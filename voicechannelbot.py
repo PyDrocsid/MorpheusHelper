@@ -189,6 +189,8 @@ class Bot(Client):
 
             await run_in_thread(db.delete, link)
             await message.channel.send(f"link has been deleted")
+        else:
+            await message.channel.send("usage: prefix|auth|list|link|unlink [<arguments>]")
 
     async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
         if before.channel == after.channel:
