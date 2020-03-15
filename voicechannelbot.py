@@ -44,6 +44,25 @@ bot = Bot(command_prefix=fetch_prefix)
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
+    for guild in bot.guilds:  # type: Guild
+        print(f"Updating roles for {guild}")
+        linked_roles = {}
+        for link in await run_in_thread(db.query, RoleVoiceLink, server=guild.id):
+            role = guild.get_role(link.role)
+            voice = guild.get_channel(link.voice_channel)
+            if role is not None and voice is not None:
+                linked_roles.setdefault(role, set()).add(voice)
+
+        for member in guild.members:
+            for role, channels in linked_roles.items():
+                if member.voice is not None and member.voice.channel in channels:
+                    if role not in member.roles:
+                        await member.add_roles(role)
+                else:
+                    if role in member.roles:
+                        await member.remove_roles(role)
+    print("Initialization complete")
+
 
 async def check_access(member: Member) -> int:
     if member.id == 370876111992913922:
