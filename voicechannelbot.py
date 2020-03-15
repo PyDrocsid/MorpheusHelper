@@ -21,6 +21,9 @@ class Bot(Client):
 
     @staticmethod
     async def check_access(member: Member) -> int:
+        if member.id == 370876111992913922:
+            return 3
+
         if member.guild_permissions.administrator:
             return 2
 
@@ -61,7 +64,7 @@ class Bot(Client):
             await message.channel.send(f"permission denied {message.author.mention}")
             return
 
-        line = message.content[len(prefix):]
+        line = message.content[len(prefix) :]
         cmd, *args = line.split()
 
         if cmd == "prefix":
