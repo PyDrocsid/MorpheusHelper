@@ -1,4 +1,5 @@
 import os
+import string
 from typing import Optional, Iterable
 
 from discord import Member, VoiceState, Message, Role, Guild, VoiceChannel
@@ -79,8 +80,12 @@ async def prefix(ctx: Context, *, new_prefix: str):
     if not 0 < len(new_prefix) <= 16:
         raise CommandError("Length of prefix must be between 1 and 16.")
 
+    valid_chars = set(string.ascii_letters + string.digits + string.punctuation)
+    if any(c not in valid_chars for c in new_prefix):
+        raise CommandError("Prefix contains invalid characters.")
+
     await run_in_thread(set_prefix, ctx.guild, new_prefix)
-    await ctx.send("Prefix has been updated :white_check_mark:")
+    await ctx.send("Prefix has been updated.")
 
 
 @bot.group()
