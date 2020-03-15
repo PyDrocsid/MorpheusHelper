@@ -200,6 +200,8 @@ async def create_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
 
     if role > ctx.me.top_role:
         raise CommandError(f"Link could not be created because `@{role}` is higher than `@{ctx.me.top_role}`.")
+    if role.managed:
+        raise CommandError(f"Link could not be created because `@{role}` cannot be assigned manually.")
 
     await run_in_thread(RoleVoiceLink.create, ctx.guild.id, role.id, voice_channel.id)
     for member in voice_channel.members:
