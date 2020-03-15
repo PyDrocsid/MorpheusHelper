@@ -202,6 +202,9 @@ async def create_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         raise CommandError(f"Link could not be created because `@{role}` is higher than `@{ctx.me.top_role}`.")
 
     await run_in_thread(RoleVoiceLink.create, ctx.guild.id, role.id, voice_channel.id)
+    for member in voice_channel.members:
+        await member.add_roles(role)
+
     await ctx.send(f"Link has been created between voice channel `{voice_channel}` and role `@{role}`.")
 
 
@@ -220,6 +223,9 @@ async def remove_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         raise CommandError("Link does not exist.")
 
     await run_in_thread(db.delete, link)
+    for member in voice_channel.members:
+        await member.remove_roles(role)
+
     await ctx.send(f"Link has been deleted.")
 
 
