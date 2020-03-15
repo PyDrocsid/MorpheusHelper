@@ -2,7 +2,7 @@ import os
 from typing import Optional, Iterable
 
 from discord import Member, VoiceState, Message, Role, Guild, VoiceChannel
-from discord.ext.commands import Bot, Context, check, CommandError
+from discord.ext.commands import Bot, Context, check, CommandError, CheckFailure
 
 from database import db, run_in_thread
 from models.authorizes_roles import AuthorizedRoles
@@ -61,7 +61,10 @@ async def check_access(member: Member) -> int:
 def permission_level(level: int):
     @check
     async def admin_only(ctx: Context):
-        return await check_access(ctx.author) >= level
+        if await check_access(ctx.author) < level:
+            raise CheckFailure("You are not allowed to use this command.")
+
+        return True
 
     return admin_only
 
@@ -74,11 +77,10 @@ async def prefix(ctx: Context, *, new_prefix: str):
     """
 
     if not 0 < len(new_prefix) <= 16:
-        await ctx.send("length of prefix must be between 1 and 16")
-        return
+        raise CommandError("Length of prefix must be between 1 and 16.")
 
     await run_in_thread(set_prefix, ctx.guild, new_prefix)
-    await ctx.send("prefix has been updated :white_check_mark:")
+    await ctx.send("Prefix has been updated :white_check_mark:")
 
 
 @bot.group()
@@ -103,9 +105,9 @@ async def auth_list(ctx: Context):
         if (role := ctx.guild.get_role(auth_role.role)) is not None:
             roles.append(f" - `@{role}` (`{role.id}`)")
     if roles:
-        await ctx.send("the following roles are authorized to control this bot:\n" + "\n".join(roles))
+        await ctx.send("The following roles are authorized to control this bot:\n" + "\n".join(roles))
     else:
-        await ctx.send("only administrators can control this bot")
+        await ctx.send("Except administrators nobody can control this bot.")
 
 
 @auth.command(name="add")
@@ -118,11 +120,10 @@ async def auth_add(ctx: Context, *, role: Role):
         db.first, AuthorizedRoles, server=ctx.guild.id, role=role.id
     )
     if authorization is not None:
-        await ctx.send(f"role `@{role}` is already authorized")
-        return
+        raise CommandError(f"Role `@{role}` is already authorized.")
 
     await run_in_thread(AuthorizedRoles.create, ctx.guild.id, role.id)
-    await ctx.send(f"role `@{role}` has been authorized to control this bot")
+    await ctx.send(f"Role `@{role}` has been authorized to control this bot.")
 
 
 @auth.command(name="del")
@@ -135,11 +136,10 @@ async def auth_del(ctx: Context, *, role: Role):
         db.first, AuthorizedRoles, server=ctx.guild.id, role=role.id
     )
     if auth is None:
-        await ctx.send(f"role `@{role}` is not authorized")
-        return
+        raise CommandError(f"Role `@{role}` is not authorized.")
 
     await run_in_thread(db.delete, authorization)
-    await ctx.send(f"role `@{role}` has been unauthorized to control this bot")
+    await ctx.send(f"Role `@{role}` has been unauthorized to control this bot.")
 
 
 @bot.command(name="list")
@@ -158,7 +158,7 @@ async def list_links(ctx: Context):
 
         out.append(f"`{voice}` (`{voice.id}`) -> `@{role}` (`{role.id}`)")
 
-    await ctx.send("\n".join(out) or "no links created")
+    await ctx.send("\n".join(out) or "No links have been created yet.")
 
 
 @bot.command(name="link")
@@ -172,11 +172,13 @@ async def create_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         await run_in_thread(db.first, RoleVoiceLink, server=ctx.guild.id, role=role.id, voice_channel=voice_channel.id)
         is not None
     ):
-        await ctx.send("link already exists")
-        return
+        raise CommandError("Link already exists.")
+
+    if role > ctx.me.top_role:
+        raise CommandError(f"Link could not be created because `@{role}` is higher than `@{ctx.me.top_role}`.")
 
     await run_in_thread(RoleVoiceLink.create, ctx.guild.id, role.id, voice_channel.id)
-    await ctx.send(f"link has been created between voice channel `{voice_channel}` and role `@{role}`")
+    await ctx.send(f"Link has been created between voice channel `{voice_channel}` and role `@{role}`.")
 
 
 @bot.command(name="unlink")
@@ -191,11 +193,10 @@ async def remove_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
             db.first, RoleVoiceLink, server=ctx.guild.id, role=role.id, voice_channel=voice_channel.id
         )
     ) is None:
-        await ctx.send("link does not exist")
-        return
+        raise CommandError("Link does not exist.")
 
     await run_in_thread(db.delete, link)
-    await ctx.send(f"link has been deleted")
+    await ctx.send(f"Link has been deleted.")
 
 
 @bot.event
