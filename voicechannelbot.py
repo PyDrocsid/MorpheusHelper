@@ -159,7 +159,7 @@ async def auth_del(ctx: Context, *, role: Role):
     authorization: Optional[AuthorizedRoles] = await run_in_thread(
         db.first, AuthorizedRoles, server=ctx.guild.id, role=role.id
     )
-    if auth is None:
+    if authorization is None:
         raise CommandError(f"Role `@{role}` is not authorized.")
 
     await run_in_thread(db.delete, authorization)
