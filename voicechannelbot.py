@@ -3,7 +3,7 @@ import string
 from typing import Optional, Iterable
 
 from discord import Member, VoiceState, Message, Role, Guild, VoiceChannel
-from discord.ext.commands import Bot, Context, check, CommandError, CheckFailure
+from discord.ext.commands import Bot, Context, check, CommandError, CheckFailure, guild_only, CommandNotFound
 
 from database import db, run_in_thread
 from models.authorizes_roles import AuthorizedRoles
@@ -34,7 +34,7 @@ def set_prefix(guild: Guild, new_prefix: str) -> str:
 async def fetch_prefix(_, message: Message) -> Iterable[str]:
     if message.guild is None:
         return ""
-    return await run_in_thread(get_prefix, message.guild), f"<@!{bot.user.id}> "
+    return await run_in_thread(get_prefix, message.guild), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
 bot = Bot(command_prefix=fetch_prefix)
@@ -91,6 +91,7 @@ def permission_level(level: int):
 
 @bot.command()
 @permission_level(1)
+@guild_only()
 async def prefix(ctx: Context, *, new_prefix: str):
     """
     change the bot prefix
@@ -109,6 +110,7 @@ async def prefix(ctx: Context, *, new_prefix: str):
 
 @bot.group()
 @permission_level(2)
+@guild_only()
 async def auth(ctx: Context):
     """
     manage roles authorized to control this bot
@@ -168,6 +170,7 @@ async def auth_del(ctx: Context, *, role: Role):
 
 @bot.command(name="list")
 @permission_level(1)
+@guild_only()
 async def list_links(ctx: Context):
     """
     list all links between voice channels and roles
@@ -187,6 +190,7 @@ async def list_links(ctx: Context):
 
 @bot.command(name="link")
 @permission_level(1)
+@guild_only()
 async def create_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
     """
     link a voice channel with a role
@@ -212,6 +216,7 @@ async def create_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
 
 @bot.command(name="unlink")
 @permission_level(1)
+@guild_only()
 async def remove_link(ctx: Context, voice_channel: VoiceChannel, *, role: Role):
     """
     delete the link between a voice channel and a role
@@ -261,13 +266,21 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
+    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == get_prefix(ctx.guild):
+        return
     await ctx.send(f":x: Error: {error}")
 
 
 @bot.event
 async def on_message(message: Message):
-    if message.guild is not None:
-        await bot.process_commands(message)
+    if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
+        if message.guild is None:
+            await message.channel.send("Ping!")
+        else:
+            await message.channel.send(f"My prefix here is `{get_prefix(message.guild)}`")
+        return
+
+    await bot.process_commands(message)
 
 
 bot.run(os.environ["TOKEN"])
