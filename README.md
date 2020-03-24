@@ -1,2 +1,2 @@
 # VoiceChannelBot
-Discord bot for voice channels
+Bot for the Discord Server of The Morpheus Tutorials
