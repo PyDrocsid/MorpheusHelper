@@ -11,7 +11,7 @@ ADD Pipfile.lock /app/
 
 RUN pipenv sync
 
-ADD voicechannelbot.py /app/
+ADD morpheushelper.py /app/
 ADD database.py /app/
 ADD models /app/models/
 

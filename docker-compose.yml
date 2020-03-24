@@ -1,14 +1,14 @@
 version: '3.7'
 services:
-  voicechannelbot:
-    container_name: voicechannelbot
-    image: defelo/voicechannelbot
+  morpheushelper:
+    container_name: morpheushelper
+    image: defelo/morpheushelper
     restart: always
     tty: true
     environment:
       TOKEN: '<TOKEN>'
       DB_HOST: 'db'
       DB_PORT: 3306
-      DB_DATABASE: 'voicechannelbot'
-      DB_USER: 'voicechannelbot'
-      DB_PASSWORD: 'voicechannelbot'
+      DB_DATABASE: 'morpheushelper'
+      DB_USER: 'morpheushelper'
+      DB_PASSWORD: 'morpheushelper'
