@@ -13,6 +13,8 @@ RUN pipenv sync
 
 ADD morpheushelper.py /app/
 ADD database.py /app/
+ADD util.py /app/
 ADD models /app/models/
+ADD cogs /app/cogs/
 
 CMD pipenv run bot
