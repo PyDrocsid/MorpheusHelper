@@ -57,7 +57,7 @@ async def run_in_thread(function, *args, **kwargs):
 db: DB = DB(
     hostname=env.get("DB_HOST", "localhost"),
     port=env.get("DB_PORT", 3306),
-    database=env.get("DB_DATABASE", "voicechannelbot"),
-    username=env.get("DB_USER", "voicechannelbot"),
-    password=env.get("DB_PASSWORD", "voicechannelbot"),
+    database=env.get("DB_DATABASE", "morpheushelper"),
+    username=env.get("DB_USER", "morpheushelper"),
+    password=env.get("DB_PASSWORD", "morpheushelper"),
 )
