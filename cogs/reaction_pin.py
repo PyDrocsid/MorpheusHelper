@@ -9,6 +9,7 @@ from discord import (
     RawReactionClearEvent,
     MessageType,
     Role,
+    HTTPException,
 )
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
@@ -16,7 +17,7 @@ from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
-from util import permission_level
+from util import permission_level, make_error
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -36,7 +37,15 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(payload.emoji) == EMOJI and await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None:
             blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
             if payload.user_id == message.author.id and all(r.id != blocked_role for r in member.roles):
-                await message.pin()
+                try:
+                    await message.pin()
+                except HTTPException:
+                    await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
+                    await channel.send(
+                        make_error(
+                            "Message could not be pinned, because 50 messages are already pinned in this channel."
+                        )
+                    )
             else:
                 await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
 

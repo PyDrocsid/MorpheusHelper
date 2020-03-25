@@ -10,7 +10,7 @@ from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorizes_roles import AuthorizedRoles
 from models.settings import Settings
-from util import permission_level
+from util import permission_level, make_error
 
 db.create_tables()
 
@@ -122,7 +122,7 @@ async def auth_del(ctx: Context, *, role: Role):
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == get_prefix():
         return
-    await ctx.send(f":x: Error: {error}")
+    await ctx.send(make_error(error))
 
 
 @bot.event

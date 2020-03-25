@@ -5,6 +5,10 @@ from database import run_in_thread, db
 from models.authorizes_roles import AuthorizedRoles
 
 
+def make_error(message) -> str:
+    return f":x: Error: {message}"
+
+
 async def check_access(member: Member) -> int:
     if member.id == 370876111992913922:
         return 3
