@@ -17,7 +17,7 @@ from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
-from util import permission_level, make_error
+from util import permission_level, make_error, check_access
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -34,9 +34,12 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if guild is None:
             return
         member: Member = guild.get_member(payload.user_id)
-        if str(payload.emoji) == EMOJI and await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None:
+        access: bool = await check_access(member) > 0
+        if str(payload.emoji) == EMOJI and (
+            await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None or access
+        ):
             blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
-            if payload.user_id == message.author.id and all(r.id != blocked_role for r in member.roles):
+            if (payload.user_id == message.author.id and all(r.id != blocked_role for r in member.roles)) or access:
                 try:
                     await message.pin()
                 except HTTPException:
@@ -56,12 +59,13 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         guild: Guild = channel.guild
         if guild is None:
             return
-        if (
-            str(payload.emoji) == EMOJI
-            and await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None
-            and payload.user_id == message.author.id
-        ):
-            await message.unpin()
+        access: bool = await check_access(guild.get_member(payload.user_id)) > 0
+        if str(payload.emoji) == EMOJI:
+            if (
+                await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None
+                and payload.user_id == message.author.id
+            ) or access:
+                await message.unpin()
 
     @Cog.listener()
     async def on_raw_reaction_clear(self, payload: RawReactionClearEvent):
