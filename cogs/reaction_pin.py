@@ -140,7 +140,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
     @reactionpin.command(name="pin_message")
     async def change_pin_message(self, ctx: Context, enabled: bool = None):
         """
-        enable/disable pin message
+        enable/disable "pinned a message" notification
         """
 
         if enabled is None:

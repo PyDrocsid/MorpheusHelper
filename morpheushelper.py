@@ -42,7 +42,7 @@ async def on_ready():
 @bot.command()
 @permission_level(1)
 @guild_only()
-async def prefix(ctx: Context, *, new_prefix: str):
+async def prefix(ctx: Context, new_prefix: str):
     """
     change the bot prefix
     """
@@ -131,7 +131,8 @@ async def on_message(message: Message):
         if message.guild is None:
             await message.channel.send("Ping!")
         else:
-            await message.channel.send(f"My prefix here is `{get_prefix()}`")
+            pref = await run_in_thread(get_prefix)
+            await message.channel.send(f"My prefix here is `{pref}`")
         return
 
     await bot.process_commands(message)
