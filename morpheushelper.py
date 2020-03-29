@@ -40,6 +40,15 @@ async def on_ready():
 
 
 @bot.command()
+async def ping(ctx: Context):
+    """
+    display bot latency
+    """
+
+    await ctx.send(f"Pong! ({bot.latency * 1000:.0f} ms)")
+
+
+@bot.command()
 @permission_level(1)
 @guild_only()
 async def prefix(ctx: Context, new_prefix: str):
