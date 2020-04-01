@@ -1,12 +1,16 @@
 from typing import Union, List
 
-from discord import Role, Guild
+from discord import Role, Guild, Member
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.btp_role import BTPRole
 from util import permission_level
+
+
+def split_topics(topics: str) -> List[str]:
+    return [topic.strip() for topic in topics.replace(";", ",").split(",")]
 
 
 class BeTheProfessionalCog(Cog):
@@ -42,12 +46,27 @@ class BeTheProfessionalCog(Cog):
             await ctx.send("No topics have been registered yet.")
 
     @btp.command(name="+")
-    async def add_role(self, ctx: Context, *topics: Role):
+    async def add_role(self, ctx: Context, *, topics: str):
         """
         add one or more topics you are interested in
         """
 
-        pass
+        guild: Guild = ctx.guild
+        member: Member = ctx.author
+        roles: List[Role] = []
+        for topic in split_topics(topics):
+            for role in guild.roles:
+                if role.name.lower() == topic.lower() and await run_in_thread(db.get, BTPRole, role.id) is not None:
+                    break
+            else:
+                raise CommandError(f"Topic `{topic}` not found.")
+            roles.append(role)
+        if not roles:
+            await ctx.send_help(self.add_role)
+            return
+
+        await member.add_roles(*roles)
+        await ctx.send("Topic" + [" has", "s have"][len(roles) > 1] + " been added successfully.")
 
     @btp.command(name="-")
     async def remove_roles(self, ctx: Context, *topics: Union[Role, str]):
@@ -85,7 +104,7 @@ class BeTheProfessionalCog(Cog):
     @permission_level(1)
     async def unregister_role(self, ctx: Context, *, topic: str):
         """
-        deletes a topic
+        delete a topic
         """
 
         guild: Guild = ctx.guild
