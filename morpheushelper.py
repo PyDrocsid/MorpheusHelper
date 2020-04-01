@@ -5,10 +5,11 @@ from typing import Optional, Iterable
 from discord import Message, Role
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 
+from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
-from models.authorizes_roles import AuthorizedRoles
+from models.authorized_roles import AuthorizedRoles
 from models.settings import Settings
 from util import permission_level, make_error
 
@@ -149,4 +150,5 @@ async def on_message(message: Message):
 
 bot.add_cog(VoiceChannelCog(bot))
 bot.add_cog(ReactionPinCog(bot))
+bot.add_cog(BeTheProfessionalCog(bot))
 bot.run(os.environ["TOKEN"])

@@ -2,7 +2,7 @@ from discord import Member
 from discord.ext.commands import check, Context, CheckFailure
 
 from database import run_in_thread, db
-from models.authorizes_roles import AuthorizedRoles
+from models.authorized_roles import AuthorizedRoles
 
 
 def make_error(message) -> str:
