@@ -11,7 +11,7 @@ from util import permission_level
 
 
 def split_topics(topics: str) -> List[str]:
-    return list(map(str.strip, topics.replace(";", ",").split(",")))
+    return [topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic]
 
 
 async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
@@ -69,8 +69,10 @@ class BeTheProfessionalCog(Cog):
         roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
 
         await member.add_roles(*roles)
-        if roles:
-            await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been added successfully.")
+        if len(roles) > 1:
+            await ctx.send(f"{len(roles)} topics have been added successfully.")
+        elif len(roles) == 1:
+            await ctx.send(f"Topic has been added successfully.")
         else:
             await ctx.send("No topic has been added.")
 
@@ -89,8 +91,10 @@ class BeTheProfessionalCog(Cog):
         roles = [r for r in roles if r in member.roles]
 
         await member.remove_roles(*roles)
-        if roles:
-            await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been removed successfully.")
+        if len(roles) > 1:
+            await ctx.send(f"{len(roles)} topics have been removed successfully.")
+        elif len(roles) == 1:
+            await ctx.send(f"Topic has been removed successfully.")
         else:
             await ctx.send("No topic has been removed.")
 
@@ -140,7 +144,10 @@ class BeTheProfessionalCog(Cog):
         for role in roles:
             await run_in_thread(BTPRole.create, role.id)
 
-        await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been registered successfully.")
+        if len(roles) > 1:
+            await ctx.send(f"{len(roles)} topics have been registered successfully.")
+        elif len(roles) == 1:
+            await ctx.send(f"Topic has been registered successfully.")
 
     @commands.command(name="/")
     @permission_level(1)
@@ -172,4 +179,7 @@ class BeTheProfessionalCog(Cog):
         for role, btp_role in zip(roles, btp_roles):
             await run_in_thread(db.delete, btp_role)
             await role.delete()
-        await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been deleted successfully.")
+        if len(roles) > 1:
+            await ctx.send(f"{len(roles)} topics have been deleted successfully.")
+        elif len(roles) == 1:
+            await ctx.send(f"Topic has been deleted successfully.")
