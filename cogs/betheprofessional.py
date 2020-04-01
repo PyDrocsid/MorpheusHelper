@@ -14,12 +14,17 @@ def split_topics(topics: str) -> List[str]:
     return list(map(str.strip, topics.replace(";", ",").split(",")))
 
 
-async def parse_topics(guild: Guild, topics: str) -> List[Role]:
+async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
     roles: List[Role] = []
     for topic in split_topics(topics):
         for role in guild.roles:
-            if role.name.lower() == topic.lower() and await run_in_thread(db.get, BTPRole, role.id) is not None:
-                break
+            if role.name.lower() == topic.lower():
+                if await run_in_thread(db.get, BTPRole, role.id) is not None:
+                    break
+                elif not role.managed and role > guild.me.top_role:
+                    raise CommandError(
+                        f"Topic `{topic}` not found.\nYou're not the first one to try this, {author.mention}"
+                    )
         else:
             raise CommandError(f"Topic `{topic}` not found.")
         roles.append(role)
@@ -69,7 +74,7 @@ class BeTheProfessionalCog(Cog):
         """
 
         member: Member = ctx.author
-        roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics) if r not in member.roles]
+        roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
 
         await member.add_roles(*roles)
         if roles:
@@ -87,7 +92,7 @@ class BeTheProfessionalCog(Cog):
         if topics.strip() == "*":
             roles: List[Role] = await list_topics(ctx.guild)
         else:
-            roles: List[Role] = await parse_topics(ctx.guild, topics)
+            roles: List[Role] = await parse_topics(ctx.guild, topics, ctx.author)
         roles = [r for r in roles if r in member.roles]
 
         await member.remove_roles(*roles)
