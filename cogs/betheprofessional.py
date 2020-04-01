@@ -1,3 +1,4 @@
+import string
 from typing import List
 
 from discord import Role, Guild, Member
@@ -9,9 +10,13 @@ from models.btp_role import BTPRole
 from util import permission_level
 
 
+def split_topics(topics: str) -> List[str]:
+    return list(map(str.strip, topics.replace(";", ",").split(",")))
+
+
 async def parse_topics(guild: Guild, topics: str) -> List[Role]:
     roles: List[Role] = []
-    for topic in map(str.strip, topics.replace(";", ",").split(",")):
+    for topic in split_topics(topics):
         for role in guild.roles:
             if role.name.lower() == topic.lower() and await run_in_thread(db.get, BTPRole, role.id) is not None:
                 break
@@ -93,44 +98,78 @@ class BeTheProfessionalCog(Cog):
 
     @btp.command(name="*")
     @permission_level(1)
-    async def register_role(self, ctx: Context, *, topic: str):
+    async def register_role(self, ctx: Context, *, topics: str):
         """
-        register a new topic
+        register one or more new topics
         """
 
         guild: Guild = ctx.guild
-        for role in guild.roles:
-            if role.name.lower() == topic.lower():
-                break
-        else:
-            role: Role = await guild.create_role(name=topic, mentionable=True)
+        names = split_topics(topics)
+        if not names:
+            await ctx.send_help(self.register_role)
+            return
 
-        if await run_in_thread(db.get, BTPRole, role.id) is not None:
-            raise CommandError("Topic has already been registered.")
-        if role > ctx.me.top_role:
-            raise CommandError(f"Topic could not be registered because `@{role}` is higher than `@{ctx.me.top_role}`.")
-        if role.managed:
-            raise CommandError(f"Topic could not be registered because `@{role}` cannot be assigned manually.")
+        valid_chars = set(string.ascii_letters + string.digits + " !\"#$%&'()*+-./:<=>?[\\]^_`{|}~")
+        to_be_created: List[str] = []
+        roles: List[Role] = []
+        for topic in names:
+            if any(c not in valid_chars for c in topic):
+                raise CommandError(f"Topic name `{topic}` contains invalid characters.")
+            elif not topic:
+                raise CommandError("Topic name may not be empty.")
 
-        await run_in_thread(BTPRole.create, role.id)
-        await ctx.send("Topic has been registered successfully.")
+            for role in guild.roles:
+                if role.name.lower() == topic.lower():
+                    break
+            else:
+                to_be_created.append(topic)
+                continue
+
+            if await run_in_thread(db.get, BTPRole, role.id) is not None:
+                raise CommandError(f"Topic `{topic}` has already been registered.")
+            if role > ctx.me.top_role:
+                raise CommandError(
+                    f"Topic could not be registered because `@{role}` is higher than `@{ctx.me.top_role}`."
+                )
+            if role.managed:
+                raise CommandError(f"Topic could not be registered because `@{role}` cannot be assigned manually.")
+            roles.append(role)
+
+        for name in to_be_created:
+            roles.append(await guild.create_role(name=name, mentionable=True))
+
+        for role in roles:
+            await run_in_thread(BTPRole.create, role.id)
+
+        await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been registered successfully.")
 
     @btp.command(name="/")
     @permission_level(1)
-    async def unregister_role(self, ctx: Context, *, topic: str):
+    async def unregister_role(self, ctx: Context, *, topics: str):
         """
-        delete a topic
+        deletes one or more topics
         """
 
         guild: Guild = ctx.guild
-        for role in guild.roles:
-            if role.name.lower() == topic.lower():
-                break
-        else:
-            raise CommandError("Topic has not been registered.")
-        if (btp_role := await run_in_thread(db.get, BTPRole, role.id)) is None:
-            raise CommandError("Topic has not been registered.")
+        roles: List[Role] = []
+        btp_roles: List[BTPRole] = []
+        names = split_topics(topics)
+        if not names:
+            await ctx.send_help(self.register_role)
+            return
+        for topic in names:
+            for role in guild.roles:
+                if role.name.lower() == topic.lower():
+                    break
+            else:
+                raise CommandError(f"Topic `{topic}` has not been registered.")
+            if (btp_role := await run_in_thread(db.get, BTPRole, role.id)) is None:
+                raise CommandError(f"Topic `{topic}` has not been registered.")
 
-        await run_in_thread(db.delete, btp_role)
-        await role.delete()
-        await ctx.send("Topic has been deleted successfully.")
+            roles.append(role)
+            btp_roles.append(btp_role)
+
+        for role, btp_role in zip(roles, btp_roles):
+            await run_in_thread(db.delete, btp_role)
+            await role.delete()
+        await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been deleted successfully.")
