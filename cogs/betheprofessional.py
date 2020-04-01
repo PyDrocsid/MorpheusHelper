@@ -45,17 +45,8 @@ class BeTheProfessionalCog(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="btp")
+    @commands.command(name="?")
     @guild_only()
-    async def btp(self, ctx: Context):
-        """
-        manage language roles
-        """
-
-        if ctx.invoked_subcommand is None:
-            await ctx.send_help("btp")
-
-    @btp.command(name="?")
     async def list_roles(self, ctx: Context):
         """
         lists all registered topics
@@ -67,7 +58,8 @@ class BeTheProfessionalCog(Cog):
         else:
             await ctx.send("No topics have been registered yet.")
 
-    @btp.command(name="+")
+    @commands.command(name="+")
+    @guild_only()
     async def add_role(self, ctx: Context, *, topics: str):
         """
         add one or more topics you are interested in
@@ -82,7 +74,8 @@ class BeTheProfessionalCog(Cog):
         else:
             await ctx.send("No topic has been added.")
 
-    @btp.command(name="-")
+    @commands.command(name="-")
+    @guild_only()
     async def remove_roles(self, ctx: Context, *, topics: str):
         """
         remove one or more topics (use * to remove all topics)
@@ -101,8 +94,9 @@ class BeTheProfessionalCog(Cog):
         else:
             await ctx.send("No topic has been removed.")
 
-    @btp.command(name="*")
+    @commands.command(name="*")
     @permission_level(1)
+    @guild_only()
     async def register_role(self, ctx: Context, *, topics: str):
         """
         register one or more new topics
@@ -148,8 +142,9 @@ class BeTheProfessionalCog(Cog):
 
         await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been registered successfully.")
 
-    @btp.command(name="/")
+    @commands.command(name="/")
     @permission_level(1)
+    @guild_only()
     async def unregister_role(self, ctx: Context, *, topics: str):
         """
         deletes one or more topics
