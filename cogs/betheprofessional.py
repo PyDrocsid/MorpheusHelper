@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import List
 
 from discord import Role, Guild, Member
 from discord.ext import commands
@@ -9,8 +9,26 @@ from models.btp_role import BTPRole
 from util import permission_level
 
 
-def split_topics(topics: str) -> List[str]:
-    return [topic.strip() for topic in topics.replace(";", ",").split(",")]
+async def parse_topics(guild: Guild, topics: str) -> List[Role]:
+    roles: List[Role] = []
+    for topic in map(str.strip, topics.replace(";", ",").split(",")):
+        for role in guild.roles:
+            if role.name.lower() == topic.lower() and await run_in_thread(db.get, BTPRole, role.id) is not None:
+                break
+        else:
+            raise CommandError(f"Topic `{topic}` not found.")
+        roles.append(role)
+    return roles
+
+
+async def list_topics(guild: Guild) -> List[Role]:
+    roles: List[Role] = []
+    for btp_role in await run_in_thread(db.all, BTPRole):
+        if (role := guild.get_role(btp_role.role_id)) is None:
+            await run_in_thread(db.delete, btp_role)
+        else:
+            roles.append(role)
+    return roles
 
 
 class BeTheProfessionalCog(Cog):
@@ -33,13 +51,7 @@ class BeTheProfessionalCog(Cog):
         lists all registered topics
         """
 
-        out = []
-        guild: Guild = ctx.guild
-        for btp_role in await run_in_thread(db.all, BTPRole):
-            if (role := guild.get_role(btp_role.role_id)) is None:
-                await run_in_thread(db.delete, btp_role)
-            else:
-                out.append(role.name)
+        out = [role.name for role in await list_topics(ctx.guild)]
         if out:
             await ctx.send("Available Topics:\n" + ", ".join(out))
         else:
@@ -51,30 +63,33 @@ class BeTheProfessionalCog(Cog):
         add one or more topics you are interested in
         """
 
-        guild: Guild = ctx.guild
         member: Member = ctx.author
-        roles: List[Role] = []
-        for topic in split_topics(topics):
-            for role in guild.roles:
-                if role.name.lower() == topic.lower() and await run_in_thread(db.get, BTPRole, role.id) is not None:
-                    break
-            else:
-                raise CommandError(f"Topic `{topic}` not found.")
-            roles.append(role)
-        if not roles:
-            await ctx.send_help(self.add_role)
-            return
+        roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics) if r not in member.roles]
 
         await member.add_roles(*roles)
-        await ctx.send("Topic" + [" has", "s have"][len(roles) > 1] + " been added successfully.")
+        if roles:
+            await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been added successfully.")
+        else:
+            await ctx.send("No topic has been added.")
 
     @btp.command(name="-")
-    async def remove_roles(self, ctx: Context, *topics: Union[Role, str]):
+    async def remove_roles(self, ctx: Context, *, topics: str):
         """
         remove one or more topics (use * to remove all topics)
         """
 
-        pass
+        member: Member = ctx.author
+        if topics.strip() == "*":
+            roles: List[Role] = await list_topics(ctx.guild)
+        else:
+            roles: List[Role] = await parse_topics(ctx.guild, topics)
+        roles = [r for r in roles if r in member.roles]
+
+        await member.remove_roles(*roles)
+        if roles:
+            await ctx.send(f"{len(roles)} topic" + [" has", "s have"][len(roles) > 1] + " been removed successfully.")
+        else:
+            await ctx.send("No topic has been removed.")
 
     @btp.command(name="*")
     @permission_level(1)
