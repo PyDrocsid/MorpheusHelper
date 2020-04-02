@@ -12,15 +12,7 @@ T = TypeVar("T")
 
 class DB:
     def __init__(self, hostname, port, database, username, password):
-        # pool_pre_ping are not supportet on all sqlalchemy versions
-        try:
-            self.engine: Engine = create_engine(
-                f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}", pool_pre_ping=True
-            )
-        except TypeError:
-            self.engine: Engine = create_engine(
-                f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}"
-            )
+        self.engine: Engine = create_engine(f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}", pool_pre_ping=True)
 
         self._SessionFactory: sessionmaker = sessionmaker(bind=self.engine, expire_on_commit=False)
         self._Session = scoped_session(self._SessionFactory)
