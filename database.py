@@ -12,7 +12,9 @@ T = TypeVar("T")
 
 class DB:
     def __init__(self, hostname, port, database, username, password):
-        self.engine: Engine = create_engine(f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}", pool_pre_ping=True)
+        self.engine: Engine = create_engine(
+            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}", pool_pre_ping=True
+        )
 
         self._SessionFactory: sessionmaker = sessionmaker(bind=self.engine, expire_on_commit=False)
         self._Session = scoped_session(self._SessionFactory)

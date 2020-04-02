@@ -1,6 +1,5 @@
 import string
 from typing import List
-from similar import best_match
 
 from discord import Role, Guild, Member
 from discord.ext import commands
@@ -8,47 +7,31 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.btp_role import BTPRole
-from util import permission_level
+from util import permission_level, calculate_edit_distance
 
 
 def split_topics(topics: str) -> List[str]:
     return [topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic]
 
 
-async def filter_role(guild: Guild, role: Role) -> bool:
-    p = role.permissions
-    if p.administrator or p.ban_members or p.kick_members or p.manage_guild or p.manage_nicknames or p.manage_roles:
-        return False
-    if await run_in_thread(db.get, BTPRole, role.id) is not None:
-        return True
-    elif not role.managed and role > guild.me.top_role:
-        return False
-
-
-async def topic_not_found(guild: Guild, topic: str):
-    list_of_available_topics = []
-    for role in guild.roles:
-        if await filter_role(guild, role):
-            list_of_available_topics.append(role.name.lower())
-    if len(list_of_available_topics) == 0:
-        raise CommandError(f"Topic `{topic}` not found.")
-    else:
-        raise CommandError(f"Topic `{topic}` not found. Did you mean `{best_match(topic.lower(), list_of_available_topics)}`?")
-
-
 async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
     roles: List[Role] = []
+    all_topics: List[Role] = await list_topics(guild)
     for topic in split_topics(topics):
         for role in guild.roles:
             if role.name.lower() == topic.lower():
-                if await filter_role(guild, role):
+                if role in all_topics:
                     break
                 elif not role.managed and role > guild.me.top_role:
                     raise CommandError(
                         f"Topic `{topic}` not found.\nYou're not the first one to try this, {author.mention}"
                     )
         else:
-            await topic_not_found(guild, topic)  # raise 100% Exception
+            if all_topics:
+                best_match = min((r.name for r in all_topics), key=lambda a: calculate_edit_distance(a, topic))
+                raise CommandError(f"Topic `{topic}` not found. Did you mean `{best_match}`?")
+            else:
+                raise CommandError(f"Topic `{topic}` not found.")
         roles.append(role)
     return roles
 
@@ -63,7 +46,7 @@ async def list_topics(guild: Guild) -> List[Role]:
     return roles
 
 
-class BeTheProfessionalCog(Cog):
+class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
