@@ -53,6 +53,7 @@ class BeTheProfessionalCog(Cog):
         """
 
         out = [role.name for role in await list_topics(ctx.guild)]
+        out.sort()
         if out:
             await ctx.send("Available Topics:\n" + ", ".join(out))
         else:
