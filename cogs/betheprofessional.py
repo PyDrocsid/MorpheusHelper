@@ -28,7 +28,9 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
                     )
         else:
             if all_topics:
-                best_match = min((r.name for r in all_topics), key=lambda a: calculate_edit_distance(a, topic))
+                best_match = min(
+                    (r.name for r in all_topics), key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
+                )
                 raise CommandError(f"Topic `{topic}` not found. Did you mean `{best_match}`?")
             else:
                 raise CommandError(f"Topic `{topic}` not found.")
