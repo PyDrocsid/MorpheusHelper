@@ -1,5 +1,6 @@
 import string
 from typing import List
+from similar import best_match
 
 from discord import Role, Guild, Member
 from discord.ext import commands
@@ -14,19 +15,40 @@ def split_topics(topics: str) -> List[str]:
     return [topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic]
 
 
+async def filter_role(guild: Guild, role: Role) -> bool:
+    p = role.permissions
+    if p.administrator or p.ban_members or p.kick_members or p.manage_guild or p.manage_nicknames or p.manage_roles:
+        return False
+    if await run_in_thread(db.get, BTPRole, role.id) is not None:
+        return True
+    elif not role.managed and role > guild.me.top_role:
+        return False
+
+
+async def topic_not_found(guild: Guild, topic: str):
+    list_of_available_topics = []
+    for role in guild.roles:
+        if await filter_role(guild, role):
+            list_of_available_topics.append(role.name.lower())
+    if len(list_of_available_topics) == 0:
+        raise CommandError(f"Topic `{topic}` not found.")
+    else:
+        raise CommandError(f"Topic `{topic}` not found. Did you mean `{best_match(topic.lower(), list_of_available_topics)}`?")
+
+
 async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
     roles: List[Role] = []
     for topic in split_topics(topics):
         for role in guild.roles:
             if role.name.lower() == topic.lower():
-                if await run_in_thread(db.get, BTPRole, role.id) is not None:
+                if await filter_role(guild, role):
                     break
                 elif not role.managed and role > guild.me.top_role:
                     raise CommandError(
                         f"Topic `{topic}` not found.\nYou're not the first one to try this, {author.mention}"
                     )
         else:
-            raise CommandError(f"Topic `{topic}` not found.")
+            await topic_not_found(guild, topic)  # raise 100% Exception
         roles.append(role)
     return roles
 
