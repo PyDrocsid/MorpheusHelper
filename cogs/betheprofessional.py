@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.btp_role import BTPRole
-from util import permission_level
+from util import permission_level, calculate_edit_distance
 
 
 def split_topics(topics: str) -> List[str]:
@@ -16,17 +16,24 @@ def split_topics(topics: str) -> List[str]:
 
 async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
     roles: List[Role] = []
+    all_topics: List[Role] = await list_topics(guild)
     for topic in split_topics(topics):
         for role in guild.roles:
             if role.name.lower() == topic.lower():
-                if await run_in_thread(db.get, BTPRole, role.id) is not None:
+                if role in all_topics:
                     break
                 elif not role.managed and role > guild.me.top_role:
                     raise CommandError(
                         f"Topic `{topic}` not found.\nYou're not the first one to try this, {author.mention}"
                     )
         else:
-            raise CommandError(f"Topic `{topic}` not found.")
+            if all_topics:
+                best_match = min(
+                    (r.name for r in all_topics), key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
+                )
+                raise CommandError(f"Topic `{topic}` not found. Did you mean `{best_match}`?")
+            else:
+                raise CommandError(f"Topic `{topic}` not found.")
         roles.append(role)
     return roles
 
@@ -41,7 +48,7 @@ async def list_topics(guild: Guild) -> List[Role]:
     return roles
 
 
-class BeTheProfessionalCog(Cog):
+class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
