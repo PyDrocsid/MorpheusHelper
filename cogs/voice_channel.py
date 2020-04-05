@@ -1,3 +1,5 @@
+from typing import Optional
+
 from discord import Member, VoiceState, Guild, VoiceChannel, Role
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
@@ -13,23 +15,23 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
     @Cog.listener()
     async def on_ready(self):
-        for guild in self.bot.guilds:  # type: Guild
-            print(f"Updating roles for {guild}")
-            linked_roles = {}
-            for link in await run_in_thread(db.query, RoleVoiceLink, server=guild.id):
-                role = guild.get_role(link.role)
-                voice = guild.get_channel(link.voice_channel)
-                if role is not None and voice is not None:
-                    linked_roles.setdefault(role, set()).add(voice)
+        guild: Guild = self.bot.guilds[0]
+        print("Updating voice channel roles")
+        linked_roles = {}
+        for link in await run_in_thread(db.query, RoleVoiceLink):
+            role = guild.get_role(link.role)
+            voice = guild.get_channel(link.voice_channel)
+            if role is not None and voice is not None:
+                linked_roles.setdefault(role, set()).add(voice)
 
-            for member in guild.members:
-                for role, channels in linked_roles.items():
-                    if member.voice is not None and member.voice.channel in channels:
-                        if role not in member.roles:
-                            await member.add_roles(role)
-                    else:
-                        if role in member.roles:
-                            await member.remove_roles(role)
+        for member in guild.members:
+            for role, channels in linked_roles.items():
+                if member.voice is not None and member.voice.channel in channels:
+                    if role not in member.roles:
+                        await member.add_roles(role)
+                else:
+                    if role in member.roles:
+                        await member.remove_roles(role)
         print("Initialization complete")
 
     @Cog.listener()
@@ -42,9 +44,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.remove_roles(
                 *(
                     role
-                    for link in await run_in_thread(
-                        db.query, RoleVoiceLink, server=guild.id, voice_channel=before.channel.id
-                    )
+                    for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=before.channel.id)
                     if (role := guild.get_role(link.role)) is not None
                 )
             )
@@ -52,9 +52,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.add_roles(
                 *(
                     role
-                    for link in await run_in_thread(
-                        db.query, RoleVoiceLink, server=guild.id, voice_channel=after.channel.id
-                    )
+                    for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=after.channel.id)
                     if (role := guild.get_role(link.role)) is not None
                 )
             )
@@ -77,13 +75,14 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         out = []
-        for link in await run_in_thread(db.query, RoleVoiceLink, server=ctx.guild.id):
-            if (role := ctx.guild.get_role(link.role)) is None:
-                continue
-            if (voice := ctx.guild.get_channel(link.voice_channel)) is None:
-                continue
-
-            out.append(f"`{voice}` (`{voice.id}`) -> `@{role}` (`{role.id}`)")
+        guild: Guild = ctx.guild
+        for link in await run_in_thread(db.all, RoleVoiceLink):
+            role: Optional[Role] = guild.get_role(link.role)
+            voice: Optional[VoiceChannel] = guild.get_channel(link.voice_channel)
+            if role is None or voice is None:
+                await run_in_thread(db.delete, link)
+            else:
+                out.append(f"`{voice}` (`{voice.id}`) -> `@{role}` (`{role.id}`)")
 
         await ctx.send("\n".join(out) or "No links have been created yet.")
 
@@ -93,12 +92,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         link a voice channel with a role
         """
 
-        if (
-            await run_in_thread(
-                db.first, RoleVoiceLink, server=ctx.guild.id, role=role.id, voice_channel=voice_channel.id
-            )
-            is not None
-        ):
+        if await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=voice_channel.id) is not None:
             raise CommandError("Link already exists.")
 
         if role > ctx.me.top_role:
@@ -106,7 +100,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if role.managed:
             raise CommandError(f"Link could not be created because `@{role}` cannot be assigned manually.")
 
-        await run_in_thread(RoleVoiceLink.create, ctx.guild.id, role.id, voice_channel.id)
+        await run_in_thread(RoleVoiceLink.create, role.id, voice_channel.id)
         for member in voice_channel.members:
             await member.add_roles(role)
 
@@ -118,11 +112,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         delete the link between a voice channel and a role
         """
 
-        if (
-            link := await run_in_thread(
-                db.first, RoleVoiceLink, server=ctx.guild.id, role=role.id, voice_channel=voice_channel.id
-            )
-        ) is None:
+        if (link := await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=voice_channel.id)) is None:
             raise CommandError("Link does not exist.")
 
         await run_in_thread(db.delete, link)

@@ -9,7 +9,7 @@ from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
-from models.authorized_roles import AuthorizedRoles
+from models.authorized_role import AuthorizedRole
 from models.settings import Settings
 from util import permission_level, make_error
 
@@ -87,9 +87,11 @@ async def auth_list(ctx: Context):
     """
 
     roles = []
-    for auth_role in await run_in_thread(db.query, AuthorizedRoles, server=ctx.guild.id):
+    for auth_role in await run_in_thread(db.all, AuthorizedRole):
         if (role := ctx.guild.get_role(auth_role.role)) is not None:
             roles.append(f" - `@{role}` (`{role.id}`)")
+        else:
+            await run_in_thread(db.delete, auth_role)
     if roles:
         await ctx.send("The following roles are authorized to control this bot:\n" + "\n".join(roles))
     else:
@@ -102,13 +104,11 @@ async def auth_add(ctx: Context, *, role: Role):
     authorize role to control this bot
     """
 
-    authorization: Optional[AuthorizedRoles] = await run_in_thread(
-        db.first, AuthorizedRoles, server=ctx.guild.id, role=role.id
-    )
+    authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
     if authorization is not None:
         raise CommandError(f"Role `@{role}` is already authorized.")
 
-    await run_in_thread(AuthorizedRoles.create, ctx.guild.id, role.id)
+    await run_in_thread(AuthorizedRole.create, role.id)
     await ctx.send(f"Role `@{role}` has been authorized to control this bot.")
 
 
@@ -118,9 +118,7 @@ async def auth_del(ctx: Context, *, role: Role):
     unauthorize role to control this bot
     """
 
-    authorization: Optional[AuthorizedRoles] = await run_in_thread(
-        db.first, AuthorizedRoles, server=ctx.guild.id, role=role.id
-    )
+    authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
     if authorization is None:
         raise CommandError(f"Role `@{role}` is not authorized.")
 

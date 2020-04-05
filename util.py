@@ -2,7 +2,7 @@ from discord import Member
 from discord.ext.commands import check, Context, CheckFailure
 
 from database import run_in_thread, db
-from models.authorized_roles import AuthorizedRoles
+from models.authorized_role import AuthorizedRole
 
 
 def make_error(message) -> str:
@@ -17,7 +17,7 @@ async def check_access(member: Member) -> int:
         return 2
 
     roles = set(role.id for role in member.roles)
-    for authorization in await run_in_thread(db.query, AuthorizedRoles, server=member.guild.id):
+    for authorization in await run_in_thread(db.query, AuthorizedRole):
         if authorization.role in roles:
             return 1
     return 0
