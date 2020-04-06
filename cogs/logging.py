@@ -10,7 +10,7 @@ from discord import (
     RawMessageDeleteEvent,
 )
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, TextChannelConverter
+from discord.ext.commands import Cog, Bot, guild_only, Context, TextChannelConverter, CommandError
 
 from database import run_in_thread
 from models.settings import Settings
@@ -135,9 +135,13 @@ class LoggingCog(Cog, name="Logging"):
         if channel is None:
             await run_in_thread(Settings.set, int, "logging_edit", -1)
             await ctx.send("Logging for message edit events has been disabled.")
-        else:
+        elif channel.permissions_for(channel.guild.me).send_messages:
             await run_in_thread(Settings.set, int, "logging_edit", channel.id)
             await ctx.send(f"Logs for message edit events will now be sent to {channel.mention}.")
+        else:
+            raise CommandError(
+                "Logging channel could not be changed because I don't have `send_messages` permission there."
+            )
 
     @logging.command(name="delete")
     async def delete(self, ctx: Context, channel: OptionalChannel):
@@ -149,6 +153,10 @@ class LoggingCog(Cog, name="Logging"):
         if channel is None:
             await run_in_thread(Settings.set, int, "logging_delete", -1)
             await ctx.send("Logging for message delete events has been disabled.")
-        else:
+        elif channel.permissions_for(channel.guild.me).send_messages:
             await run_in_thread(Settings.set, int, "logging_delete", channel.id)
             await ctx.send(f"Logs for message delete events will now be sent to {channel.mention}.")
+        else:
+            raise CommandError(
+                "Logging channel could not be changed because I don't have `send_messages` permission there."
+            )
