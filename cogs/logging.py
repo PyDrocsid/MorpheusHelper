@@ -1,6 +1,15 @@
 from typing import Optional
 
-from discord import TextChannel, Guild, RawMessageUpdateEvent, Message, Embed, RawMessageDeleteEvent
+from discord import (
+    TextChannel,
+    Guild,
+    RawMessageUpdateEvent,
+    Message,
+    Embed,
+    RawMessageDeleteEvent,
+    AuditLogAction,
+    Member,
+)
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, TextChannelConverter
 
@@ -23,6 +32,13 @@ class LoggingCog(Cog, name="Logging"):
     async def get_logging_channel(self, event: str) -> Optional[TextChannel]:
         channel_id = await run_in_thread(Settings.get, int, "logging_" + event, -1)
         return self.bot.get_channel(channel_id) if channel_id != -1 else None
+
+    async def find_deleted_by(self, channel: TextChannel, author: Member) -> Member:
+        guild: Guild = self.bot.guilds[0]
+        async for entry in guild.audit_logs(action=AuditLogAction.message_delete):
+            if entry.target.id == author.id and entry.extra.channel.id == channel.id:
+                return entry.user
+        return author
 
     @Cog.listener()
     async def on_message_edit(self, before: Message, after: Message):
@@ -68,6 +84,8 @@ class LoggingCog(Cog, name="Logging"):
         embed = Embed(title="Message Deleted", color=0xFF0000)
         embed.add_field(name="Channel", value=message.channel.mention)
         embed.add_field(name="Author", value=message.author.mention)
+        deleted_by: Member = await self.find_deleted_by(message.channel, message.author)
+        embed.add_field(name="Deleted by", value=deleted_by.mention)
         if message.content:
             embed.add_field(name="Old Content", value=message.content, inline=False)
         await delete_channel.send(embed=embed)
