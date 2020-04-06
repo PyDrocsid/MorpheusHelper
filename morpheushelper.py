@@ -2,7 +2,7 @@ import os
 import string
 from typing import Optional, Iterable
 
-from discord import Message, Role
+from discord import Message, Role, Status, Game
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 
 from cogs.betheprofessional import BeTheProfessionalCog
@@ -39,6 +39,8 @@ bot = Bot(command_prefix=fetch_prefix)
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
+
+    await bot.change_presence(status=Status.online, activity=Game(name="github.com/Defelo/MorpheusHelper"))
 
 
 @bot.command()
