@@ -1,6 +1,6 @@
 from typing import Optional
 
-from discord import TextChannel, Guild, RawMessageUpdateEvent, Message, Embed
+from discord import TextChannel, Guild, RawMessageUpdateEvent, Message, Embed, RawMessageDeleteEvent
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, TextChannelConverter
 
@@ -20,10 +20,13 @@ class LoggingCog(Cog, name="Logging"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
+    async def get_logging_channel(self, event: str) -> Optional[TextChannel]:
+        channel_id = await run_in_thread(Settings.get, int, "logging_" + event, -1)
+        return self.bot.get_channel(channel_id) if channel_id != -1 else None
+
     @Cog.listener()
     async def on_message_edit(self, before: Message, after: Message):
-        edit_id = await run_in_thread(Settings.get, int, "logging_edit", -1)
-        edit_channel: Optional[TextChannel] = self.bot.get_channel(edit_id) if edit_id != -1 else None
+        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         if edit_channel is None or before.content == after.content:
             return
 
@@ -40,8 +43,7 @@ class LoggingCog(Cog, name="Logging"):
         if event.cached_message is not None:
             return
 
-        edit_id = await run_in_thread(Settings.get, int, "logging_edit", -1)
-        edit_channel: Optional[TextChannel] = self.bot.get_channel(edit_id) if edit_id != -1 else None
+        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         if edit_channel is None:
             return
 
@@ -56,6 +58,35 @@ class LoggingCog(Cog, name="Logging"):
                 if message.content:
                     embed.add_field(name="New Content", value=message.content, inline=False)
         await edit_channel.send(embed=embed)
+
+    @Cog.listener()
+    async def on_message_delete(self, message: Message):
+        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
+        if delete_channel is None:
+            return
+
+        embed = Embed(title="Message Deleted", color=0xFF0000)
+        embed.add_field(name="Channel", value=message.channel.mention)
+        embed.add_field(name="Author", value=message.author.mention)
+        if message.content:
+            embed.add_field(name="Old Content", value=message.content, inline=False)
+        await delete_channel.send(embed=embed)
+
+    @Cog.listener()
+    async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
+        if event.cached_message is not None:
+            return
+
+        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
+        if delete_channel is None:
+            return
+
+        embed = Embed(title="Message Deleted", color=0xFF0000)
+        channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
+        if channel is not None:
+            embed.add_field(name="Channel", value=channel.mention)
+            embed.add_field(name="Message ID", value=event.message_id, inline=False)
+        await delete_channel.send(embed=embed)
 
     @commands.group(name="logging")
     @permission_level(1)
