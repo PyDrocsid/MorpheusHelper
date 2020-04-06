@@ -24,6 +24,14 @@ class OptionalChannel(TextChannelConverter):
         return await super().convert(ctx, argument)
 
 
+def add_field(embed: Embed, name: str, text: str):
+    first = True
+    while text:
+        embed.add_field(name=["\ufeff", name][first], value=text[:1024], inline=False)
+        text = text[1024:]
+        first = False
+
+
 class LoggingCog(Cog, name="Logging"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -42,8 +50,8 @@ class LoggingCog(Cog, name="Logging"):
         embed.add_field(name="Channel", value=before.channel.mention)
         embed.add_field(name="Author", value=before.author.mention)
         embed.add_field(name="URL", value=before.jump_url, inline=False)
-        embed.add_field(name="Old Content", value=before.content, inline=False)
-        embed.add_field(name="New Content", value=after.content, inline=False)
+        add_field(embed, "Old Content", before.content)
+        add_field(embed, "New Content", after.content)
         await edit_channel.send(embed=embed)
 
     @Cog.listener()
@@ -63,8 +71,7 @@ class LoggingCog(Cog, name="Logging"):
             if message is not None:
                 embed.add_field(name="Author", value=message.author.mention)
                 embed.add_field(name="URL", value=message.jump_url, inline=False)
-                if message.content:
-                    embed.add_field(name="New Content", value=message.content, inline=False)
+                add_field(embed, "New Content", message.content)
         await edit_channel.send(embed=embed)
 
     @Cog.listener()
@@ -76,8 +83,7 @@ class LoggingCog(Cog, name="Logging"):
         embed = Embed(title="Message Deleted", color=0xFF0000, timestamp=(datetime.utcnow()))
         embed.add_field(name="Channel", value=message.channel.mention)
         embed.add_field(name="Author", value=message.author.mention)
-        if message.content:
-            embed.add_field(name="Old Content", value=message.content, inline=False)
+        add_field(embed, "Old Content", message.content)
         await delete_channel.send(embed=embed)
 
     @Cog.listener()
