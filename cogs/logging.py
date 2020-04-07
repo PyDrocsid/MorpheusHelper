@@ -84,6 +84,16 @@ class LoggingCog(Cog, name="Logging"):
         embed.add_field(name="Channel", value=message.channel.mention)
         embed.add_field(name="Author", value=message.author.mention)
         add_field(embed, "Old Content", message.content)
+        if message.attachments:
+            out = []
+            for attachment in message.attachments:
+                size = attachment.size
+                for unit in "BKMG":
+                    if size < 1000:
+                        break
+                    size /= 1000
+                out.append(f"{attachment.filename} ({size:.1f} {unit})")
+            embed.add_field(name="Attachments", value="\n".join(out), inline=False)
         await delete_channel.send(embed=embed)
 
     @Cog.listener()
