@@ -10,18 +10,11 @@ from discord import (
     RawMessageDeleteEvent,
 )
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, TextChannelConverter, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread
 from models.settings import Settings
-from util import permission_level
-
-
-class OptionalChannel(TextChannelConverter):
-    async def convert(self, ctx: Context, argument: str) -> Optional[TextChannel]:
-        if argument.lower() in ("no", "n", "false", "f", "0", "disable", "off"):
-            return None
-        return await super().convert(ctx, argument)
+from util import permission_level, calculate_edit_distance
 
 
 def add_field(embed: Embed, name: str, text: str):
@@ -43,7 +36,8 @@ class LoggingCog(Cog, name="Logging"):
     @Cog.listener()
     async def on_message_edit(self, before: Message, after: Message):
         edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
-        if edit_channel is None or before.content == after.content:
+        mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
+        if edit_channel is None or calculate_edit_distance(before.content, after.content) < mindiff:
             return
 
         embed = Embed(title="Message Edited", color=0xFFFF00, timestamp=datetime.utcnow())
@@ -132,7 +126,8 @@ class LoggingCog(Cog, name="Logging"):
         delete_channel: Optional[TextChannel] = guild.get_channel(delete_id) if delete_id != -1 else None
         out = ["Logging channels:"]
         if edit_channel is not None:
-            out.append(f" - message edit: {edit_channel.mention}")
+            mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
+            out.append(f" - message edit: {edit_channel.mention} (minimum difference: {mindiff})")
         else:
             out.append(f" - message edit: *disabled*")
         if delete_channel is not None:
@@ -141,38 +136,78 @@ class LoggingCog(Cog, name="Logging"):
             out.append(f" - message delete: *disabled*")
         await ctx.send("\n".join(out))
 
-    @logging.command(name="edit")
-    async def edit(self, ctx: Context, channel: OptionalChannel):
+    @logging.group(name="edit")
+    async def edit(self, ctx: Context):
         """
-        change logging channel for message edit events (specify off to disable)
+        change settings for edit event logging
         """
 
-        channel: Optional[TextChannel]
-        if channel is None:
-            await run_in_thread(Settings.set, int, "logging_edit", -1)
-            await ctx.send("Logging for message edit events has been disabled.")
-        elif channel.permissions_for(channel.guild.me).send_messages:
-            await run_in_thread(Settings.set, int, "logging_edit", channel.id)
-            await ctx.send(f"Logs for message edit events will now be sent to {channel.mention}.")
-        else:
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(self.edit)
+
+    @edit.command(name="mindiff")
+    async def edit_mindiff(self, ctx: Context, mindiff: int):
+        """
+        change the minimum difference between the old and new content of the message to be logged
+        """
+
+        if mindiff <= 0:
+            raise CommandError("Minimum difference must be greater than zero.")
+
+        await run_in_thread(Settings.set, int, "logging_edit_mindiff", mindiff)
+        await ctx.send(f"Message edit events will now only be logged if the difference is at least {mindiff}.")
+
+    @edit.command(name="channel")
+    async def edit_channel(self, ctx: Context, channel: TextChannel):
+        """
+        change logging channel for edit events
+        """
+
+        if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(
                 "Logging channel could not be changed because I don't have `send_messages` permission there."
             )
 
-    @logging.command(name="delete")
-    async def delete(self, ctx: Context, channel: OptionalChannel):
+        await run_in_thread(Settings.set, int, "logging_edit", channel.id)
+        await ctx.send(f"Logs for message edit events will now be sent to {channel.mention}.")
+
+    @edit.command(name="disable")
+    async def edit_disable(self, ctx: Context):
         """
-        change logging channel for message delete events (specify off to disable)
+        disable edit event logging
         """
 
-        channel: Optional[TextChannel]
-        if channel is None:
-            await run_in_thread(Settings.set, int, "logging_delete", -1)
-            await ctx.send("Logging for message delete events has been disabled.")
-        elif channel.permissions_for(channel.guild.me).send_messages:
-            await run_in_thread(Settings.set, int, "logging_delete", channel.id)
-            await ctx.send(f"Logs for message delete events will now be sent to {channel.mention}.")
-        else:
+        await run_in_thread(Settings.set, int, "logging_edit", -1)
+        await ctx.send("Logging for message edit events has been disabled.")
+
+    @logging.group(name="delete")
+    async def delete(self, ctx: Context):
+        """
+        change settings for delete event logging
+        """
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(self.delete)
+
+    @delete.command(name="channel")
+    async def delete_channel(self, ctx: Context, channel: TextChannel):
+        """
+        change logging channel for delete events
+        """
+
+        if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(
                 "Logging channel could not be changed because I don't have `send_messages` permission there."
             )
+
+        await run_in_thread(Settings.set, int, "logging_delete", channel.id)
+        await ctx.send(f"Logs for message delete events will now be sent to {channel.mention}.")
+
+    @delete.command(name="disable")
+    async def delete_disable(self, ctx: Context):
+        """
+        disable delete event logging
+        """
+
+        await run_in_thread(Settings.set, int, "logging_delete", -1)
+        await ctx.send("Logging for message delete events has been disabled.")
