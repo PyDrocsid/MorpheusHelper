@@ -1,7 +1,9 @@
 import io
+import re
 from http.client import HTTPException
+from typing import Optional, Union
 
-from discord import TextChannel, Message, File, Forbidden
+from discord import TextChannel, Message, File, Forbidden, Permissions, Embed, Color
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -45,6 +47,47 @@ class RulesCog(Cog, name="Rule Commands"):
             files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
         try:
             await channel.send(content=msg.content, files=files)
+        except (HTTPException, Forbidden):
+            raise CommandError("Message could not be sent.")
+        else:
+            await ctx.send("Message has been sent successfully.")
+
+    @send.command(name="embed")
+    async def send_embed(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None):
+        """
+        send an embed
+        """
+
+        if isinstance(color, str):
+            if not re.match(r"^[0-9a-fA-F]{6}$", color):
+                raise CommandError("Invalid color")
+            else:
+                color = int(color, 16)
+
+        permissions: Permissions = channel.permissions_for(channel.guild.me)
+        if not permissions.send_messages:
+            raise CommandError(
+                "Message could not be sent because I don't have `send_messages` permission in this channel."
+            )
+        elif not permissions.embed_links:
+            raise CommandError(
+                "Message could not be sent because I don't have `embed_links` permission in this channel."
+            )
+
+        await ctx.send("Send me the title of the embed!")
+        title: str = (
+            await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel and m.author == ctx.author)
+        ).content
+        await ctx.send("Ok, now send me the content of the embed!")
+        content: str = (
+            await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel and m.author == ctx.author)
+        ).content
+
+        try:
+            embed = Embed(title=title, description=content)
+            if color is not None:
+                embed.colour = color
+            await channel.send(embed=embed)
         except (HTTPException, Forbidden):
             raise CommandError("Message could not be sent.")
         else:
