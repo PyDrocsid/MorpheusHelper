@@ -23,6 +23,17 @@ class RulesCog(Cog, name="Rule Commands"):
             files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
         return msg.content, files
 
+    async def read_embed(self, channel: TextChannel, author: Member) -> Embed:
+        await channel.send("Send me the title of the embed!")
+        title: str = (
+            await self.bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
+        ).content
+        await channel.send("Ok, now send me the content of the embed!")
+        content: str = (
+            await self.bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
+        ).content
+        return Embed(title=title, description=content)
+
     @commands.group(name="send")
     @permission_level(1)
     @guild_only()
@@ -76,19 +87,10 @@ class RulesCog(Cog, name="Rule Commands"):
                 "Message could not be sent because I don't have `embed_links` permission in this channel."
             )
 
-        await ctx.send("Send me the title of the embed!")
-        title: str = (
-            await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel and m.author == ctx.author)
-        ).content
-        await ctx.send("Ok, now send me the content of the embed!")
-        content: str = (
-            await self.bot.wait_for("message", check=lambda m: m.channel == ctx.channel and m.author == ctx.author)
-        ).content
-
+        embed = await self.read_embed(ctx.channel, ctx.author)
+        if color is not None:
+            embed.colour = color
         try:
-            embed = Embed(title=title, description=content)
-            if color is not None:
-                embed.colour = color
             await channel.send(embed=embed)
         except (HTTPException, Forbidden):
             raise CommandError("Message could not be sent.")
@@ -117,5 +119,26 @@ class RulesCog(Cog, name="Rule Commands"):
 
         await ctx.send("Now send me the new message!")
         content, files = await self.read_normal_message(ctx.channel, ctx.author)
-        await message.edit(content=content, files=files)
+        await message.edit(content=content, files=files, embed=None)
+        await ctx.send("Message has been edited successfully.")
+
+    @edit.command(name="embed")
+    async def edit_embed(self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None):
+        """
+        edit an embed
+        """
+
+        if message.author != self.bot.user:
+            raise CommandError("This message cannot be edited because the bot is not the author of the message.")
+
+        if isinstance(color, str):
+            if not re.match(r"^[0-9a-fA-F]{6}$", color):
+                raise CommandError("Invalid color")
+            else:
+                color = int(color, 16)
+
+        embed = await self.read_embed(ctx.channel, ctx.author)
+        if color is not None:
+            embed.colour = color
+        await message.edit(content=None, files=[], embed=embed)
         await ctx.send("Message has been edited successfully.")
