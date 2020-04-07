@@ -1,9 +1,9 @@
 import io
 import re
 from http.client import HTTPException
-from typing import Optional, Union
+from typing import Optional, Union, Tuple, List
 
-from discord import TextChannel, Message, File, Forbidden, Permissions, Embed, Color
+from discord import TextChannel, Message, File, Forbidden, Permissions, Embed, Color, Member
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -13,6 +13,15 @@ from util import permission_level
 class RulesCog(Cog, name="Rule Commands"):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    async def read_normal_message(self, channel: TextChannel, author: Member) -> Tuple[str, List[File]]:
+        msg: Message = await self.bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
+        files = []
+        for attachment in msg.attachments:
+            file = io.BytesIO()
+            await attachment.save(file)
+            files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
+        return msg.content, files
 
     @commands.group(name="send")
     @permission_level(1)
@@ -37,16 +46,9 @@ class RulesCog(Cog, name="Rule Commands"):
             )
 
         await ctx.send("Now send me the message!")
-        msg: Message = await self.bot.wait_for(
-            "message", check=lambda m: m.channel == ctx.channel and m.author == ctx.author
-        )
-        files = []
-        for attachment in msg.attachments:
-            file = io.BytesIO()
-            await attachment.save(file)
-            files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
+        content, files = await self.read_normal_message(ctx.channel, ctx.author)
         try:
-            await channel.send(content=msg.content, files=files)
+            await channel.send(content=content, files=files)
         except (HTTPException, Forbidden):
             raise CommandError("Message could not be sent.")
         else:
@@ -92,3 +94,28 @@ class RulesCog(Cog, name="Rule Commands"):
             raise CommandError("Message could not be sent.")
         else:
             await ctx.send("Message has been sent successfully.")
+
+    @commands.group(name="edit")
+    @permission_level(1)
+    @guild_only()
+    async def edit(self, ctx: Context):
+        """
+        edit messages sent by the bot
+        """
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(self.edit)
+
+    @edit.command(name="text")
+    async def edit_text(self, ctx: Context, message: Message):
+        """
+        edit a normal message
+        """
+
+        if message.author != self.bot.user:
+            raise CommandError("This message cannot be edited because the bot is not the author of the message.")
+
+        await ctx.send("Now send me the new message!")
+        content, files = await self.read_normal_message(ctx.channel, ctx.author)
+        await message.edit(content=content, files=files)
+        await ctx.send("Message has been edited successfully.")
