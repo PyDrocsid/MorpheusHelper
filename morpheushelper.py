@@ -2,7 +2,7 @@ import os
 import string
 from typing import Optional, Iterable
 
-from discord import Message, Role, Status, Game
+from discord import Message, Role, Status, Game, Embed
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 
 from cogs.betheprofessional import BeTheProfessionalCog
@@ -55,7 +55,7 @@ async def ping(ctx: Context):
 @bot.command()
 @permission_level(1)
 @guild_only()
-async def prefix(ctx: Context, new_prefix: str):
+async def change_prefix(ctx: Context, new_prefix: str):
     """
     change the bot prefix
     """
@@ -129,6 +129,58 @@ async def auth_del(ctx: Context, *, role: Role):
     await ctx.send(f"Role `@{role}` has been unauthorized to control this bot.")
 
 
+async def build_info_embed(authorized: bool) -> Embed:
+    embed = Embed(
+        title="MorpheusHelper",
+        color=0x007700,
+        description="Helper Bot for the Discord Server of The Morpheus Tutorials",
+    )
+    embed.set_thumbnail(
+        url="https://cdn.discordapp.com/avatars/686299664726622258/cb99c816286bdd1d988ec16d8ae85e15.png"
+    )
+    prefix = await run_in_thread(get_prefix)
+    features = [
+        "Role system for topics you are interested in",
+        "Pin your own messages by reacting with :pushpin: in specific channels",
+        "Automatic role assignment upon entering a voice channel",
+    ]
+    if authorized:
+        features.append("Logging of message edit and delete events")
+    embed.add_field(
+        name="Features", value="\n".join(f":small_orange_diamond: {feature}" for feature in features), inline=False
+    )
+    embed.add_field(name="Author", value="<@370876111992913922>", inline=True)
+    embed.add_field(name="Contributors", value="<@212866839083089921>, <@330148908531580928>", inline=True)
+    embed.add_field(name="GitHub", value="https://github.com/Defelo/MorpheusHelper", inline=False)
+    embed.add_field(name="Prefix", value=f"`{prefix}` or {bot.user.mention}", inline=True)
+    embed.add_field(name="Help Command", value=f"`{prefix}help`", inline=True)
+    embed.add_field(
+        name="Bug Reports / Feature Requests",
+        value="Please create an issue in the GitHub repository or contact me (<@370876111992913922>) via Discord.",
+        inline=False,
+    )
+    return embed
+
+
+@bot.command(name="info", aliases=["about"])
+async def info(ctx: Context):
+    """
+    show information about the bot
+    """
+
+    await ctx.send(embed=await build_info_embed(False))
+
+
+@bot.command(name="admininfo")
+@permission_level(1)
+async def admininfo(ctx: Context):
+    """
+    show information about the bot (admin view)
+    """
+
+    await ctx.send(embed=await build_info_embed(True))
+
+
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == get_prefix():
@@ -142,8 +194,7 @@ async def on_message(message: Message):
         if message.guild is None:
             await message.channel.send("Ping!")
         else:
-            pref = await run_in_thread(get_prefix)
-            await message.channel.send(f"My prefix here is `{pref}`")
+            await message.channel.send(embed=await build_info_embed(False))
         return
 
     await bot.process_commands(message)
