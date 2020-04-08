@@ -13,7 +13,7 @@ from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
-from util import permission_level, make_error
+from util import permission_level, make_error, measure_latency
 
 db.create_tables()
 
@@ -50,10 +50,14 @@ async def ping(ctx: Context):
     display bot latency
     """
 
-    await ctx.send(f"Pong! ({bot.latency * 1000:.0f} ms)")
+    latency: Optional[float] = measure_latency()
+    out = "Pong!"
+    if latency is not None:
+        out += f" ({latency * 1000:.0f} ms)"
+    await ctx.send(out)
 
 
-@bot.command()
+@bot.command(name="prefix")
 @permission_level(1)
 @guild_only()
 async def change_prefix(ctx: Context, new_prefix: str):
