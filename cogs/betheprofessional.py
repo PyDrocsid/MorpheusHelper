@@ -60,9 +60,9 @@ class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
         """
 
         out = [role.name for role in await list_topics(ctx.guild)]
-        out.sort()
+        out.sort(key=str.lower)
         if out:
-            await ctx.send("Available Topics:\n" + ", ".join(out))
+            await ctx.send("Available Topics:\n```\n" + ", ".join(out) + "```")
         else:
             await ctx.send("No topics have been registered yet.")
 
