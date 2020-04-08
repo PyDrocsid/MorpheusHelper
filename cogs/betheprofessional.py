@@ -48,7 +48,7 @@ async def list_topics(guild: Guild) -> List[Role]:
     return roles
 
 
-class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
+class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -56,7 +56,7 @@ class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
     @guild_only()
     async def list_roles(self, ctx: Context):
         """
-        lists all registered topics
+        list all registered topics
         """
 
         out = [role.name for role in await list_topics(ctx.guild)]
@@ -162,7 +162,7 @@ class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
     @guild_only()
     async def unregister_role(self, ctx: Context, *, topics: str):
         """
-        deletes one or more topics
+        delete one or more topics
         """
 
         guild: Guild = ctx.guild

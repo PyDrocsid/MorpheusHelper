@@ -56,7 +56,7 @@ async def ping(ctx: Context):
     await ctx.send(out)
 
 
-@bot.command()
+@bot.command(name="prefix")
 @permission_level(1)
 @guild_only()
 async def change_prefix(ctx: Context, new_prefix: str):

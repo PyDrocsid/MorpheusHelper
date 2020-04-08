@@ -158,7 +158,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
     @reactionpin.command(name="blocked_role")
     async def change_blocked_role(self, ctx: Context, role: Role = None):
         """
-        changes the blocked role
+        change the blocked role
         """
 
         if role is None:
