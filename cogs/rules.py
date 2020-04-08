@@ -142,3 +142,24 @@ class RulesCog(Cog, name="Rule Commands"):
             embed.colour = color
         await message.edit(content=None, files=[], embed=embed)
         await ctx.send("Message has been edited successfully.")
+
+    @commands.command(name="delete")
+    @permission_level(1)
+    @guild_only()
+    async def delete(self, ctx: Context, message: Message):
+        """
+        delete a message
+        """
+
+        if message.guild is None:
+            raise CommandError("Private messages cannot be deleted.")
+
+        channel: TextChannel = message.channel
+        permissions: Permissions = channel.permissions_for(message.guild.me)
+        if message.author != self.bot.user and not permissions.manage_messages:
+            raise CommandError(
+                f"Message could not be deleted because I don't have `manage_messages` permission in {channel.mention}."
+            )
+
+        await message.delete()
+        await ctx.send("Message has been deleted successfully.")
