@@ -1,3 +1,7 @@
+import socket
+import time
+from typing import Optional
+
 from discord import Member
 from discord.ext.commands import check, Context, CheckFailure
 
@@ -40,3 +44,19 @@ def calculate_edit_distance(a: str, b: str) -> int:
         for j in range(1, len(b) + 1):
             dp[i][j] = min(dp[i - 1][j - 1] + (a[i - 1] != b[j - 1]), dp[i - 1][j] + 1, dp[i][j - 1] + 1,)
     return dp[len(a)][len(b)]
+
+
+def measure_latency() -> Optional[float]:
+    host = socket.gethostbyname("discordapp.com")
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(5)
+
+    t = time.time()
+
+    try:
+        s.connect((host, 443))
+        s.shutdown(socket.SHUT_RD)
+    except (socket.timeout, OSError):
+        return None
+
+    return time.time() - t
