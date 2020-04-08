@@ -147,6 +147,7 @@ async def build_info_embed(authorized: bool) -> Embed:
     ]
     if authorized:
         features.append("Logging of message edit and delete events")
+        features.append("Send/Edit/Delete text and embed messages as the bot")
     embed.add_field(
         name="Features", value="\n".join(f":small_orange_diamond: {feature}" for feature in features), inline=False
     )
