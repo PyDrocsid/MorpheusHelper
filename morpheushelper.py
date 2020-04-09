@@ -7,6 +7,7 @@ from discord.ext.commands import Bot, Context, CommandError, guild_only, Command
 
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.logging import LoggingCog
+from cogs.mediaonly import MediaOnlyCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
@@ -152,6 +153,7 @@ async def build_info_embed(authorized: bool) -> Embed:
     if authorized:
         features.append("Logging of message edit and delete events")
         features.append("Send/Edit/Delete text and embed messages as the bot")
+        features.append("Media only channels")
     embed.add_field(
         name="Features", value="\n".join(f":small_orange_diamond: {feature}" for feature in features), inline=False
     )
@@ -210,5 +212,6 @@ bot.add_cog(VoiceChannelCog(bot))
 bot.add_cog(ReactionPinCog(bot))
 bot.add_cog(BeTheProfessionalCog(bot))
 bot.add_cog(LoggingCog(bot))
+bot.add_cog(MediaOnlyCog(bot))
 bot.add_cog(RulesCog(bot))
 bot.run(os.environ["TOKEN"])
