@@ -84,7 +84,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if not pin_messages_enabled and message.author == self.bot.user and message.type == MessageType.pins_add:
             await message.delete()
 
-    @commands.group()
+    @commands.group(aliases=["rp"])
     @permission_level(1)
     @guild_only()
     async def reactionpin(self, ctx: Context):

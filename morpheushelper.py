@@ -7,6 +7,7 @@ from discord.ext.commands import Bot, Context, CommandError, guild_only, Command
 
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.logging import LoggingCog
+from cogs.mediaonly import MediaOnlyCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
@@ -208,4 +209,5 @@ bot.add_cog(VoiceChannelCog(bot))
 bot.add_cog(ReactionPinCog(bot))
 bot.add_cog(BeTheProfessionalCog(bot))
 bot.add_cog(LoggingCog(bot))
+bot.add_cog(MediaOnlyCog(bot))
 bot.run(os.environ["TOKEN"])
