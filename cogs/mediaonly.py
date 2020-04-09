@@ -9,7 +9,7 @@ from requests import RequestException
 
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
-from util import permission_level
+from util import permission_level, check_access
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -21,6 +21,8 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         if message.author == self.bot.user:
             return
         if message.author.bot:
+            return
+        if await check_access(message.author):
             return
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return
