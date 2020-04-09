@@ -6,6 +6,7 @@ from discord import Message, Role, Status, Game, Embed
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 
 from cogs.betheprofessional import BeTheProfessionalCog
+from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.voice_channel import VoiceChannelCog
@@ -208,4 +209,5 @@ bot.add_cog(VoiceChannelCog(bot))
 bot.add_cog(ReactionPinCog(bot))
 bot.add_cog(BeTheProfessionalCog(bot))
 bot.add_cog(LoggingCog(bot))
+bot.add_cog(InvitesCog(bot))
 bot.run(os.environ["TOKEN"])
