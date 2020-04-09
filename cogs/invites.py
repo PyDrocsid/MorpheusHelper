@@ -1,17 +1,35 @@
+import re
 from typing import Union, Optional
 
-from discord import Invite, Member, Guild, Embed
+from discord import Invite, Member, Guild, Embed, Message, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
-from util import permission_level
+from util import permission_level, check_access
 
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    @Cog.listener()
+    async def on_message(self, message: Message):
+        if message.author.bot or await check_access(message.author):
+            return
+        for url, *_ in re.findall(r"(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)", message.content):
+            try:
+                invite = await self.bot.fetch_invite(url)
+            except NotFound:
+                continue
+            if invite.guild is not None and await run_in_thread(db.get, AllowedInvite, invite.guild.id) is None:
+                await message.delete()
+                await message.channel.send(
+                    f"{message.author.mention} Illegal discord invite link! "
+                    "Please contact a team member to submit a request for whitelisting the invitation. "
+                    "Use the command `.invites list` to get a list of allowed discord invites."
+                )
 
     @commands.group()
     @guild_only()
@@ -43,11 +61,13 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         show more information about a allowed discord server
         """
 
-        row: Optional[AllowedInvite] = None
+        row: Optional[AllowedInvite]
         if isinstance(invite, str):
             for row in await run_in_thread(db.query, AllowedInvite):  # type: AllowedInvite
                 if row.guild_name.lower() == invite.lower():
                     break
+            else:
+                row = None
         else:
             if invite.guild is None:
                 raise CommandError("Invalid invite.")
@@ -90,7 +110,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         disallow a discord server
         """
 
-        row: Optional[AllowedInvite] = None
+        row: Optional[AllowedInvite]
         if isinstance(server, Invite):
             if server.guild is None:
                 raise CommandError("Invalid invite.")
@@ -99,6 +119,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             for row in await run_in_thread(db.query, AllowedInvite):  # type: AllowedInvite
                 if row.guild_name.lower() == server.lower():
                     break
+            else:
+                row = None
         else:
             row = await run_in_thread(db.get, AllowedInvite, server)
 
