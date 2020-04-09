@@ -155,6 +155,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         features.append("Logging of message edit and delete events")
         features.append("Send/Edit/Delete text and embed messages as the bot")
         features.append("Media only channels")
+        features.append("Discord server invite whitelist")
     embed.add_field(
         name="Features", value="\n".join(f":small_orange_diamond: {feature}" for feature in features), inline=False
     )
