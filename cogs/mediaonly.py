@@ -20,10 +20,13 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
     async def on_message(self, message: Message):
         if message.author == self.bot.user:
             return
+        if message.author.bot:
+            return
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return
         urls = [(att.url,) for att in message.attachments]
-        for url, *_ in urls + re.findall(r"(https?://([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content):
+        urls += re.findall(r"(https?://([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content)
+        for url, *_ in urls:
             try:
                 mime = requests.head(url).headers["Content-type"]
             except (KeyError, AttributeError, RequestException, UnicodeError, ConnectionError):
