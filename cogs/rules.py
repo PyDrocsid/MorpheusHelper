@@ -111,7 +111,7 @@ class RulesCog(Cog, name="Rule Commands"):
     @edit.command(name="text")
     async def edit_text(self, ctx: Context, message: Message):
         """
-        edit a normal message
+        edit a normal message (specify message link)
         """
 
         if message.author != self.bot.user:
@@ -125,7 +125,7 @@ class RulesCog(Cog, name="Rule Commands"):
     @edit.command(name="embed")
     async def edit_embed(self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None):
         """
-        edit an embed
+        edit an embed (specify message link)
         """
 
         if message.author != self.bot.user:
@@ -148,7 +148,7 @@ class RulesCog(Cog, name="Rule Commands"):
     @guild_only()
     async def delete(self, ctx: Context, message: Message):
         """
-        delete a message
+        delete a message (specify message link)
         """
 
         if message.guild is None:
