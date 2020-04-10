@@ -33,7 +33,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             await message.channel.send(
                 f"{message.author.mention} Illegal discord invite link! "
                 "Please contact a team member to submit a request for whitelisting the invitation. "
-                "Use the command `.invites list` to get a list of allowed discord invites."
+                "Use the command `.invites list` to get a list of all allowed discord servers."
             )
             await send_to_changelog(
                 message.guild,
