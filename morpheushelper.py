@@ -8,6 +8,7 @@ from discord.ext.commands import Bot, Context, CommandError, guild_only, Command
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
+from cogs.metaquestion import MetaQuestionCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
@@ -149,6 +150,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         "Role system for topics you are interested in",
         "Pin your own messages by reacting with :pushpin: in specific channels",
         "Automatic role assignment upon entering a voice channel",
+        "Meta question information command",
     ]
     if authorized:
         features.append("Logging of message edit and delete events")
@@ -214,4 +216,5 @@ bot.add_cog(BeTheProfessionalCog(bot))
 bot.add_cog(LoggingCog(bot))
 bot.add_cog(MediaOnlyCog(bot))
 bot.add_cog(RulesCog(bot))
+bot.add_cog(MetaQuestionCog(bot))
 bot.run(os.environ["TOKEN"])
