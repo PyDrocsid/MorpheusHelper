@@ -2,11 +2,12 @@ import socket
 import time
 from typing import Optional
 
-from discord import Member
+from discord import Member, TextChannel, Guild
 from discord.ext.commands import check, Context, CheckFailure
 
 from database import run_in_thread, db
 from models.authorized_role import AuthorizedRole
+from models.settings import Settings
 
 
 def make_error(message) -> str:
@@ -60,3 +61,9 @@ def measure_latency() -> Optional[float]:
         return None
 
     return time.time() - t
+
+
+async def send_to_changelog(guild: Guild, message: str):
+    channel: Optional[TextChannel] = guild.get_channel(await run_in_thread(Settings.get, int, "logging_changelog", -1))
+    if channel is not None:
+        await channel.send(message)

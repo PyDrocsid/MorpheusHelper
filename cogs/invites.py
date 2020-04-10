@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
-from util import permission_level, check_access
+from util import permission_level, check_access, send_to_changelog
 
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
@@ -16,20 +16,30 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
     @Cog.listener()
     async def on_message(self, message: Message):
-        if message.author.bot or await check_access(message.author):
+        if message.guild is None or message.author.bot or await check_access(message.author):
             return
+        forbidden = []
         for url, *_ in re.findall(r"(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)", message.content):
             try:
                 invite = await self.bot.fetch_invite(url)
             except NotFound:
                 continue
-            if invite.guild is not None and await run_in_thread(db.get, AllowedInvite, invite.guild.id) is None:
-                await message.delete()
-                await message.channel.send(
-                    f"{message.author.mention} Illegal discord invite link! "
-                    "Please contact a team member to submit a request for whitelisting the invitation. "
-                    "Use the command `.invites list` to get a list of allowed discord invites."
-                )
+            if invite.guild is None or invite.guild == message.guild:
+                continue
+            if await run_in_thread(db.get, AllowedInvite, invite.guild.id) is None:
+                forbidden.append(f"`{invite.code}` ({invite.guild.name})")
+        if forbidden:
+            await message.delete()
+            await message.channel.send(
+                f"{message.author.mention} Illegal discord invite link! "
+                "Please contact a team member to submit a request for whitelisting the invitation. "
+                "Use the command `.invites list` to get a list of allowed discord invites."
+            )
+            await send_to_changelog(
+                message.guild,
+                f"Deleted a message of {message.author.mention} in {message.channel.mention} "
+                f"because it contained one or more illegal discord invite links: {', '.join(forbidden)}",
+            )
 
     @commands.group()
     @guild_only()
@@ -105,7 +115,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
     @invites.command(name="remove")
     @permission_level(1)
-    async def remove_invite(self, ctx: Context, server: Union[Invite, int, str]):
+    async def remove_invite(self, ctx: Context, *, server: Union[Invite, int, str]):
         """
         disallow a discord server
         """
@@ -116,7 +126,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 raise CommandError("Invalid invite.")
             row = await run_in_thread(db.get, AllowedInvite, server.guild.id)
         elif isinstance(server, str):
-            for row in await run_in_thread(db.query, AllowedInvite):  # type: AllowedInvite
+            for row in await run_in_thread(db.all, AllowedInvite):  # type: AllowedInvite
                 if row.guild_name.lower() == server.lower():
                     break
             else:
