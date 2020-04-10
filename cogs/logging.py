@@ -122,8 +122,10 @@ class LoggingCog(Cog, name="Logging"):
         guild: Guild = ctx.guild
         edit_id = await run_in_thread(Settings.get, int, "logging_edit", -1)
         delete_id = await run_in_thread(Settings.get, int, "logging_delete", -1)
+        changelog_id = await run_in_thread(Settings.get, int, "logging_changelog", -1)
         edit_channel: Optional[TextChannel] = guild.get_channel(edit_id) if edit_id != -1 else None
         delete_channel: Optional[TextChannel] = guild.get_channel(delete_id) if delete_id != -1 else None
+        changelog_channel: Optional[TextChannel] = guild.get_channel(changelog_id) if changelog_id != -1 else None
         out = ["Logging channels:"]
         if edit_channel is not None:
             mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
@@ -134,6 +136,10 @@ class LoggingCog(Cog, name="Logging"):
             out.append(f" - message delete: {delete_channel.mention}")
         else:
             out.append(f" - message delete: *disabled*")
+        if changelog_channel is not None:
+            out.append(f" - changelog: {changelog_channel.mention}")
+        else:
+            out.append(f" - changelog: *disabled*")
         await ctx.send("\n".join(out))
 
     @logging.group(name="edit")
@@ -211,3 +217,35 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_delete", -1)
         await ctx.send("Logging for message delete events has been disabled.")
+
+    @logging.group(name="changelog")
+    async def changelog(self, ctx: Context):
+        """
+        change settings for internal changelog
+        """
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(self.changelog)
+
+    @changelog.command(name="channel")
+    async def changelog_channel(self, ctx: Context, channel: TextChannel):
+        """
+        change changelog channel
+        """
+
+        if not channel.permissions_for(channel.guild.me).send_messages:
+            raise CommandError(
+                "Changelog channel could not be changed because I don't have `send_messages` permission there."
+            )
+
+        await run_in_thread(Settings.set, int, "logging_changelog", channel.id)
+        await ctx.send(f"Changelog channel is now {channel.mention}.")
+
+    @changelog.command(name="disable")
+    async def changelog_disable(self, ctx: Context):
+        """
+        disable changelog
+        """
+
+        await run_in_thread(Settings.set, int, "logging_changelog", -1)
+        await ctx.send("Changelog channel has been disabled.")
