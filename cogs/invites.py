@@ -130,6 +130,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
         await ctx.send("Server has been whitelisted successfully.")
+        await send_to_changelog(ctx.guild, f"Discord Server `{guild.name}` has been added to the whitelist.")
 
     @invites.command(name="remove")
     @permission_level(1)
@@ -157,3 +158,4 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await run_in_thread(db.delete, row)
         await ctx.send("Server has been removed from the whitelist successfully.")
+        await send_to_changelog(ctx.guild, f"Discord Server `{row.guild_name}` has been removed from the whitelist.")
