@@ -29,17 +29,28 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             if await run_in_thread(db.get, AllowedInvite, invite.guild.id) is None:
                 forbidden.append(f"`{invite.code}` ({invite.guild.name})")
         if forbidden:
-            await message.delete()
+            can_delete = message.channel.permissions_for(message.guild.me).manage_messages
+            if can_delete:
+                await message.delete()
             await message.channel.send(
                 f"{message.author.mention} Illegal discord invite link! "
                 "Please contact a team member to submit a request for whitelisting the invitation. "
                 "Use the command `.invites list` to get a list of all allowed discord servers."
             )
-            await send_to_changelog(
-                message.guild,
-                f"Deleted a message of {message.author.mention} in {message.channel.mention} "
-                f"because it contained one or more illegal discord invite links: {', '.join(forbidden)}",
-            )
+            if can_delete:
+                await send_to_changelog(
+                    message.guild,
+                    f"Deleted a message of {message.author.mention} in {message.channel.mention} "
+                    f"because it contained one or more illegal discord invite links: {', '.join(forbidden)}",
+                )
+            else:
+                await send_to_changelog(
+                    message.guild,
+                    f"{message.author.mention} sent a message in {message.channel.mention} which contained one or "
+                    f"more illegal discord invite links: {', '.join(forbidden)}\n"
+                    "The message could not be deleted because I don't have `manage_messages` permission "
+                    "in this channel.",
+                )
 
     @commands.group()
     @guild_only()
