@@ -6,7 +6,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.role_voice_link import RoleVoiceLink
-from util import permission_level
+from util import permission_level, send_to_changelog
 
 
 class VoiceChannelCog(Cog, name="Voice Channels"):
@@ -105,6 +105,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.add_roles(role)
 
         await ctx.send(f"Link has been created between voice channel `{voice_channel}` and role `@{role}`.")
+        await send_to_changelog(
+            ctx.guild, f"Link has been created between voice channel `{voice_channel}` and role `@{role}`."
+        )
 
     @voice.command(name="unlink")
     async def remove_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
@@ -120,3 +123,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.remove_roles(role)
 
         await ctx.send(f"Link has been deleted.")
+        await send_to_changelog(
+            ctx.guild, f"Link has been deleted between voice channel `{voice_channel}` and role `@{role}`."
+        )
