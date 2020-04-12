@@ -9,6 +9,7 @@ from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
+from cogs.metaquestion import MetaQuestionCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
@@ -151,6 +152,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         "Pin your own messages by reacting with :pushpin: in specific channels",
         "Automatic role assignment upon entering a voice channel",
         "Discord server invite whitelist",
+        "Meta question information command",
     ]
     if authorized:
         features.append("Logging of message edit and delete events")
@@ -200,6 +202,9 @@ async def on_command_error(ctx: Context, error: CommandError):
 
 @bot.event
 async def on_message(message: Message):
+    if message.author == bot.user:
+        return
+
     if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
         if message.guild is None:
             await message.channel.send("Ping!")
@@ -217,4 +222,5 @@ bot.add_cog(LoggingCog(bot))
 bot.add_cog(MediaOnlyCog(bot))
 bot.add_cog(RulesCog(bot))
 bot.add_cog(InvitesCog(bot))
+bot.add_cog(MetaQuestionCog(bot))
 bot.run(os.environ["TOKEN"])
