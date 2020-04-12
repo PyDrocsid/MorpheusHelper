@@ -17,7 +17,7 @@ from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
-from util import permission_level, make_error, check_access
+from util import permission_level, make_error, check_access, send_to_changelog
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -124,6 +124,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         await run_in_thread(ReactionPinChannel.create, channel.id)
         await ctx.send("Channel has been whitelisted.")
+        await send_to_changelog(ctx.guild, f"Channel {channel.mention} has been whitelisted for ReactionPin.")
 
     @reactionpin.command(name="remove")
     async def remove_channel(self, ctx: Context, channel: TextChannel):
@@ -136,6 +137,9 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         await run_in_thread(db.delete, row)
         await ctx.send("Channel has been removed from the whitelist.")
+        await send_to_changelog(
+            ctx.guild, f"Channel {channel.mention} has been removed from the ReactionPin whitelist."
+        )
 
     @reactionpin.command(name="pin_message")
     async def change_pin_message(self, ctx: Context, enabled: bool = None):
@@ -152,8 +156,10 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             await run_in_thread(Settings.set, bool, "reactionpin_pin_message", enabled)
             if enabled:
                 await ctx.send("Pin Messages have been enabled.")
+                await send_to_changelog(ctx.guild, "Pin Messages have been enabled.")
             else:
                 await ctx.send("Pin Messages have been disabled.")
+                await send_to_changelog(ctx.guild, "Pin Messages have been disabled.")
 
     @reactionpin.command(name="blocked_role")
     async def change_blocked_role(self, ctx: Context, role: Role = None):

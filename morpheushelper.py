@@ -16,7 +16,7 @@ from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
-from util import permission_level, make_error, measure_latency
+from util import permission_level, make_error, measure_latency, send_to_changelog
 
 db.create_tables()
 
@@ -77,6 +77,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
     await run_in_thread(set_prefix, new_prefix)
     await ctx.send("Prefix has been updated.")
+    await send_to_changelog(ctx.guild, f"Bot prefix has been changed to `{new_prefix}`")
 
 
 @bot.group()
@@ -121,6 +122,7 @@ async def auth_add(ctx: Context, *, role: Role):
 
     await run_in_thread(AuthorizedRole.create, role.id)
     await ctx.send(f"Role `@{role}` has been authorized to control this bot.")
+    await send_to_changelog(ctx.guild, f"Role `@{role}` has been authorized to control this bot.")
 
 
 @auth.command(name="del")
@@ -135,6 +137,7 @@ async def auth_del(ctx: Context, *, role: Role):
 
     await run_in_thread(db.delete, authorization)
     await ctx.send(f"Role `@{role}` has been unauthorized to control this bot.")
+    await send_to_changelog(ctx.guild, f"Role `@{role}` has been unauthorized to control this bot.")
 
 
 async def build_info_embed(authorized: bool) -> Embed:
