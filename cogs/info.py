@@ -5,6 +5,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context
 from discord.utils import get
 
 from database import run_in_thread, db
+from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
 
 
@@ -48,5 +49,9 @@ class InfoCog(Cog, name="Server Information"):
         bots = [m.mention for m in guild.members if m.bot]
         embed.add_field(name=f"{len(bots)} Bots", value="\n".join(":small_orange_diamond: " + b for b in bots))
         embed.add_field(name="Topics", value=f"{len(await run_in_thread(db.all, BTPRole))} topics registered")
+        embed.add_field(
+            name="Allowed Discord Servers",
+            value=f"{len(await run_in_thread(db.all, AllowedInvite))} servers whitelisted",
+        )
 
         await ctx.send(embed=embed)
