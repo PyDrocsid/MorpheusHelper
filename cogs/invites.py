@@ -14,8 +14,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_message(self, message: Message):
+    async def check_message(self, message: Message):
         if message.guild is None or message.author.bot or await check_access(message.author):
             return
         forbidden = []
@@ -51,6 +50,14 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     "The message could not be deleted because I don't have `manage_messages` permission "
                     "in this channel.",
                 )
+
+    @Cog.listener()
+    async def on_message(self, message: Message):
+        await self.check_message(message)
+
+    @Cog.listener()
+    async def on_message_edit(self, _, after: Message):
+        await self.check_message(after)
 
     @commands.group()
     @guild_only()
