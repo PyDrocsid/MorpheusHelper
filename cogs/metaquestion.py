@@ -58,8 +58,10 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         channel: TextChannel = self.bot.get_channel(event.channel_id)
         message: Message = await channel.fetch_message(event.message_id)
+        member: Member = channel.guild.get_member(event.user_id)
         if event.emoji.name == "metaquestion":
-            if message.author == self.bot.user:
+            if message.author == self.bot.user or not channel.permissions_for(member).send_messages:
+                await message.remove_reaction(event.emoji, member)
                 return
 
             for reaction in message.reactions:
@@ -77,6 +79,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                     if author_id == event.member.id or await check_access(event.member):
                         break
             else:
+                await message.remove_reaction(event.emoji, member)
                 return
 
             await message.delete()
