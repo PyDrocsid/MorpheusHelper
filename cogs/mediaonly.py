@@ -9,7 +9,7 @@ from requests import RequestException
 
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
-from util import permission_level, check_access
+from util import permission_level, check_access, send_to_changelog
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -88,6 +88,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(MediaOnlyChannel.create, channel.id)
         await ctx.send("Channel is now a media only channel.")
+        await send_to_changelog(ctx.guild, f"Channel {channel.mention} is now a media only channel.")
 
     @mediaonly.command(name="remove")
     async def remove_channel(self, ctx: Context, channel: TextChannel):
@@ -100,3 +101,4 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(db.delete, row)
         await ctx.send("Channel is not a media only channel anymore.")
+        await send_to_changelog(ctx.guild, f"Channel {channel.mention} is not a media only channel anymore.")

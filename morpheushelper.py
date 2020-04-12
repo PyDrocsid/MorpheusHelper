@@ -10,13 +10,14 @@ from cogs.info import InfoCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
+from cogs.metaquestion import MetaQuestionCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
-from util import permission_level, make_error, measure_latency
+from util import permission_level, make_error, measure_latency, send_to_changelog
 
 db.create_tables()
 
@@ -77,6 +78,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
     await run_in_thread(set_prefix, new_prefix)
     await ctx.send("Prefix has been updated.")
+    await send_to_changelog(ctx.guild, f"Bot prefix has been changed to `{new_prefix}`")
 
 
 @bot.group()
@@ -121,6 +123,7 @@ async def auth_add(ctx: Context, *, role: Role):
 
     await run_in_thread(AuthorizedRole.create, role.id)
     await ctx.send(f"Role `@{role}` has been authorized to control this bot.")
+    await send_to_changelog(ctx.guild, f"Role `@{role}` has been authorized to control this bot.")
 
 
 @auth.command(name="del")
@@ -135,6 +138,7 @@ async def auth_del(ctx: Context, *, role: Role):
 
     await run_in_thread(db.delete, authorization)
     await ctx.send(f"Role `@{role}` has been unauthorized to control this bot.")
+    await send_to_changelog(ctx.guild, f"Role `@{role}` has been unauthorized to control this bot.")
 
 
 async def build_info_embed(authorized: bool) -> Embed:
@@ -152,6 +156,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         "Pin your own messages by reacting with :pushpin: in specific channels",
         "Automatic role assignment upon entering a voice channel",
         "Discord server invite whitelist",
+        "Meta question information command",
     ]
     if authorized:
         features.append("Logging of message edit and delete events")
@@ -201,6 +206,9 @@ async def on_command_error(ctx: Context, error: CommandError):
 
 @bot.event
 async def on_message(message: Message):
+    if message.author == bot.user:
+        return
+
     if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
         if message.guild is None:
             await message.channel.send("Ping!")
@@ -218,5 +226,6 @@ bot.add_cog(LoggingCog(bot))
 bot.add_cog(MediaOnlyCog(bot))
 bot.add_cog(RulesCog(bot))
 bot.add_cog(InvitesCog(bot))
+bot.add_cog(MetaQuestionCog(bot))
 bot.add_cog(InfoCog(bot))
 bot.run(os.environ["TOKEN"])
