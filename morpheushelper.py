@@ -202,6 +202,9 @@ async def on_command_error(ctx: Context, error: CommandError):
 
 @bot.event
 async def on_message(message: Message):
+    if message.author == bot.user:
+        return
+
     if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
         if message.guild is None:
             await message.channel.send("Ping!")
