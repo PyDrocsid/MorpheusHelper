@@ -59,6 +59,9 @@ class MetaQuestionCog(Cog, name="Metafragen"):
         channel: TextChannel = self.bot.get_channel(event.channel_id)
         message: Message = await channel.fetch_message(event.message_id)
         if event.emoji.name == "metaquestion":
+            if message.author == self.bot.user:
+                return
+
             for reaction in message.reactions:
                 if reaction.emoji == event.emoji:
                     if reaction.me:
