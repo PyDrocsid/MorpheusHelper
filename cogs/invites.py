@@ -86,7 +86,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
     @invites.command(name="show", aliases=["info"])
     async def show_invite(self, ctx: Context, *, invite: Union[Invite, str]):
         """
-        show more information about a allowed discord server
+        show more information about an allowed discord server
         """
 
         row: Optional[AllowedInvite]

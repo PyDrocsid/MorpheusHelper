@@ -46,6 +46,11 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             "For conversations please use the channels designated for this purpose.",
             delete_after=30,
         )
+        await send_to_changelog(
+            message.guild,
+            f"Deleted a message of {message.author.mention} in media only channel {message.channel.mention} "
+            f"because it did not contain an image.",
+        )
 
     @commands.group(aliases=["mo"])
     @permission_level(1)
