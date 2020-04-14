@@ -141,7 +141,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             ctx.guild, f"Channel {channel.mention} has been removed from the ReactionPin whitelist."
         )
 
-    @reactionpin.command(name="pin_message")
+    @reactionpin.command(name="pin_message", aliases=["pm"])
     async def change_pin_message(self, ctx: Context, enabled: bool = None):
         """
         enable/disable "pinned a message" notification
@@ -161,7 +161,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
                 await ctx.send("Pin Messages have been disabled.")
                 await send_to_changelog(ctx.guild, "Pin Messages have been disabled.")
 
-    @reactionpin.command(name="blocked_role")
+    @reactionpin.command(name="blocked_role", aliases=["br"])
     async def change_blocked_role(self, ctx: Context, role: Role = None):
         """
         change the blocked role
