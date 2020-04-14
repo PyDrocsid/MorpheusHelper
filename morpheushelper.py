@@ -126,7 +126,7 @@ async def auth_add(ctx: Context, *, role: Role):
     await send_to_changelog(ctx.guild, f"Role `@{role}` has been authorized to control this bot.")
 
 
-@auth.command(name="del")
+@auth.command(name="remove", aliases=["del"])
 async def auth_del(ctx: Context, *, role: Role):
     """
     unauthorize role to control this bot

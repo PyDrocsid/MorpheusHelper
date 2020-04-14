@@ -95,7 +95,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         await ctx.send("Channel is now a media only channel.")
         await send_to_changelog(ctx.guild, f"Channel {channel.mention} is now a media only channel.")
 
-    @mediaonly.command(name="remove")
+    @mediaonly.command(name="remove", aliases=["del"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove a media only channel

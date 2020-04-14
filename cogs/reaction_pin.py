@@ -126,7 +126,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         await ctx.send("Channel has been whitelisted.")
         await send_to_changelog(ctx.guild, f"Channel {channel.mention} has been whitelisted for ReactionPin.")
 
-    @reactionpin.command(name="remove")
+    @reactionpin.command(name="remove", aliases=["del"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist
