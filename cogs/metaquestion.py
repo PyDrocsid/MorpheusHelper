@@ -51,10 +51,9 @@ class MetaQuestionCog(Cog, name="Metafragen"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_raw_reaction_add(self, event: RawReactionActionEvent):
+    async def on_raw_reaction_add(self, event: RawReactionActionEvent) -> bool:
         if event.member == self.bot.user:
-            return
+            return True
 
         channel: TextChannel = self.bot.get_channel(event.channel_id)
         message: Message = await channel.fetch_message(event.message_id)
@@ -62,16 +61,17 @@ class MetaQuestionCog(Cog, name="Metafragen"):
         if event.emoji.name == "metaquestion":
             if message.author == self.bot.user or not channel.permissions_for(member).send_messages:
                 await message.remove_reaction(event.emoji, member)
-                return
+                return False
 
             for reaction in message.reactions:
                 if reaction.emoji == event.emoji:
                     if reaction.me:
-                        return
+                        return False
                     break
             await message.add_reaction(event.emoji)
             msg: Message = await channel.send(message.author.mention, embed=make_embed(event.member))
             await msg.add_reaction(WASTEBASKET)
+            return False
         elif event.emoji.name == WASTEBASKET:
             for embed in message.embeds:
                 if (match := re.match(r"^Requested by @.*?#\d{4} \((\d+)\)$", embed.footer.text)) is not None:
@@ -80,9 +80,12 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                         break
             else:
                 await message.remove_reaction(event.emoji, member)
-                return
+                return False
 
             await message.delete()
+            return False
+
+        return True
 
     @commands.command(name="metafrage", aliases=["meta", "metaquestion"])
     @guild_only()

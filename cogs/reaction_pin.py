@@ -26,63 +26,69 @@ class ReactionPinCog(Cog, name="ReactionPin"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
+    async def on_raw_reaction_add(self, payload: RawReactionActionEvent) -> bool:
         channel: TextChannel = self.bot.get_channel(payload.channel_id)
         message: Message = await channel.fetch_message(payload.message_id)
         guild: Guild = channel.guild
-        if guild is None:
-            return
+        if guild is None or str(payload.emoji) != EMOJI:
+            return True
+
         member: Member = guild.get_member(payload.user_id)
         access: bool = await check_access(member) > 0
-        if str(payload.emoji) == EMOJI and (
-            await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None or access
-        ):
-            blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
-            if (payload.user_id == message.author.id and all(r.id != blocked_role for r in member.roles)) or access:
-                try:
-                    await message.pin()
-                except HTTPException:
-                    await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
-                    await channel.send(
-                        make_error(
-                            "Message could not be pinned, because 50 messages are already pinned in this channel."
-                        )
-                    )
-            else:
+        if not (await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None or access):
+            return True
+
+        blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
+        if (payload.user_id == message.author.id and all(r.id != blocked_role for r in member.roles)) or access:
+            try:
+                await message.pin()
+            except HTTPException:
                 await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
+                await channel.send(
+                    make_error("Message could not be pinned, because 50 messages are already pinned in this channel.")
+                )
+        else:
+            await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
 
-    @Cog.listener()
-    async def on_raw_reaction_remove(self, payload: RawReactionActionEvent):
+        return False
+
+    async def on_raw_reaction_remove(self, payload: RawReactionActionEvent) -> bool:
         channel: TextChannel = self.bot.get_channel(payload.channel_id)
         message: Message = await channel.fetch_message(payload.message_id)
         guild: Guild = channel.guild
-        if guild is None:
-            return
+        if guild is None or str(payload.emoji) != EMOJI:
+            return True
+
         access: bool = await check_access(guild.get_member(payload.user_id)) > 0
-        if str(payload.emoji) == EMOJI:
-            if (
-                await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None
-                and payload.user_id == message.author.id
-            ) or access:
-                await message.unpin()
+        if (
+            await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None
+            and payload.user_id == message.author.id
+        ) or access:
+            await message.unpin()
+            return False
 
-    @Cog.listener()
-    async def on_raw_reaction_clear(self, payload: RawReactionClearEvent):
+        return True
+
+    async def on_raw_reaction_clear(self, payload: RawReactionClearEvent) -> bool:
         channel: TextChannel = self.bot.get_channel(payload.channel_id)
         message: Message = await channel.fetch_message(payload.message_id)
         guild: Guild = channel.guild
         if guild is None:
-            return
-        await message.unpin()
+            return True
 
-    @Cog.listener()
-    async def on_message(self, message: Message):
+        await message.unpin()
+        return False
+
+    async def on_message(self, message: Message) -> bool:
         if message.guild is None:
-            return
+            return True
+
         pin_messages_enabled = await run_in_thread(Settings.get, bool, "reactionpin_pin_message", True)
         if not pin_messages_enabled and message.author == self.bot.user and message.type == MessageType.pins_add:
             await message.delete()
+            return False
+
+        return True
 
     @commands.group(aliases=["rp"])
     @permission_level(1)

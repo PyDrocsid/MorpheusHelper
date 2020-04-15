@@ -33,12 +33,11 @@ class LoggingCog(Cog, name="Logging"):
         channel_id = await run_in_thread(Settings.get, int, "logging_" + event, -1)
         return self.bot.get_channel(channel_id) if channel_id != -1 else None
 
-    @Cog.listener()
-    async def on_message_edit(self, before: Message, after: Message):
+    async def on_message_edit(self, before: Message, after: Message) -> bool:
         edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
         if edit_channel is None or calculate_edit_distance(before.content, after.content) < mindiff:
-            return
+            return True
 
         embed = Embed(title="Message Edited", color=0xFFFF00, timestamp=datetime.utcnow())
         embed.add_field(name="Channel", value=before.channel.mention)
@@ -48,14 +47,15 @@ class LoggingCog(Cog, name="Logging"):
         add_field(embed, "New Content", after.content)
         await edit_channel.send(embed=embed)
 
-    @Cog.listener()
-    async def on_raw_message_edit(self, event: RawMessageUpdateEvent):
+        return True
+
+    async def on_raw_message_edit(self, event: RawMessageUpdateEvent) -> bool:
         if event.cached_message is not None:
-            return
+            return True
 
         edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         if edit_channel is None:
-            return
+            return True
 
         embed = Embed(title="Message Edited", color=0xFFFF00, timestamp=datetime.utcnow())
         channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
@@ -68,11 +68,12 @@ class LoggingCog(Cog, name="Logging"):
                 add_field(embed, "New Content", message.content)
         await edit_channel.send(embed=embed)
 
-    @Cog.listener()
-    async def on_message_delete(self, message: Message):
+        return True
+
+    async def on_message_delete(self, message: Message) -> bool:
         delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
         if delete_channel is None:
-            return
+            return True
 
         embed = Embed(title="Message Deleted", color=0xFF0000, timestamp=(datetime.utcnow()))
         embed.add_field(name="Channel", value=message.channel.mention)
@@ -90,14 +91,16 @@ class LoggingCog(Cog, name="Logging"):
             embed.add_field(name="Attachments", value="\n".join(out), inline=False)
         await delete_channel.send(embed=embed)
 
+        return True
+
     @Cog.listener()
-    async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
+    async def on_raw_message_delete(self, event: RawMessageDeleteEvent) -> bool:
         if event.cached_message is not None:
-            return
+            return True
 
         delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
         if delete_channel is None:
-            return
+            return True
 
         embed = Embed(title="Message Deleted", color=0xFF0000, timestamp=datetime.utcnow())
         channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
@@ -105,6 +108,8 @@ class LoggingCog(Cog, name="Logging"):
             embed.add_field(name="Channel", value=channel.mention)
             embed.add_field(name="Message ID", value=event.message_id, inline=False)
         await delete_channel.send(embed=embed)
+
+        return True
 
     @commands.group(name="logging")
     @permission_level(1)

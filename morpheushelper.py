@@ -2,7 +2,19 @@ import os
 import string
 from typing import Optional, Iterable
 
-from discord import Message, Role, Status, Game, Embed
+from discord import (
+    Message,
+    Role,
+    Status,
+    Game,
+    Embed,
+    RawReactionActionEvent,
+    RawReactionClearEvent,
+    RawMessageUpdateEvent,
+    RawMessageDeleteEvent,
+    Member,
+    VoiceState,
+)
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 
 from cogs.betheprofessional import BeTheProfessionalCog
@@ -17,7 +29,14 @@ from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
-from util import permission_level, make_error, measure_latency, send_to_changelog
+from util import (
+    permission_level,
+    make_error,
+    measure_latency,
+    send_to_changelog,
+    call_event_handlers,
+    register_cogs,
+)
 
 db.create_tables()
 
@@ -46,6 +65,8 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
 
     await bot.change_presence(status=Status.online, activity=Game(name="github.com/Defelo/MorpheusHelper"))
+
+    await call_event_handlers("ready")
 
 
 @bot.command()
@@ -205,8 +226,51 @@ async def on_command_error(ctx: Context, error: CommandError):
 
 
 @bot.event
+async def on_raw_reaction_add(event: RawReactionActionEvent):
+    await call_event_handlers("raw_reaction_add", event)
+
+
+@bot.event
+async def on_raw_reaction_remove(event: RawReactionActionEvent):
+    await call_event_handlers("raw_reaction_remove", event)
+
+
+@bot.event
+async def on_raw_reaction_clear(event: RawReactionClearEvent):
+    await call_event_handlers("raw_reaction_clear", event)
+
+
+@bot.event
+async def on_message_edit(before: Message, after: Message):
+    await call_event_handlers("message_edit", before, after)
+
+
+@bot.event
+async def on_raw_message_edit(event: RawMessageUpdateEvent):
+    await call_event_handlers("raw_message_edit", event)
+
+
+@bot.event
+async def on_message_delete(message: Message):
+    await call_event_handlers("message_delete", message)
+
+
+@bot.event
+async def on_raw_message_delete(event: RawMessageDeleteEvent):
+    await call_event_handlers("raw_message_delete", event)
+
+
+@bot.event
+async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
+    await call_event_handlers("voice_state_update", member, before, after)
+
+
+@bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
+        return
+
+    if not await call_event_handlers("message", message):
         return
 
     if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
@@ -219,13 +283,16 @@ async def on_message(message: Message):
     await bot.process_commands(message)
 
 
-bot.add_cog(VoiceChannelCog(bot))
-bot.add_cog(ReactionPinCog(bot))
-bot.add_cog(BeTheProfessionalCog(bot))
-bot.add_cog(LoggingCog(bot))
-bot.add_cog(MediaOnlyCog(bot))
-bot.add_cog(RulesCog(bot))
-bot.add_cog(InvitesCog(bot))
-bot.add_cog(MetaQuestionCog(bot))
-bot.add_cog(InfoCog(bot))
+register_cogs(
+    bot,
+    VoiceChannelCog,
+    ReactionPinCog,
+    BeTheProfessionalCog,
+    LoggingCog,
+    MediaOnlyCog,
+    RulesCog,
+    InvitesCog,
+    MetaQuestionCog,
+    InfoCog,
+)
 bot.run(os.environ["TOKEN"])

@@ -3,7 +3,7 @@ import time
 from typing import Optional
 
 from discord import Member, TextChannel, Guild
-from discord.ext.commands import check, Context, CheckFailure
+from discord.ext.commands import check, Context, CheckFailure, Bot, Cog
 
 from database import run_in_thread, db
 from models.authorized_role import AuthorizedRole
@@ -67,3 +67,25 @@ async def send_to_changelog(guild: Guild, message: str):
     channel: Optional[TextChannel] = guild.get_channel(await run_in_thread(Settings.get, int, "logging_changelog", -1))
     if channel is not None:
         await channel.send(message)
+
+
+event_handlers = {}
+cog_instances = {}
+
+
+async def call_event_handlers(event: str, *args, **kwargs):
+    for handler in event_handlers.get(event, []):
+        if not await handler(*args, **kwargs):
+            return False
+
+    return True
+
+
+def register_cogs(bot: Bot, *cogs):
+    for cog_class in cogs:
+        cog: Cog = cog_class(bot)
+        for e in dir(cog):
+            func = getattr(cog, e)
+            if e.startswith("on_") and callable(func):
+                event_handlers.setdefault(e[3:], []).append(func)
+        bot.add_cog(cog)
