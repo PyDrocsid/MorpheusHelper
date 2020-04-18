@@ -1,15 +1,14 @@
 from typing import Optional
 
 from discord import (
-    RawReactionActionEvent,
     TextChannel,
     Message,
     Guild,
     Member,
-    RawReactionClearEvent,
     MessageType,
     Role,
     HTTPException,
+    PartialEmoji,
 )
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
@@ -26,60 +25,45 @@ class ReactionPinCog(Cog, name="ReactionPin"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def on_raw_reaction_add(self, payload: RawReactionActionEvent) -> bool:
-        channel: TextChannel = self.bot.get_channel(payload.channel_id)
-        message: Message = await channel.fetch_message(payload.message_id)
-        guild: Guild = channel.guild
-        if guild is None or str(payload.emoji) != EMOJI:
+    async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+        if str(emoji) != EMOJI:
             return True
 
-        member: Member = guild.get_member(payload.user_id)
         access: bool = await check_access(member) > 0
-        if not (await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None or access):
+        if not (await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return True
 
         blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
-        if (payload.user_id == message.author.id and all(r.id != blocked_role for r in member.roles)) or access:
+        if access or (member == message.author and all(r.id != blocked_role for r in member.roles)):
             try:
                 await message.pin()
             except HTTPException:
-                await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
-                await channel.send(
+                await message.remove_reaction(emoji, member)
+                await message.channel.send(
                     make_error("Message could not be pinned, because 50 messages are already pinned in this channel.")
                 )
         else:
-            await message.remove_reaction(payload.emoji, self.bot.get_user(payload.user_id))
+            await message.remove_reaction(emoji, member)
 
         return False
 
-    async def on_raw_reaction_remove(self, payload: RawReactionActionEvent) -> bool:
-        channel: TextChannel = self.bot.get_channel(payload.channel_id)
-        message: Message = await channel.fetch_message(payload.message_id)
-        guild: Guild = channel.guild
-        if guild is None or str(payload.emoji) != EMOJI:
+    async def on_raw_reaction_remove(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+        if str(emoji) != EMOJI:
             return True
 
-        access: bool = await check_access(guild.get_member(payload.user_id)) > 0
-        if (
-            await run_in_thread(db.get, ReactionPinChannel, channel.id) is not None
-            and payload.user_id == message.author.id
-        ) or access:
+        access: bool = await check_access(member) > 0
+        is_reactionpin_channel = await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None
+        if access or (is_reactionpin_channel and member == message.author):
             await message.unpin()
             return False
 
         return True
 
-    async def on_raw_reaction_clear(self, payload: RawReactionClearEvent) -> bool:
-        channel: TextChannel = self.bot.get_channel(payload.channel_id)
-        message: Message = await channel.fetch_message(payload.message_id)
-        guild: Guild = channel.guild
-        if guild is None:
-            return True
-
+    async def on_raw_reaction_clear(self, message: Message) -> bool:
         await message.unpin()
         return False
 
-    async def on_message(self, message: Message) -> bool:
+    async def on_self_message(self, message: Message) -> bool:
         if message.guild is None:
             return True
 

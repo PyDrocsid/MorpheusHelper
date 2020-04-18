@@ -1,6 +1,6 @@
 import re
 
-from discord import Embed, Member, RawReactionActionEvent, TextChannel, Message
+from discord import Embed, Member, Message, PartialEmoji
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
@@ -51,35 +51,32 @@ class MetaQuestionCog(Cog, name="Metafragen"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def on_raw_reaction_add(self, event: RawReactionActionEvent) -> bool:
-        if event.member == self.bot.user:
+    async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+        if member == self.bot.user:
             return True
 
-        channel: TextChannel = self.bot.get_channel(event.channel_id)
-        message: Message = await channel.fetch_message(event.message_id)
-        member: Member = channel.guild.get_member(event.user_id)
-        if event.emoji.name == "metaquestion":
-            if message.author == self.bot.user or not channel.permissions_for(member).send_messages:
-                await message.remove_reaction(event.emoji, member)
+        if emoji.name == "metaquestion":
+            if message.author == self.bot.user or not message.channel.permissions_for(member).send_messages:
+                await message.remove_reaction(emoji, member)
                 return False
 
             for reaction in message.reactions:
-                if reaction.emoji == event.emoji:
+                if reaction.emoji == emoji:
                     if reaction.me:
                         return False
                     break
-            await message.add_reaction(event.emoji)
-            msg: Message = await channel.send(message.author.mention, embed=make_embed(event.member))
+            await message.add_reaction(emoji)
+            msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
             await msg.add_reaction(WASTEBASKET)
             return False
-        elif event.emoji.name == WASTEBASKET:
+        elif emoji.name == WASTEBASKET:
             for embed in message.embeds:
                 if (match := re.match(r"^Requested by @.*?#\d{4} \((\d+)\)$", embed.footer.text)) is not None:
                     author_id = int(match.group(1))
-                    if author_id == event.member.id or await check_access(event.member):
+                    if author_id == member.id or await check_access(member):
                         break
             else:
-                await message.remove_reaction(event.emoji, member)
+                await message.remove_reaction(emoji, member)
                 return False
 
             await message.delete()

@@ -2,12 +2,13 @@ import socket
 import time
 from typing import Optional
 
-from discord import Member, TextChannel, Guild
+from discord import Member, TextChannel, Guild, NotFound
 from discord.ext.commands import check, Context, CheckFailure, Bot, Cog
 
 from database import run_in_thread, db
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
+from multilock import MultiLock
 
 
 def make_error(message) -> str:
@@ -71,12 +72,29 @@ async def send_to_changelog(guild: Guild, message: str):
 
 event_handlers = {}
 cog_instances = {}
+handler_lock = MultiLock()
 
 
-async def call_event_handlers(event: str, *args, **kwargs):
-    for handler in event_handlers.get(event, []):
-        if not await handler(*args, **kwargs):
+async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
+    if identifier is not None:
+        await handler_lock.acquire((event, identifier))
+
+    if prepare is not None:
+        try:
+            args = await prepare()
+        except NotFound:
+            if identifier is not None:
+                handler_lock.release((event, identifier))
             return False
+
+    for handler in event_handlers.get(event, []):
+        if not await handler(*args):
+            if identifier is not None:
+                handler_lock.release((event, identifier))
+            return False
+
+    if identifier is not None:
+        handler_lock.release((event, identifier))
 
     return True
 

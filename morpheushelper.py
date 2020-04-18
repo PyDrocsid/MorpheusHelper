@@ -14,6 +14,8 @@ from discord import (
     RawMessageDeleteEvent,
     Member,
     VoiceState,
+    TextChannel,
+    NotFound,
 )
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 
@@ -227,50 +229,81 @@ async def on_command_error(ctx: Context, error: CommandError):
 
 @bot.event
 async def on_raw_reaction_add(event: RawReactionActionEvent):
-    await call_event_handlers("raw_reaction_add", event)
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+
+    await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_raw_reaction_remove(event: RawReactionActionEvent):
-    await call_event_handlers("raw_reaction_remove", event)
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+
+    await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_raw_reaction_clear(event: RawReactionClearEvent):
-    await call_event_handlers("raw_reaction_clear", event)
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id)
+
+    await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
-    await call_event_handlers("message_edit", before, after)
+    await call_event_handlers("message_edit", before, after, identifier=after.id)
 
 
 @bot.event
 async def on_raw_message_edit(event: RawMessageUpdateEvent):
-    await call_event_handlers("raw_message_edit", event)
+    if event.cached_message is not None:
+        return
+
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id)
+
+    await call_event_handlers("raw_message_edit", event, identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_message_delete(message: Message):
-    await call_event_handlers("message_delete", message)
+    await call_event_handlers("message_delete", message, identifier=message.id)
 
 
 @bot.event
 async def on_raw_message_delete(event: RawMessageDeleteEvent):
-    await call_event_handlers("raw_message_delete", event)
+    if event.cached_message is not None:
+        return
+
+    await call_event_handlers("raw_message_delete", event, identifier=event.message_id)
 
 
 @bot.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
-    await call_event_handlers("voice_state_update", member, before, after)
+    await call_event_handlers("voice_state_update", member, before, after, identifier=member.id)
 
 
 @bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
+        await call_event_handlers("self_message", message, identifier=message.id)
         return
 
-    if not await call_event_handlers("message", message):
+    if not await call_event_handlers("message", message, identifier=message.id):
         return
 
     if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
