@@ -1,6 +1,7 @@
 import re
 from typing import Union, Optional
 
+import requests
 from discord import Invite, Member, Guild, Embed, Message, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
@@ -8,6 +9,25 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
 from util import permission_level, check_access, send_to_changelog
+
+
+def get_discord_invite(url) -> Optional[str]:
+    while True:
+        if re.match(r"^(https?://)?(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)$", url):
+            return url
+
+        if not re.match(r"^(https?://).*$", url):
+            url = "https://" + url
+
+        try:
+            response = requests.head(url)
+        except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+            return None
+
+        if response.is_redirect and "Location" in response.headers:
+            url = response.headers["Location"]
+        else:
+            return None
 
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
@@ -19,7 +39,9 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             return True
 
         forbidden = []
-        for url, *_ in re.findall(r"(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)", message.content):
+        for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content):
+            if (url := get_discord_invite(url)) is None:
+                continue
             try:
                 invite = await self.bot.fetch_invite(url)
             except NotFound:
