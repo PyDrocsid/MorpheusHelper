@@ -2,6 +2,7 @@ import os
 import string
 from typing import Optional, Iterable
 
+import sentry_sdk
 from discord import (
     Message,
     Role,
@@ -18,6 +19,8 @@ from discord import (
     NotFound,
 )
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.info import InfoCog
@@ -39,6 +42,15 @@ from util import (
     call_event_handlers,
     register_cogs,
 )
+
+sentry_dsn = os.environ.get("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        attach_stacktrace=True,
+        shutdown_timeout=5,
+        integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
+    )
 
 db.create_tables()
 
@@ -218,6 +230,11 @@ async def admininfo(ctx: Context):
     """
 
     await ctx.send(embed=await build_info_embed(True))
+
+
+@bot.event
+async def on_error(*_, **__):
+    sentry_sdk.capture_exception()
 
 
 @bot.event

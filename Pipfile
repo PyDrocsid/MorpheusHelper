@@ -10,6 +10,7 @@ discord-py = "*"
 sqlalchemy = "*"
 pymysql = "*"
 requests = "*"
+sentry-sdk = "*"
 
 [requires]
 python_version = "3.8"
