@@ -4,6 +4,8 @@ from discord import Embed, Member, Message, PartialEmoji
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
+from database import run_in_thread, db
+from models.mediaonly_channel import MediaOnlyChannel
 from util import check_access
 
 WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
@@ -56,7 +58,11 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             return True
 
         if emoji.name == "metaquestion":
-            if message.author == self.bot.user or not message.channel.permissions_for(member).send_messages:
+            media_only = (
+                not await check_access(member)
+                and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
+            )
+            if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
                 await message.remove_reaction(emoji, member)
                 return False
 
