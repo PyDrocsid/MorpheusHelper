@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import BoundedSemaphore
 from os import environ as env
 from typing import TypeVar, Optional, Union, Iterable, Type, List
 
@@ -52,15 +53,19 @@ class DB:
         return self._Session()
 
 
-async def run_in_thread(function, *args, **kwargs):
-    def inner():
-        out = function(*args, **kwargs)
-        db.session.commit()
-        db.close()
-        return out
+thread_semaphore = BoundedSemaphore(5)
 
-    result = await asyncio.get_running_loop().run_in_executor(None, inner)
-    return result
+
+async def run_in_thread(function, *args, **kwargs):
+    async with thread_semaphore:
+        def inner():
+            out = function(*args, **kwargs)
+            db.session.commit()
+            db.close()
+            return out
+
+        result = await asyncio.get_running_loop().run_in_executor(None, inner)
+        return result
 
 
 db: DB = DB(

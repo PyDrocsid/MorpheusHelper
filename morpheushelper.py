@@ -2,8 +2,25 @@ import os
 import string
 from typing import Optional, Iterable
 
-from discord import Message, Role, Status, Game, Embed
+import sentry_sdk
+from discord import (
+    Message,
+    Role,
+    Status,
+    Game,
+    Embed,
+    RawReactionActionEvent,
+    RawReactionClearEvent,
+    RawMessageUpdateEvent,
+    RawMessageDeleteEvent,
+    Member,
+    VoiceState,
+    TextChannel,
+    NotFound,
+)
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.info import InfoCog
@@ -17,7 +34,23 @@ from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
-from util import permission_level, make_error, measure_latency, send_to_changelog
+from util import (
+    permission_level,
+    make_error,
+    measure_latency,
+    send_to_changelog,
+    call_event_handlers,
+    register_cogs,
+)
+
+sentry_dsn = os.environ.get("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        attach_stacktrace=True,
+        shutdown_timeout=5,
+        integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
+    )
 
 db.create_tables()
 
@@ -46,6 +79,8 @@ async def on_ready():
     print(f"Logged in as {bot.user}")
 
     await bot.change_presence(status=Status.online, activity=Game(name="github.com/Defelo/MorpheusHelper"))
+
+    await call_event_handlers("ready")
 
 
 @bot.command()
@@ -198,6 +233,11 @@ async def admininfo(ctx: Context):
 
 
 @bot.event
+async def on_error(*_, **__):
+    sentry_sdk.capture_exception()
+
+
+@bot.event
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == get_prefix():
         return
@@ -205,8 +245,82 @@ async def on_command_error(ctx: Context, error: CommandError):
 
 
 @bot.event
+async def on_raw_reaction_add(event: RawReactionActionEvent):
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+
+    await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
+
+
+@bot.event
+async def on_raw_reaction_remove(event: RawReactionActionEvent):
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+
+    await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
+
+
+@bot.event
+async def on_raw_reaction_clear(event: RawReactionClearEvent):
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return await channel.fetch_message(event.message_id)
+
+    await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
+
+
+@bot.event
+async def on_message_edit(before: Message, after: Message):
+    await call_event_handlers("message_edit", before, after, identifier=after.id)
+
+
+@bot.event
+async def on_raw_message_edit(event: RawMessageUpdateEvent):
+    if event.cached_message is not None:
+        return
+
+    async def prepare():
+        channel: TextChannel = bot.get_channel(event.channel_id)
+        if not isinstance(channel, TextChannel):
+            raise NotFound
+        return channel, await channel.fetch_message(event.message_id)
+
+    await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
+
+
+@bot.event
+async def on_message_delete(message: Message):
+    await call_event_handlers("message_delete", message, identifier=message.id)
+
+
+@bot.event
+async def on_raw_message_delete(event: RawMessageDeleteEvent):
+    if event.cached_message is not None:
+        return
+
+    await call_event_handlers("raw_message_delete", event, identifier=event.message_id)
+
+
+@bot.event
+async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
+    await call_event_handlers("voice_state_update", member, before, after, identifier=member.id)
+
+
+@bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
+        await call_event_handlers("self_message", message, identifier=message.id)
+        return
+
+    if not await call_event_handlers("message", message, identifier=message.id):
         return
 
     if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
@@ -219,13 +333,16 @@ async def on_message(message: Message):
     await bot.process_commands(message)
 
 
-bot.add_cog(VoiceChannelCog(bot))
-bot.add_cog(ReactionPinCog(bot))
-bot.add_cog(BeTheProfessionalCog(bot))
-bot.add_cog(LoggingCog(bot))
-bot.add_cog(MediaOnlyCog(bot))
-bot.add_cog(RulesCog(bot))
-bot.add_cog(InvitesCog(bot))
-bot.add_cog(MetaQuestionCog(bot))
-bot.add_cog(InfoCog(bot))
+register_cogs(
+    bot,
+    VoiceChannelCog,
+    ReactionPinCog,
+    BeTheProfessionalCog,
+    LoggingCog,
+    MediaOnlyCog,
+    RulesCog,
+    InvitesCog,
+    MetaQuestionCog,
+    InfoCog,
+)
 bot.run(os.environ["TOKEN"])

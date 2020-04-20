@@ -13,8 +13,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_ready(self):
+    async def on_ready(self) -> bool:
         guild: Guild = self.bot.guilds[0]
         print("Updating voice channel roles")
         linked_roles = {}
@@ -33,11 +32,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     if role in member.roles:
                         await member.remove_roles(role)
         print("Initialization complete")
+        return True
 
-    @Cog.listener()
-    async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
+    async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState) -> bool:
         if before.channel == after.channel:
-            return
+            return True
 
         guild: Guild = member.guild
         if before.channel is not None:
@@ -56,6 +55,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     if (role := guild.get_role(link.role)) is not None
                 )
             )
+        return True
 
     @commands.group()
     @permission_level(1)

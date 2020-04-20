@@ -16,16 +16,12 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_message(self, message: Message):
-        if message.author == self.bot.user:
-            return
-        if message.author.bot:
-            return
-        if await check_access(message.author):
-            return
+    async def on_message(self, message: Message) -> bool:
+        if message.author.bot or await check_access(message.author):
+            return True
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
-            return
+            return True
+
         urls = [(att.url,) for att in message.attachments]
         urls += re.findall(r"(https?://([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content)
         for url, *_ in urls:
@@ -37,7 +33,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
                 break
         else:
             if urls:
-                return
+                return True
 
         channel: TextChannel = message.channel
         await message.delete()
@@ -51,6 +47,8 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             f"Deleted a message of {message.author.mention} in media only channel {message.channel.mention} "
             f"because it did not contain an image.",
         )
+
+        return False
 
     @commands.group(aliases=["mo"])
     @permission_level(1)

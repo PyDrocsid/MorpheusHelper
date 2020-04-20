@@ -1,9 +1,11 @@
 import re
 
-from discord import Embed, Member, RawReactionActionEvent, TextChannel, Message
+from discord import Embed, Member, Message, PartialEmoji
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
+from database import run_in_thread, db
+from models.mediaonly_channel import MediaOnlyChannel
 from util import check_access
 
 WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
@@ -51,38 +53,42 @@ class MetaQuestionCog(Cog, name="Metafragen"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_raw_reaction_add(self, event: RawReactionActionEvent):
-        if event.member == self.bot.user:
-            return
+    async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+        if member == self.bot.user:
+            return True
 
-        channel: TextChannel = self.bot.get_channel(event.channel_id)
-        message: Message = await channel.fetch_message(event.message_id)
-        member: Member = channel.guild.get_member(event.user_id)
-        if event.emoji.name == "metaquestion":
-            if message.author == self.bot.user or not channel.permissions_for(member).send_messages:
-                await message.remove_reaction(event.emoji, member)
-                return
+        if emoji.name == "metaquestion":
+            media_only = (
+                not await check_access(member)
+                and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
+            )
+            if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
+                await message.remove_reaction(emoji, member)
+                return False
 
             for reaction in message.reactions:
-                if reaction.emoji == event.emoji:
+                if reaction.emoji == emoji:
                     if reaction.me:
-                        return
+                        return False
                     break
-            await message.add_reaction(event.emoji)
-            msg: Message = await channel.send(message.author.mention, embed=make_embed(event.member))
+            await message.add_reaction(emoji)
+            msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
             await msg.add_reaction(WASTEBASKET)
-        elif event.emoji.name == WASTEBASKET:
+            return False
+        elif emoji.name == WASTEBASKET:
             for embed in message.embeds:
                 if (match := re.match(r"^Requested by @.*?#\d{4} \((\d+)\)$", embed.footer.text)) is not None:
                     author_id = int(match.group(1))
-                    if author_id == event.member.id or await check_access(event.member):
+                    if author_id == member.id or await check_access(member):
                         break
             else:
-                await message.remove_reaction(event.emoji, member)
-                return
+                await message.remove_reaction(emoji, member)
+                return False
 
             await message.delete()
+            return False
+
+        return True
 
     @commands.command(name="metafrage", aliases=["meta", "metaquestion"])
     @guild_only()
