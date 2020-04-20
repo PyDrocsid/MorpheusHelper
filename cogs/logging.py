@@ -48,13 +48,13 @@ class LoggingCog(Cog, name="Logging"):
 
         return True
 
-    async def on_raw_message_edit(self, message: Message) -> bool:
+    async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]) -> bool:
         edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         if edit_channel is None:
             return True
 
         embed = Embed(title="Message Edited", color=0xFFFF00, timestamp=datetime.utcnow())
-        embed.add_field(name="Channel", value=message.channel.mention)
+        embed.add_field(name="Channel", value=channel.mention)
         if message is not None:
             embed.add_field(name="Author", value=message.author.mention)
             embed.add_field(name="URL", value=message.jump_url, inline=False)

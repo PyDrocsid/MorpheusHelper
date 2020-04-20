@@ -291,9 +291,9 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             raise NotFound
-        return await channel.fetch_message(event.message_id)
+        return channel, await channel.fetch_message(event.message_id)
 
-    await call_event_handlers("raw_message_edit", event, identifier=event.message_id, prepare=prepare)
+    await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
