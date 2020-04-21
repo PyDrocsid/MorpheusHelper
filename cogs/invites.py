@@ -101,9 +101,11 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         out = []
         for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
-            out.append(f"- {row.guild_name} (discord.gg/{row.code})")
+            out.append(f"- {row.guild_name} ({row.code})")
         if out:
-            await ctx.send("Allowed discord servers:\n```\n" + "\n".join(out) + "```")
+            await ctx.send(
+                "Allowed discord servers (any link to these servers is allowed):\n```\n" + "\n".join(out) + "```"
+            )
         else:
             await ctx.send("No discord servers allowed.")
 
