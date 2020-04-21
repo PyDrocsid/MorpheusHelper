@@ -70,7 +70,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
     @guild_only()
     async def add_role(self, ctx: Context, *, topics: str):
         """
-        add one or more topics you are interested in
+        add one or more topics (comma separated) you are interested in
         """
 
         member: Member = ctx.author
