@@ -46,8 +46,9 @@ class InfoCog(Cog, name="Server Information"):
                 value="\n".join(":small_orange_diamond: " + m.mention for m in role.members),
             )
 
-        bots = [m.mention for m in guild.members if m.bot]
-        embed.add_field(name=f"{len(bots)} Bots", value="\n".join(":small_orange_diamond: " + b for b in bots))
+        bots = [m for m in guild.members if m.bot]
+        bots_online = sum(m.status != Status.offline for m in bots)
+        embed.add_field(name=f"{len(bots)} Bots", value=f"{bots_online} online")
         embed.add_field(name="Topics", value=f"{len(await run_in_thread(db.all, BTPRole))} topics registered")
         embed.add_field(
             name="Allowed Discord Servers",
