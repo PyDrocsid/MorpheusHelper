@@ -90,7 +90,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         return True
 
-    @commands.command(name="metafrage", aliases=["meta", "metaquestion"])
+    @commands.command(name="metafrage", aliases=["mf", "mq", "meta", "metaquestion"])
     @guild_only()
     async def metaquestion(self, ctx: Context):
         """

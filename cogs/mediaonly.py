@@ -61,7 +61,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.mediaonly)
 
-    @mediaonly.command(name="list")
+    @mediaonly.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):
         """
         list media only channels
@@ -80,7 +80,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         else:
             await ctx.send("No media only channels.")
 
-    @mediaonly.command(name="add")
+    @mediaonly.command(name="add", aliases=["a", "+"])
     async def add_channel(self, ctx: Context, channel: TextChannel):
         """
         add a media only channel
@@ -93,7 +93,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         await ctx.send("Channel is now a media only channel.")
         await send_to_changelog(ctx.guild, f"Channel {channel.mention} is now a media only channel.")
 
-    @mediaonly.command(name="remove", aliases=["del"])
+    @mediaonly.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove a media only channel

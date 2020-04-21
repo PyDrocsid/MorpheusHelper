@@ -83,7 +83,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
     async def on_message_edit(self, _, after: Message):
         return await self.check_message(after)
 
-    @commands.group()
+    @commands.group(aliases=["i"])
     @guild_only()
     async def invites(self, ctx: Context):
         """
@@ -93,7 +93,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.invites)
 
-    @invites.command(name="list")
+    @invites.command(name="list", aliases=["l", "?"])
     async def list_invites(self, ctx: Context):
         """
         list allowed discord servers
@@ -109,7 +109,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         else:
             await ctx.send("No discord servers allowed.")
 
-    @invites.command(name="show", aliases=["info"])
+    @invites.command(name="show", aliases=["info", "s", "i"])
     async def show_invite(self, ctx: Context, *, invite: Union[Invite, str]):
         """
         show more information about an allowed discord server
@@ -140,7 +140,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         embed.add_field(name="Date", value=f"{date.day:02}.{date.month:02}.{date.year:02}")
         await ctx.send(embed=embed)
 
-    @invites.command(name="add")
+    @invites.command(name="add", aliases=["+", "a"])
     @permission_level(1)
     async def add_invite(self, ctx: Context, invite: Invite, applicant: Member):
         """
@@ -158,7 +158,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await ctx.send("Server has been whitelisted successfully.")
         await send_to_changelog(ctx.guild, f"Discord Server `{guild.name}` has been added to the whitelist.")
 
-    @invites.command(name="remove")
+    @invites.command(name="remove", aliases=["r", "del", "d", "-"])
     @permission_level(1)
     async def remove_invite(self, ctx: Context, *, server: Union[Invite, int, str]):
         """

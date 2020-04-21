@@ -57,7 +57,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             )
         return True
 
-    @commands.group()
+    @commands.group(aliases=["vc"])
     @permission_level(1)
     @guild_only()
     async def voice(self, ctx: Context):
@@ -68,7 +68,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help("voice")
 
-    @voice.command(name="list")
+    @voice.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context):
         """
         list all links between voice channels and roles
@@ -86,7 +86,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         await ctx.send("\n".join(out) or "No links have been created yet.")
 
-    @voice.command(name="link")
+    @voice.command(name="link", aliases=["add", "a", "+"])
     async def create_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         """
         link a voice channel with a role
@@ -109,7 +109,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             ctx.guild, f"Link has been created between voice channel `{voice_channel}` and role `@{role}`."
         )
 
-    @voice.command(name="unlink")
+    @voice.command(name="unlink", aliases=["remove", "del", "u", "r", "d", "-"])
     async def remove_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         """
         delete the link between a voice channel and a role

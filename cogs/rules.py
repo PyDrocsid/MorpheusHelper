@@ -45,7 +45,7 @@ class RulesCog(Cog, name="Rule Commands"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.send)
 
-    @send.command(name="text")
+    @send.command(name="text", aliases=["t"])
     async def send_text(self, ctx: Context, channel: TextChannel):
         """
         send a normal message
@@ -65,7 +65,7 @@ class RulesCog(Cog, name="Rule Commands"):
         else:
             await ctx.send("Message has been sent successfully.")
 
-    @send.command(name="embed")
+    @send.command(name="embed", aliases=["e"])
     async def send_embed(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None):
         """
         send an embed
@@ -108,7 +108,7 @@ class RulesCog(Cog, name="Rule Commands"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.edit)
 
-    @edit.command(name="text")
+    @edit.command(name="text", aliases=["t"])
     async def edit_text(self, ctx: Context, message: Message):
         """
         edit a normal message (specify message link)
@@ -122,7 +122,7 @@ class RulesCog(Cog, name="Rule Commands"):
         await message.edit(content=content, files=files, embed=None)
         await ctx.send("Message has been edited successfully.")
 
-    @edit.command(name="embed")
+    @edit.command(name="embed", aliases=["e"])
     async def edit_embed(self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None):
         """
         edit an embed (specify message link)

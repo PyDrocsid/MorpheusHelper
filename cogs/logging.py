@@ -100,7 +100,7 @@ class LoggingCog(Cog, name="Logging"):
 
         return True
 
-    @commands.group(name="logging")
+    @commands.group(name="logging", aliases=["log"])
     @permission_level(1)
     @guild_only()
     async def logging(self, ctx: Context):
@@ -136,7 +136,7 @@ class LoggingCog(Cog, name="Logging"):
             out.append(f" - changelog: *disabled*")
         await ctx.send("\n".join(out))
 
-    @logging.group(name="edit")
+    @logging.group(name="edit", aliases=["e"])
     async def edit(self, ctx: Context):
         """
         change settings for edit event logging
@@ -145,7 +145,7 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.edit)
 
-    @edit.command(name="mindiff")
+    @edit.command(name="mindiff", aliases=["md"])
     async def edit_mindiff(self, ctx: Context, mindiff: int):
         """
         change the minimum difference between the old and new content of the message to be logged
@@ -157,7 +157,7 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_edit_mindiff", mindiff)
         await ctx.send(f"Message edit events will now only be logged if the difference is at least {mindiff}.")
 
-    @edit.command(name="channel")
+    @edit.command(name="channel", aliases=["ch", "c"])
     async def edit_channel(self, ctx: Context, channel: TextChannel):
         """
         change logging channel for edit events
@@ -171,7 +171,7 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_edit", channel.id)
         await ctx.send(f"Logs for message edit events will now be sent to {channel.mention}.")
 
-    @edit.command(name="disable")
+    @edit.command(name="disable", aliases=["d"])
     async def edit_disable(self, ctx: Context):
         """
         disable edit event logging
@@ -180,7 +180,7 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_edit", -1)
         await ctx.send("Logging for message edit events has been disabled.")
 
-    @logging.group(name="delete")
+    @logging.group(name="delete", aliases=["d"])
     async def delete(self, ctx: Context):
         """
         change settings for delete event logging
@@ -189,7 +189,7 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.delete)
 
-    @delete.command(name="channel")
+    @delete.command(name="channel", aliases=["ch", "c"])
     async def delete_channel(self, ctx: Context, channel: TextChannel):
         """
         change logging channel for delete events
@@ -203,7 +203,7 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_delete", channel.id)
         await ctx.send(f"Logs for message delete events will now be sent to {channel.mention}.")
 
-    @delete.command(name="disable")
+    @delete.command(name="disable", aliases=["d"])
     async def delete_disable(self, ctx: Context):
         """
         disable delete event logging
@@ -212,7 +212,7 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_delete", -1)
         await ctx.send("Logging for message delete events has been disabled.")
 
-    @logging.group(name="changelog")
+    @logging.group(name="changelog", aliases=["cl", "c", "change"])
     async def changelog(self, ctx: Context):
         """
         change settings for internal changelog
@@ -221,7 +221,7 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.changelog)
 
-    @changelog.command(name="channel")
+    @changelog.command(name="channel", aliases=["ch", "c"])
     async def changelog_channel(self, ctx: Context, channel: TextChannel):
         """
         change changelog channel
@@ -235,7 +235,7 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_changelog", channel.id)
         await ctx.send(f"Changelog channel is now {channel.mention}.")
 
-    @changelog.command(name="disable")
+    @changelog.command(name="disable", aliases=["d"])
     async def changelog_disable(self, ctx: Context):
         """
         disable changelog

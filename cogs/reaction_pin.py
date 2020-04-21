@@ -85,7 +85,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help("reactionpin")
 
-    @reactionpin.command(name="list")
+    @reactionpin.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):
         """
         list configured channels
@@ -103,7 +103,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         else:
             await ctx.send("No whitelisted channels.")
 
-    @reactionpin.command(name="add")
+    @reactionpin.command(name="add", aliases=["a", "+"])
     async def add_channel(self, ctx: Context, channel: TextChannel):
         """
         add channel to whitelist
@@ -116,7 +116,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         await ctx.send("Channel has been whitelisted.")
         await send_to_changelog(ctx.guild, f"Channel {channel.mention} has been whitelisted for ReactionPin.")
 
-    @reactionpin.command(name="remove", aliases=["del"])
+    @reactionpin.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist

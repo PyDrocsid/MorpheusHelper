@@ -119,7 +119,7 @@ async def auth(ctx: Context):
         await ctx.send_help("auth")
 
 
-@auth.command(name="list")
+@auth.command(name="list", aliases=["l", "?"])
 async def auth_list(ctx: Context):
     """
     list authorized roles
@@ -137,7 +137,7 @@ async def auth_list(ctx: Context):
         await ctx.send("Except administrators nobody can control this bot.")
 
 
-@auth.command(name="add")
+@auth.command(name="add", aliases=["a", "+"])
 async def auth_add(ctx: Context, *, role: Role):
     """
     authorize role to control this bot
@@ -152,7 +152,7 @@ async def auth_add(ctx: Context, *, role: Role):
     await send_to_changelog(ctx.guild, f"Role `@{role}` has been authorized to control this bot.")
 
 
-@auth.command(name="remove", aliases=["del"])
+@auth.command(name="remove", aliases=["del", "r", "d", "-"])
 async def auth_del(ctx: Context, *, role: Role):
     """
     unauthorize role to control this bot
