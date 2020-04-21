@@ -107,3 +107,11 @@ def register_cogs(bot: Bot, *cogs):
             if e.startswith("on_") and callable(func):
                 event_handlers.setdefault(e[3:], []).append(func)
         bot.add_cog(cog)
+
+
+async def get_prefix() -> str:
+    return await run_in_thread(Settings.get, str, "prefix", ".")
+
+
+async def set_prefix(new_prefix: str):
+    await run_in_thread(Settings.set, str, "prefix", new_prefix)

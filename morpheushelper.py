@@ -33,7 +33,6 @@ from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
-from models.settings import Settings
 from util import (
     permission_level,
     make_error,
@@ -41,6 +40,8 @@ from util import (
     send_to_changelog,
     call_event_handlers,
     register_cogs,
+    get_prefix,
+    set_prefix,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -54,21 +55,11 @@ if sentry_dsn:
 
 db.create_tables()
 
-DEFAULT_PREFIX = "!"
-
-
-def get_prefix() -> str:
-    return Settings.get(str, "prefix", DEFAULT_PREFIX)
-
-
-def set_prefix(new_prefix: str):
-    Settings.set(str, "prefix", new_prefix)
-
 
 async def fetch_prefix(_, message: Message) -> Iterable[str]:
     if message.guild is None:
         return ""
-    return await run_in_thread(get_prefix), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
+    return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
 bot = Bot(command_prefix=fetch_prefix)
@@ -111,7 +102,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
     if any(c not in valid_chars for c in new_prefix):
         raise CommandError("Prefix contains invalid characters.")
 
-    await run_in_thread(set_prefix, new_prefix)
+    await set_prefix(new_prefix)
     await ctx.send("Prefix has been updated.")
     await send_to_changelog(ctx.guild, f"Bot prefix has been changed to `{new_prefix}`")
 
@@ -185,7 +176,7 @@ async def build_info_embed(authorized: bool) -> Embed:
     embed.set_thumbnail(
         url="https://cdn.discordapp.com/avatars/686299664726622258/cb99c816286bdd1d988ec16d8ae85e15.png"
     )
-    prefix = await run_in_thread(get_prefix)
+    prefix = await get_prefix()
     features = [
         "Role system for topics you are interested in",
         "Pin your own messages by reacting with :pushpin: in specific channels",
@@ -239,7 +230,7 @@ async def on_error(*_, **__):
 
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
-    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == get_prefix():
+    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
         return
     await ctx.send(make_error(error))
 

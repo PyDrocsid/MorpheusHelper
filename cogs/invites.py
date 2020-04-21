@@ -8,7 +8,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
-from util import permission_level, check_access, send_to_changelog
+from util import permission_level, check_access, send_to_changelog, get_prefix
 
 
 def get_discord_invite(url) -> Optional[str]:
@@ -54,10 +54,11 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             can_delete = message.channel.permissions_for(message.guild.me).manage_messages
             if can_delete:
                 await message.delete()
+            prefix = await get_prefix()
             await message.channel.send(
                 f"{message.author.mention} Illegal discord invite link! "
                 "Please contact a team member to submit a request for whitelisting the invitation. "
-                "Use the command `.invites list` to get a list of all allowed discord servers."
+                f"Use the command `{prefix}invites list` to get a list of all allowed discord servers."
             )
             if can_delete:
                 await send_to_changelog(

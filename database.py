@@ -58,6 +58,7 @@ thread_semaphore = BoundedSemaphore(5)
 
 async def run_in_thread(function, *args, **kwargs):
     async with thread_semaphore:
+
         def inner():
             out = function(*args, **kwargs)
             db.session.commit()
