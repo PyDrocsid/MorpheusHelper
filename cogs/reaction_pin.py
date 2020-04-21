@@ -36,6 +36,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
         if access or (member == message.author and all(r.id != blocked_role for r in member.roles)):
             if message.type != MessageType.default:
+                await message.remove_reaction(emoji, member)
                 await message.channel.send(make_error("Message could not be pinned, because it is a system message."))
                 return False
             try:
