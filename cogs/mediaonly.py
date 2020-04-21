@@ -9,23 +9,19 @@ from requests import RequestException
 
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
-from util import permission_level, check_access
+from util import permission_level, check_access, send_to_changelog
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_message(self, message: Message):
-        if message.author == self.bot.user:
-            return
-        if message.author.bot:
-            return
-        if await check_access(message.author):
-            return
+    async def on_message(self, message: Message) -> bool:
+        if message.author.bot or await check_access(message.author):
+            return True
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
-            return
+            return True
+
         urls = [(att.url,) for att in message.attachments]
         urls += re.findall(r"(https?://([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content)
         for url, *_ in urls:
@@ -37,7 +33,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
                 break
         else:
             if urls:
-                return
+                return True
 
         channel: TextChannel = message.channel
         await message.delete()
@@ -46,6 +42,13 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             "For conversations please use the channels designated for this purpose.",
             delete_after=30,
         )
+        await send_to_changelog(
+            message.guild,
+            f"Deleted a message of {message.author.mention} in media only channel {message.channel.mention} "
+            f"because it did not contain an image.",
+        )
+
+        return False
 
     @commands.group(aliases=["mo"])
     @permission_level(1)
@@ -58,7 +61,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.mediaonly)
 
-    @mediaonly.command(name="list")
+    @mediaonly.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):
         """
         list media only channels
@@ -77,7 +80,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         else:
             await ctx.send("No media only channels.")
 
-    @mediaonly.command(name="add")
+    @mediaonly.command(name="add", aliases=["a", "+"])
     async def add_channel(self, ctx: Context, channel: TextChannel):
         """
         add a media only channel
@@ -88,8 +91,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(MediaOnlyChannel.create, channel.id)
         await ctx.send("Channel is now a media only channel.")
+        await send_to_changelog(ctx.guild, f"Channel {channel.mention} is now a media only channel.")
 
-    @mediaonly.command(name="remove")
+    @mediaonly.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove a media only channel
@@ -100,3 +104,4 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(db.delete, row)
         await ctx.send("Channel is not a media only channel anymore.")
+        await send_to_changelog(ctx.guild, f"Channel {channel.mention} is not a media only channel anymore.")

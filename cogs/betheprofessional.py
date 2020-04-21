@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.btp_role import BTPRole
-from util import permission_level, calculate_edit_distance
+from util import permission_level, calculate_edit_distance, send_to_changelog
 
 
 def split_topics(topics: str) -> List[str]:
@@ -70,7 +70,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
     @guild_only()
     async def add_role(self, ctx: Context, *, topics: str):
         """
-        add one or more topics you are interested in
+        add one or more topics (comma separated) you are interested in
         """
 
         member: Member = ctx.author
@@ -154,8 +154,12 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
 
         if len(roles) > 1:
             await ctx.send(f"{len(roles)} topics have been registered successfully.")
+            await send_to_changelog(
+                ctx.guild, "These topics have been registered: " + ", ".join(f"`{t.name}`" for t in roles)
+            )
         elif len(roles) == 1:
             await ctx.send(f"Topic has been registered successfully.")
+            await send_to_changelog(ctx.guild, f"The new topic `{roles[0].name}` has been registered.")
 
     @commands.command(name="/")
     @permission_level(1)
@@ -189,5 +193,9 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await role.delete()
         if len(roles) > 1:
             await ctx.send(f"{len(roles)} topics have been deleted successfully.")
+            await send_to_changelog(
+                ctx.guild, "These topics have been removed: " + ", ".join(f"`{t.name}`" for t in roles)
+            )
         elif len(roles) == 1:
             await ctx.send(f"Topic has been deleted successfully.")
+            await send_to_changelog(ctx.guild, f"The topic `{roles[0].name}` has been removed.")

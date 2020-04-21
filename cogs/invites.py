@@ -1,24 +1,47 @@
 import re
 from typing import Union, Optional
 
+import requests
 from discord import Invite, Member, Guild, Embed, Message, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
-from util import permission_level, check_access, send_to_changelog
+from util import permission_level, check_access, send_to_changelog, get_prefix
+
+
+def get_discord_invite(url) -> Optional[str]:
+    while True:
+        if re.match(r"^(https?://)?(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)$", url):
+            return url
+
+        if not re.match(r"^(https?://).*$", url):
+            url = "https://" + url
+
+        try:
+            response = requests.head(url)
+        except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+            return None
+
+        if response.is_redirect and "Location" in response.headers:
+            url = response.headers["Location"]
+        else:
+            return None
 
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def check_message(self, message: Message):
+    async def check_message(self, message: Message) -> bool:
         if message.guild is None or message.author.bot or await check_access(message.author):
-            return
+            return True
+
         forbidden = []
-        for url, *_ in re.findall(r"(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)", message.content):
+        for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content):
+            if (url := get_discord_invite(url)) is None:
+                continue
             try:
                 invite = await self.bot.fetch_invite(url)
             except NotFound:
@@ -31,10 +54,11 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             can_delete = message.channel.permissions_for(message.guild.me).manage_messages
             if can_delete:
                 await message.delete()
+            prefix = await get_prefix()
             await message.channel.send(
                 f"{message.author.mention} Illegal discord invite link! "
                 "Please contact a team member to submit a request for whitelisting the invitation. "
-                "Use the command `.invites list` to get a list of all allowed discord servers."
+                f"Use the command `{prefix}invites list` to get a list of all allowed discord servers."
             )
             if can_delete:
                 await send_to_changelog(
@@ -50,16 +74,16 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     "The message could not be deleted because I don't have `manage_messages` permission "
                     "in this channel.",
                 )
+            return False
+        return True
 
-    @Cog.listener()
     async def on_message(self, message: Message):
-        await self.check_message(message)
+        return await self.check_message(message)
 
-    @Cog.listener()
     async def on_message_edit(self, _, after: Message):
-        await self.check_message(after)
+        return await self.check_message(after)
 
-    @commands.group()
+    @commands.group(aliases=["i"])
     @guild_only()
     async def invites(self, ctx: Context):
         """
@@ -69,24 +93,26 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(self.invites)
 
-    @invites.command(name="list")
+    @invites.command(name="list", aliases=["l", "?"])
     async def list_invites(self, ctx: Context):
         """
         list allowed discord servers
         """
 
         out = []
-        for row in await run_in_thread(db.query, AllowedInvite):  # type: AllowedInvite
-            out.append(f"- {row.guild_name} (discord.gg/{row.code})")
+        for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
+            out.append(f"- {row.guild_name} ({row.code})")
         if out:
-            await ctx.send("Allowed discord servers:\n```\n" + "\n".join(out) + "```")
+            await ctx.send(
+                "Allowed discord servers (any link to these servers is allowed):\n```\n" + "\n".join(out) + "```"
+            )
         else:
             await ctx.send("No discord servers allowed.")
 
-    @invites.command(name="show", aliases=["info"])
+    @invites.command(name="show", aliases=["info", "s", "i"])
     async def show_invite(self, ctx: Context, *, invite: Union[Invite, str]):
         """
-        show more information about a allowed discord server
+        show more information about an allowed discord server
         """
 
         row: Optional[AllowedInvite]
@@ -114,7 +140,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         embed.add_field(name="Date", value=f"{date.day:02}.{date.month:02}.{date.year:02}")
         await ctx.send(embed=embed)
 
-    @invites.command(name="add")
+    @invites.command(name="add", aliases=["+", "a"])
     @permission_level(1)
     async def add_invite(self, ctx: Context, invite: Invite, applicant: Member):
         """
@@ -130,8 +156,9 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
         await ctx.send("Server has been whitelisted successfully.")
+        await send_to_changelog(ctx.guild, f"Discord Server `{guild.name}` has been added to the whitelist.")
 
-    @invites.command(name="remove")
+    @invites.command(name="remove", aliases=["r", "del", "d", "-"])
     @permission_level(1)
     async def remove_invite(self, ctx: Context, *, server: Union[Invite, int, str]):
         """
@@ -157,3 +184,4 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await run_in_thread(db.delete, row)
         await ctx.send("Server has been removed from the whitelist successfully.")
+        await send_to_changelog(ctx.guild, f"Discord Server `{row.guild_name}` has been removed from the whitelist.")

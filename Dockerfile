@@ -14,6 +14,7 @@ RUN pipenv sync
 ADD morpheushelper.py /app/
 ADD database.py /app/
 ADD util.py /app/
+ADD multilock.py /app/
 ADD models /app/models/
 ADD cogs /app/cogs/
 
