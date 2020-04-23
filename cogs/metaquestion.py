@@ -79,11 +79,12 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             for embed in message.embeds:
                 if (match := re.match(r"^Requested by @.*?#\d{4} \((\d+)\)$", embed.footer.text)) is not None:
                     author_id = int(match.group(1))
-                    if author_id == member.id or await check_access(member):
-                        break
+                    if not (author_id == member.id or await check_access(member)):
+                        await message.remove_reaction(emoji, member)
+                        return False
+                    break
             else:
-                await message.remove_reaction(emoji, member)
-                return False
+                return True
 
             await message.delete()
             return False
