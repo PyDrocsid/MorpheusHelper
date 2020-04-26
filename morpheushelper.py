@@ -29,6 +29,7 @@ from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
 from cogs.reaction_pin import ReactionPinCog
+from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
@@ -335,5 +336,6 @@ register_cogs(
     InvitesCog,
     MetaQuestionCog,
     InfoCog,
+    ReactionRoleCog,
 )
 bot.run(os.environ["TOKEN"])

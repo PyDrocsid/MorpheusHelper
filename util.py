@@ -2,13 +2,24 @@ import socket
 import time
 from typing import Optional
 
-from discord import Member, TextChannel, Guild, NotFound
-from discord.ext.commands import check, Context, CheckFailure, Bot, Cog
+from discord import Member, TextChannel, Guild, NotFound, PartialEmoji
+from discord.ext.commands import check, Context, CheckFailure, Bot, Cog, PartialEmojiConverter, BadArgument
 
 from database import run_in_thread, db
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
 from multilock import MultiLock
+
+
+class FixedEmojiConverter(PartialEmojiConverter):
+    async def convert(self, ctx, argument):
+        try:
+            return await super().convert(ctx, argument)
+        except BadArgument:
+            pass
+
+        # noinspection PyProtectedMember
+        return PartialEmoji.with_state(ctx.bot._connection, animated=False, name=argument, id=None)
 
 
 def make_error(message) -> str:
