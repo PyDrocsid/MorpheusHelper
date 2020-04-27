@@ -1,6 +1,6 @@
 from typing import Optional
 
-from discord import Message, Role, PartialEmoji, TextChannel
+from discord import Message, Role, PartialEmoji, TextChannel, Member
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -9,9 +9,34 @@ from models.reactionrole import ReactionRole
 from util import permission_level, send_to_changelog, FixedEmojiConverter
 
 
+async def get_role(message: Message, emoji: PartialEmoji) -> Optional[Role]:
+    link: Optional[ReactionRole] = await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji))
+    if link is not None:
+        role: Optional[Role] = message.guild.get_role(link.role_id)
+        if role is None:
+            await run_in_thread(db.delete, link)
+            return None
+
+        return role
+
+
 class ReactionRoleCog(Cog, name="ReactionRole"):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+        role: Optional[Role] = await get_role(message, emoji)
+        if role is not None:
+            await member.add_roles(role)
+            return True
+        return False
+
+    async def on_raw_reaction_remove(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+        role: Optional[Role] = await get_role(message, emoji)
+        if role is not None:
+            await member.remove_roles(role)
+            return True
+        return False
 
     @commands.group(name="reactionrole", aliases=["rr"])
     @permission_level(1)
