@@ -17,7 +17,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         self.bot = bot
 
     async def on_message(self, message: Message) -> bool:
-        if message.author.bot or await check_access(message.author):
+        if message.guild is None or message.author.bot or await check_access(message.author):
             return True
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return True
