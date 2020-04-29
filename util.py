@@ -2,7 +2,7 @@ import socket
 import time
 from typing import Optional
 
-from discord import Member, TextChannel, Guild, NotFound, PartialEmoji
+from discord import Member, TextChannel, Guild, PartialEmoji
 from discord.ext.commands import check, Context, CheckFailure, Bot, Cog, PartialEmojiConverter, BadArgument
 
 from database import run_in_thread, db
@@ -91,9 +91,8 @@ async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
         await handler_lock.acquire((event, identifier))
 
     if prepare is not None:
-        try:
-            args = await prepare()
-        except NotFound:
+        args = await prepare()
+        if args is None:
             if identifier is not None:
                 handler_lock.release((event, identifier))
             return False
