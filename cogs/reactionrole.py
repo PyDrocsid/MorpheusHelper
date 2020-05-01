@@ -1,6 +1,6 @@
 from typing import Optional
 
-from discord import Message, Role, PartialEmoji, TextChannel, Member
+from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -62,8 +62,12 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 if channel is None:
                     await run_in_thread(db.delete, link)
                     continue
-                msg: Optional[Message] = await channel.fetch_message(link.message_id)
-                if msg is None or ctx.guild.get_role(link.role_id) is None:
+                try:
+                    msg: Message = await channel.fetch_message(link.message_id)
+                except NotFound:
+                    await run_in_thread(db.delete, link)
+                    continue
+                if ctx.guild.get_role(link.role_id) is None:
                     await run_in_thread(db.delete, link)
                     continue
                 channels.setdefault(channel, {}).setdefault(msg.jump_url, set())
