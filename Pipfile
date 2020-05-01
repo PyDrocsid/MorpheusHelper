@@ -11,6 +11,7 @@ sqlalchemy = "*"
 pymysql = "*"
 requests = "*"
 sentry-sdk = "*"
+pyyaml = "*"
 
 [requires]
 python_version = "3.8"
