@@ -86,7 +86,8 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             else:
                 return True
 
-            await message.delete()
+            await message.clear_reactions()
+            await message.edit(content=message.content + " http://metafrage.de/", embed=None)
             return False
 
         return True
