@@ -258,7 +258,7 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id)
+        return [await channel.fetch_message(event.message_id)]
 
     await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
 
