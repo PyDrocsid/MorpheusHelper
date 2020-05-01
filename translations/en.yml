@@ -70,3 +70,18 @@ cnt_topics_unregistered: "{} topics have been deleted successfully."
 log_these_topics_unregistered: "These topics have been removed:"
 topic_unregistered: Topic has been deleted successfully.
 log_topic_unregistered: The topic `{}` has been removed.
+
+# server info
+info_description: Information about this Discord Server
+creation_date: Creation Date
+cnt_members: "{} Members"
+cnt_online: "{} online"
+owner: Owner
+cnt_admins: "{} Admins"
+cnt_mods: "{} Moderators"
+cnt_supps: "{} Supporters"
+cnt_bots: "{} Bots"
+topics: Topics
+cnt_topics: "{} Topics registered"
+allowed_discord_server: Allowed Discord Servers
+cnt_servers_whitelisted: "{} servers whitelisted"
