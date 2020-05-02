@@ -139,3 +139,19 @@ log_delete_updated: Logs for message delete events will now be sent to {}.
 log_delete_disabled: Logging for message delete events has been disabled.
 log_changelog_updated: Changelog channel is now {}.
 log_changelog_disabled: Changelog channel has been disabled.
+
+# mediaonly
+deleted_nomedia: >
+  {} Only pictures are allowed in this channel.
+  For conversations please use the channels designated for this purpose.
+log_deleted_nomedia: Deleted a message of {} in media only channel {} because it did not contain an image.
+media_only_channels_header: "Media only channels:"
+no_media_only_channels: No media only channels.
+channel_already_media_only: Channel is already a media only channel.
+channel_now_media_only: Channel is now a media only channel.
+log_channel_now_media_only: Channel {} is now a media only channel.
+channel_not_media_only: Channel is not a media only channel.
+channel_not_media_only_anymore: Channel is not a media only channel anymore.
+log_channel_not_media_only_anymore: Channel {} is not a media only channel anymore.
+media_only_not_changed_no_permissions: >
+  Media only channel could not be added because I don't have `manage_messages` permission there.
