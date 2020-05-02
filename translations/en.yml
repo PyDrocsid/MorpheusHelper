@@ -112,3 +112,30 @@ log_server_whitelisted: Discord Server `{}` has been added to the whitelist.
 server_not_whitelisted: Server is not whitelisted.
 server_removed: Server has been removed from the whitelist successfully.
 log_server_removed: Discord Server `{}` has been removed from the whitelist.
+
+# logging
+message_edited: Message Edited
+channel: Channel
+url: URL
+old_content: Old Content
+new_content: New Content
+message_deleted: Message Deleted
+attachments: Attachments
+message_id: Message ID
+logging_channels_header: "Logging channels:"
+msg_edit_on: "message edit: {} (minimum difference: {})"
+msg_edit_off: "message edit: *disabled*"
+msg_delete_on: "message delete: {}"
+msg_delete_off: "message delete: *disabled*"
+changelog_on: "changelog: {}"
+changelog_off: "changelog: *disabled*"
+min_diff_gt_zero: Minimum difference must be greater than zero.
+edit_mindiff_updated: Message edit events will now only be logged if the difference is at least {}.
+log_not_changed_no_permissions: >
+  Logging channel could not be changed because I don't have `send_messages` permission there.
+log_edit_updated: Logs for message edit events will now be sent to {}.
+log_edit_disabled: Logging for message edit events has been disabled.
+log_delete_updated: Logs for message delete events will now be sent to {}.
+log_delete_disabled: Logging for message delete events has been disabled.
+log_changelog_updated: Changelog channel is now {}.
+log_changelog_disabled: Changelog channel has been disabled.
