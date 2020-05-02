@@ -6,6 +6,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.reactionrole import ReactionRole
+from translations import translations
 from util import permission_level, send_to_changelog, FixedEmojiConverter
 
 
@@ -74,7 +75,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 channels[channel][msg.jump_url].add(link.emoji)
 
             if not channels:
-                await ctx.send("No ReactionRole links have been created yet.")
+                await ctx.send(translations.no_reactionrole_links)
             else:
                 await ctx.send(
                     "\n\n".join(
@@ -98,7 +99,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                     continue
                 out.append(f"{link.emoji} -> `@{role}`")
             if not out:
-                await ctx.send("No ReactionRole links have been created yet for this message.")
+                await ctx.send(translations.no_reactionrole_links_for_msg)
             else:
                 await ctx.send("\n".join(out))
 
@@ -111,14 +112,12 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         emoji: PartialEmoji
 
         if await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji)) is not None:
-            raise CommandError("A link already exists for this reaction on this message.")
+            raise CommandError(translations.rr_link_already_exists)
 
         await run_in_thread(ReactionRole.create, message.channel.id, message.id, str(emoji), role.id)
         await message.add_reaction(emoji)
-        await ctx.send("Link has been created successfully.")
-        await send_to_changelog(
-            ctx.guild, f"ReactionRole link for {emoji} -> `@{role}` has been created on {message.jump_url}"
-        )
+        await ctx.send(translations.rr_link_created)
+        await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role, message.jump_url))
 
     @reactionrole.command(name="remove", aliases=["r", "del", "d", "-"])
     async def remove(self, ctx: Context, message: Message, emoji: FixedEmojiConverter):
@@ -129,11 +128,11 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         emoji: PartialEmoji
 
         if (link := await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji))) is None:
-            raise CommandError("Such a link does not exist.")
+            raise CommandError(translations.rr_link_not_found)
 
         await run_in_thread(db.delete, link)
         for reaction in message.reactions:
             if str(emoji) == str(reaction.emoji):
                 await reaction.clear()
-        await ctx.send("Link has been removed successfully.")
-        await send_to_changelog(ctx.guild, f"ReactionRole link for {emoji} has been deleted on {message.jump_url}")
+        await ctx.send(translations.rr_link_removed)
+        await send_to_changelog(ctx.guild, translations.f_log_rr_link_removed(emoji, message.jump_url))

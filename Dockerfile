@@ -11,11 +11,13 @@ ADD Pipfile.lock /app/
 
 RUN pipenv sync
 
-ADD morpheushelper.py /app/
+ADD translations.py /app/
+ADD multilock.py /app/
 ADD database.py /app/
 ADD util.py /app/
-ADD multilock.py /app/
 ADD models /app/models/
 ADD cogs /app/cogs/
+ADD morpheushelper.py /app/
+ADD translations /app/translations/
 
 CMD pipenv run bot

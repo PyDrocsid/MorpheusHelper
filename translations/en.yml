@@ -1,0 +1,246 @@
+# profile
+profile_status: github.com/Defelo/MorpheusHelper
+
+# ping
+pong: Pong!
+pong_latency: Pong ({:.0f} ms)
+
+# prefix
+invalid_prefix_length: Length of prefix must be between 1 and 16
+prefix_invalid_chars: Prefix contains invalid characters.
+prefix_updated: Prefix has been updated.
+log_prefix_updated: Bot prefix has been changed to `{}`
+
+# auth
+authorized_roles_header: "The following roles are authorized to control this bot:"
+no_authorized_roles: Except administrators nobody can control this bot.
+already_authorized: Role `@{}` is already authorized.
+role_authorized: Role `@{}` has been authorized to control this bot.
+log_role_authorized: Role `@{}` has been authorized to control this bot.
+not_authorized: Role `@{}` is not authorized.
+role_unauthorized: Role `@{}` has been unauthorized to control this bot.
+log_role_unauthorized: Role `@{}` has been unauthorized to control this bot.
+
+# info
+description: Helper Bot for the Discord Server of The Morpheus Tutorials
+test:
+features:
+  - Role system for topics you are interested in
+  - "Pin your own messages by reacting with :pushpin: in specific channels"
+  - Automatic role assignment upon entering a voice channel
+  - Discord server invite whitelist
+  - Meta question information command
+admin_features:
+  - Logging of message edit and delete events
+  - Send/Edit/Delete text and embed messages as the bot
+  - Media only channels
+features_title: Features
+author_title: Author
+contributors_title: Contributors
+github_title: GitHub
+prefix_title: Prefix
+help_command_title: Help Command
+bugs_features_title: Bug Reports / Feature Requests
+bugs_features: Please create an issue in the GitHub repository or contact me (<@370876111992913922>) via Discord.
+
+# betheprofessional
+youre_not_the_first_one: "Topic `{}` not found.\nYou're not the first one to try this, {}"
+topic_not_found: Topic `{}` not found.
+topic_not_found_did_you_mean: Topic `{}` not found. Did you mean `{}`?
+available_topics_header: "Available Topics:"
+no_topics_registered: No topics have been registered yet.
+
+cnt_topics_added: "{} topics have been added successfully."
+topic_added: Topic has been added successfully.
+no_topic_added: No topic has been added.
+cnt_topics_removed: "{} topics have been removed successfully."
+topic_removed: Topic has been removed successfully.
+no_topic_removed: No topic has been removed.
+
+topic_invalid_chars: Topic name `{}` contains invalid characters.
+topic_already_registered: Topic `{}` has already been registered.
+topic_not_registered_too_high: Topic could not be registered because `@{}` is higher than `@{}`.
+topic_not_registered_managed_role: Topic could not be registered because `@{}` cannot be assigned manually.
+cnt_topics_registered: "{} topics have been registered successfully."
+log_these_topics_registered: "These topics have been registered:"
+topic_registered: Topic has been registered successfully.
+log_topic_registered: The new topic `{}` has been registered.
+topic_not_registered: Topic `{}` has not been registered.
+cnt_topics_unregistered: "{} topics have been deleted successfully."
+log_these_topics_unregistered: "These topics have been removed:"
+topic_unregistered: Topic has been deleted successfully.
+log_topic_unregistered: The topic `{}` has been removed.
+
+# server info
+info_description: Information about this Discord Server
+creation_date: Creation Date
+cnt_members: "{} Members"
+cnt_online: "{} online"
+owner: Owner
+cnt_admins: "{} Admins"
+cnt_mods: "{} Moderators"
+cnt_supps: "{} Supporters"
+cnt_bots: "{} Bots"
+topics: Topics
+cnt_topics: "{} Topics registered"
+allowed_discord_server: Allowed Discord Servers
+cnt_servers_whitelisted: "{} servers whitelisted"
+
+# invites
+illegal_invite_link: >
+  {} Illegal discord invite link!
+  Please contact a team member to submit a request for whitelisting the invitation.
+  Use the command `{}` to get a list of all allowed discord servers.
+log_illegal_invite: "Deleted a message of {} in {} because it contained one or more illegal discord invite links: {}"
+log_illegal_invite_not_deleted: |
+  {} sent a message in {} which contained one or more illegal discord invite links: {}
+  The message could not be deleted because I don't have `manage_messages` permission in this channel.
+allowed_servers_header: "Allowed discord servers (any link to these servers is allowed):"
+no_server_allowed: No discord servers allowed.
+invalid_invite: Invalid invite.
+allowed_server_not_found: Allowed discord server not found.
+allowed_server: Allowed Discord Server
+server_name: Server Name
+server_id: Server ID
+invite_link: Invite Link
+applicant: Applicant
+approver: Approver
+date: Date
+server_already_whitelisted: This server has already been whitelisted.
+server_whitelisted: Server has been whitelisted successfully.
+log_server_whitelisted: Discord Server `{}` has been added to the whitelist.
+server_not_whitelisted: Server is not whitelisted.
+server_removed: Server has been removed from the whitelist successfully.
+log_server_removed: Discord Server `{}` has been removed from the whitelist.
+
+# logging
+message_edited: Message Edited
+channel: Channel
+url: URL
+old_content: Old Content
+new_content: New Content
+message_deleted: Message Deleted
+attachments: Attachments
+message_id: Message ID
+logging_channels_header: "Logging channels:"
+msg_edit_on: "message edit: {} (minimum difference: {})"
+msg_edit_off: "message edit: *disabled*"
+msg_delete_on: "message delete: {}"
+msg_delete_off: "message delete: *disabled*"
+changelog_on: "changelog: {}"
+changelog_off: "changelog: *disabled*"
+min_diff_gt_zero: Minimum difference must be greater than zero.
+edit_mindiff_updated: Message edit events will now only be logged if the difference is at least {}.
+log_not_changed_no_permissions: >
+  Logging channel could not be changed because I don't have `send_messages` permission there.
+log_edit_updated: Logs for message edit events will now be sent to {}.
+log_edit_disabled: Logging for message edit events has been disabled.
+log_delete_updated: Logs for message delete events will now be sent to {}.
+log_delete_disabled: Logging for message delete events has been disabled.
+log_changelog_updated: Changelog channel is now {}.
+log_changelog_disabled: Changelog channel has been disabled.
+
+# mediaonly
+deleted_nomedia: >
+  {} Only pictures are allowed in this channel.
+  For conversations please use the channels designated for this purpose.
+log_deleted_nomedia: Deleted a message of {} in media only channel {} because it did not contain an image.
+media_only_channels_header: "Media only channels:"
+no_media_only_channels: No media only channels.
+channel_already_media_only: Channel is already a media only channel.
+channel_now_media_only: Channel is now a media only channel.
+log_channel_now_media_only: Channel {} is now a media only channel.
+channel_not_media_only: Channel is not a media only channel.
+channel_not_media_only_anymore: Channel is not a media only channel anymore.
+log_channel_not_media_only_anymore: Channel {} is not a media only channel anymore.
+media_only_not_changed_no_permissions: >
+  Media only channel could not be added because I don't have `manage_messages` permission there.
+
+# metaquestion
+metaquestion_title: Metafragen
+metaquestion_description: >
+  Eine Metafrage ist eine Frage über eine Frage, wie beispielsweise „Darf ich etwas fragen?“
+  oder „Kennt sich jemand mit Computern aus?“.
+
+  In der Regel wird der Begriff Metafrage aber verallgemeinert und damit alle Fragen bezeichnet,
+  die keine direkte Frage zum Problem des Hilfesuchenden sind. Der Hilfesuchende fragt also zunächst
+  allgemein, ob jemand helfen kann. Gerade Neulinge oder unerfahrene Benutzer lassen sich zu Metafragen
+  hinreißen, um einen kompetenten und hilfsbereiten Ansprechpartner zu finden. Meistens werden Metafragen
+  ignoriert oder der Fragende wird rüde darauf hingewiesen, dass ihm niemand bei seinem Problem
+  helfen könne, ohne dies zu kennen. Grundsätzlich folgt auf eine Meta-Frage eine weitere Frage.
+requested_by: Requested by @{} ({})
+mq_advantages_title: Vorteile von Metafragen
+mq_advantages:
+  - als höfliche Floskel um Aufmerksamkeit zu gewinnen
+  - Beginn einer zunächst einseitigen Konversation (Allgemeine Problemanalyse)
+mq_disadvantages_title: Nachteile von Metafragen
+mq_disadvantages:
+  - >-
+    die Anwesenden könnten eventuell bei dem Problem helfen, obwohl sie (eventuell aus Bescheidenheit)
+    nicht von sich behaupten würden, mit dem Thema vertraut zu sein,
+  - >-
+    oft ist die Metafrage falsch formuliert, z. B. wird gefragt „kennt sich jemand mit Kochen aus?“
+    und er will nur wissen, ob Mangos essbar sind,
+  - >-
+    Auch wenn jemand mit dem erfragten Thema vertraut ist, bedeutet dies nicht, dass er eine
+    spezielle Frage zu diesem beantworten kann – niemand ist allwissend,
+  - >-
+    wenn keine Reaktion auf die Metafrage erfolgt, beläßt es der Fragende meist dabei. So
+    kann eine Antwort auf das Problem von später aufmerksam Werdenden nicht erfolgen.
+
+# reactionpin
+msg_not_pinned_system: Message could not be pinned, because it is a system message.
+msg_not_pinned_limit: Message could not be pinned, because 50 messages are already pinned in this channel.
+whitelisted_channels_header: "Whitelisted channels:"
+no_whitelisted_channels: No whitelisted channels.
+channel_already_whitelisted: Channel is already whitelisted.
+channel_whitelisted: Channel has been whitelisted.
+log_channel_whitelisted: Channel {} has been whitelisted for ReactionPin.
+channel_not_whitelisted: Channel is not whitelisted.
+channel_removed: Channel has been removed from the whitelist.
+log_channel_removed: Channel {} has been removed from the ReactionPin whitelist.
+pin_messages_enabled: Pin Messages are enabled.
+pin_messages_disabled: Pin Messages are disabled.
+pin_messages_now_enabled: Pin Messages have been enabled.
+pin_messages_now_disabled: Pin Messages have been disabled.
+no_blocked_role: No blocked role configured.
+blocked_role: "Blocked role: `@{}`"
+blocked_role_updated: Blocked role has been updated.
+
+# reactionrole
+no_reactionrole_links: No ReactionRole links have been created yet.
+no_reactionrole_links_for_msg: No ReactionRole links have been created yet for this message.
+rr_link_already_exists: A link already exists for this reaction on this message.
+rr_link_created: Link has been created successfully.
+log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
+rr_link_not_found: Such a link does not exist.
+rr_link_removed: Link has been removed successfully.
+log_rr_link_removed: ReactionRole link for {} has been deleted on {}
+
+# rule commands
+send_embed_title: Send me the title of the embed!
+send_embed_content: Ok, now send me the content of the embed!
+could_not_send_message: Message could not be sent because I don't have `send_messages` permission in this channel.
+send_message: Now send me the message!
+msg_could_not_be_sent: Message could not be sent.
+msg_sent: Message has been sent successfully.
+invalid_color: Invalid color
+could_not_send_embed: Message could not be sent because I don't have `embed_links` permission in this channel.
+could_not_edit: This message cannot be edited because the bot is not the author of the message.
+send_new_message: Now send me the new message!
+msg_edited: Message has been edited successfully.
+cannot_delete_dm: Private messages cannot be deleted.
+could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
+msg_deleted: Message has been deleted successfully.
+
+# voice channel
+updating_voice_roles: Updating voice channel roles
+voice_init_done: Initialization complete
+no_links_created: No links have been created yet.
+link_already_exists: Link already exists.
+link_not_created_too_high: Link could not be created because `@{}` is higher than `@{}`.
+link_not_created_managed_role: Link could not be created because `@{}` cannot be assigned manually.
+link_created: Link has been created between voice channel `{}` and role `@{}`.
+link_not_found: Link does not exist.
+link_deleted: Link has been deleted.
+log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
