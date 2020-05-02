@@ -8,6 +8,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
+from translations import translations
 from util import permission_level, check_access, send_to_changelog, get_prefix
 
 
@@ -56,23 +57,21 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 await message.delete()
             prefix = await get_prefix()
             await message.channel.send(
-                f"{message.author.mention} Illegal discord invite link! "
-                "Please contact a team member to submit a request for whitelisting the invitation. "
-                f"Use the command `{prefix}invites list` to get a list of all allowed discord servers."
+                translations.f_illegal_invite_link(message.author.mention, prefix + "invites list")
             )
             if can_delete:
                 await send_to_changelog(
                     message.guild,
-                    f"Deleted a message of {message.author.mention} in {message.channel.mention} "
-                    f"because it contained one or more illegal discord invite links: {', '.join(forbidden)}",
+                    translations.f_log_illegal_invite(
+                        message.author.mention, message.channel.mention, ", ".join(forbidden)
+                    ),
                 )
             else:
                 await send_to_changelog(
                     message.guild,
-                    f"{message.author.mention} sent a message in {message.channel.mention} which contained one or "
-                    f"more illegal discord invite links: {', '.join(forbidden)}\n"
-                    "The message could not be deleted because I don't have `manage_messages` permission "
-                    "in this channel.",
+                    translations.f_log_illegal_invite_not_deleted(
+                        message.author.mention, message.channel.mention, ", ".join(forbidden)
+                    ),
                 )
             return False
         return True
@@ -103,11 +102,9 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
             out.append(f"- {row.guild_name} ({row.code})")
         if out:
-            await ctx.send(
-                "Allowed discord servers (any link to these servers is allowed):\n```\n" + "\n".join(out) + "```"
-            )
+            await ctx.send(translations.allowed_servers_header + "\n```\n" + "\n".join(out) + "```")
         else:
-            await ctx.send("No discord servers allowed.")
+            await ctx.send(translations.no_server_allowed)
 
     @invites.command(name="show", aliases=["info", "s", "i"])
     async def show_invite(self, ctx: Context, *, invite: Union[Invite, str]):
@@ -124,20 +121,20 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 row = None
         else:
             if invite.guild is None:
-                raise CommandError("Invalid invite.")
+                raise CommandError(translations.invalid_invite)
             row = await run_in_thread(db.get, AllowedInvite, invite.guild.id)
 
         if row is None:
-            raise CommandError("Allowed discord server not found.")
+            raise CommandError(translations.allowed_server_not_found)
 
         date = row.created_at
-        embed = Embed(title="Allowed Discord Server", color=0x007700)
-        embed.add_field(name="Server Name", value=row.guild_name)
-        embed.add_field(name="Server ID", value=row.guild_id)
-        embed.add_field(name="Invite Link", value=f"https://discord.gg/{row.code}")
-        embed.add_field(name="Applicant", value=f"<@{row.applicant}>")
-        embed.add_field(name="Approver", value=f"<@{row.approver}>")
-        embed.add_field(name="Date", value=f"{date.day:02}.{date.month:02}.{date.year:02}")
+        embed = Embed(title=translations.allowed_server, color=0x007700)
+        embed.add_field(name=translations.server_name, value=row.guild_name)
+        embed.add_field(name=translations.server_id, value=row.guild_id)
+        embed.add_field(name=translations.invite_link, value=f"https://discord.gg/{row.code}")
+        embed.add_field(name=translations.applicant, value=f"<@{row.applicant}>")
+        embed.add_field(name=translations.approver, value=f"<@{row.approver}>")
+        embed.add_field(name=translations.date, value=f"{date.day:02}.{date.month:02}.{date.year:02}")
         await ctx.send(embed=embed)
 
     @invites.command(name="add", aliases=["+", "a"])
@@ -148,15 +145,15 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         """
 
         if invite.guild is None:
-            raise CommandError("Invalid invite.")
+            raise CommandError(translations.invalid_invite)
 
         guild: Guild = invite.guild
         if await run_in_thread(db.get, AllowedInvite, guild.id) is not None:
-            raise CommandError("This server has already been whitelisted.")
+            raise CommandError(translations.server_already_whitelisted)
 
         await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
-        await ctx.send("Server has been whitelisted successfully.")
-        await send_to_changelog(ctx.guild, f"Discord Server `{guild.name}` has been added to the whitelist.")
+        await ctx.send(translations.server_whitelisted)
+        await send_to_changelog(ctx.guild, translations.f_log_server_whitelisted(guild.name))
 
     @invites.command(name="remove", aliases=["r", "del", "d", "-"])
     @permission_level(1)
@@ -168,7 +165,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         row: Optional[AllowedInvite]
         if isinstance(server, Invite):
             if server.guild is None:
-                raise CommandError("Invalid invite.")
+                raise CommandError(translations.invalid_invite)
             row = await run_in_thread(db.get, AllowedInvite, server.guild.id)
         elif isinstance(server, str):
             for row in await run_in_thread(db.all, AllowedInvite):  # type: AllowedInvite
@@ -180,8 +177,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             row = await run_in_thread(db.get, AllowedInvite, server)
 
         if row is None:
-            raise CommandError("Server is not whitelisted.")
+            raise CommandError(translations.server_not_whitelisted)
 
         await run_in_thread(db.delete, row)
-        await ctx.send("Server has been removed from the whitelist successfully.")
-        await send_to_changelog(ctx.guild, f"Discord Server `{row.guild_name}` has been removed from the whitelist.")
+        await ctx.send(translations.server_removed)
+        await send_to_changelog(ctx.guild, translations.f_log_server_removed(row.guild_name))
