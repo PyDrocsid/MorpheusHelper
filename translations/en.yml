@@ -232,3 +232,15 @@ msg_edited: Message has been edited successfully.
 cannot_delete_dm: Private messages cannot be deleted.
 could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
 msg_deleted: Message has been deleted successfully.
+
+# voice channel
+updating_voice_roles: Updating voice channel roles
+voice_init_done: Initialization complete
+no_links_created: No links have been created yet.
+link_already_exists: Link already exists.
+link_not_created_too_high: Link could not be created because `@{}` is higher than `@{}`.
+link_not_created_managed_role: Link could not be created because `@{}` cannot be assigned manually.
+link_created: Link has been created between voice channel `{}` and role `@{}`.
+link_not_found: Link does not exist.
+link_deleted: Link has been deleted.
+log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
