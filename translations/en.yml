@@ -216,3 +216,19 @@ log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: Link has been removed successfully.
 log_rr_link_removed: ReactionRole link for {} has been deleted on {}
+
+# rule commands
+send_embed_title: Send me the title of the embed!
+send_embed_content: Ok, now send me the content of the embed!
+could_not_send_message: Message could not be sent because I don't have `send_messages` permission in this channel.
+send_message: Now send me the message!
+msg_could_not_be_sent: Message could not be sent.
+msg_sent: Message has been sent successfully.
+invalid_color: Invalid color
+could_not_send_embed: Message could not be sent because I don't have `embed_links` permission in this channel.
+could_not_edit: This message cannot be edited because the bot is not the author of the message.
+send_new_message: Now send me the new message!
+msg_edited: Message has been edited successfully.
+cannot_delete_dm: Private messages cannot be deleted.
+could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
+msg_deleted: Message has been deleted successfully.
