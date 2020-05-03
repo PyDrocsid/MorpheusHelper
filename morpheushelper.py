@@ -97,8 +97,8 @@ async def yesno(ctx: Context):
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    await ctx.message.add_reaction(chr(0x1f44d))
-    await ctx.message.add_reaction(chr(0x1f44e))
+    await ctx.message.add_reaction(chr(0x1F44D))
+    await ctx.message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")

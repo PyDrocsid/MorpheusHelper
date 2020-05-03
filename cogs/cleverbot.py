@@ -1,6 +1,7 @@
+import asyncio
+import string
 from typing import Optional, Dict
 
-import asyncio
 from discord import TextChannel, Message, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
@@ -9,7 +10,7 @@ from cleverbot import CleverBot
 from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from translations import translations
-from util import permission_level, send_to_changelog, get_prefix
+from util import permission_level, send_to_changelog
 
 
 class CleverBotCog(Cog, name="CleverBot"):
@@ -18,7 +19,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         self.states: Dict[TextChannel, CleverBot] = {}
 
     async def on_message(self, message: Message) -> bool:
-        if message.guild is None or message.content.startswith(await get_prefix()):
+        if message.guild is None or message.content[:1] not in string.ascii_letters or message.author.bot:
             return True
         if await run_in_thread(db.get, CleverBotChannel, message.channel.id) is None:
             return True
@@ -29,6 +30,8 @@ class CleverBotCog(Cog, name="CleverBot"):
             else:
                 cleverbot = self.states[message.channel] = CleverBot()
             response = await asyncio.get_running_loop().run_in_executor(None, lambda: cleverbot.say(message.content))
+            if not response:
+                response = "..."
             await message.channel.send(response)
 
         return True
