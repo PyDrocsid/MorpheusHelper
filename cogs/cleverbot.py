@@ -1,22 +1,35 @@
-from typing import Optional
+from typing import Optional, Dict
 
+import asyncio
 from discord import TextChannel, Message, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
+from cleverbot import CleverBot
 from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, get_prefix
 
 
 class CleverBotCog(Cog, name="CleverBot"):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.states: Dict[TextChannel, CleverBot] = {}
 
     async def on_message(self, message: Message) -> bool:
-        if message.guild is None:
+        if message.guild is None or message.content.startswith(await get_prefix()):
             return True
+        if await run_in_thread(db.get, CleverBotChannel, message.channel.id) is None:
+            return True
+
+        async with message.channel.typing():
+            if message.channel in self.states:
+                cleverbot: CleverBot = self.states[message.channel]
+            else:
+                cleverbot = self.states[message.channel] = CleverBot()
+            response = await asyncio.get_running_loop().run_in_executor(None, lambda: cleverbot.say(message.content))
+            await message.channel.send(response)
 
         return True
 
@@ -69,6 +82,9 @@ class CleverBotCog(Cog, name="CleverBot"):
 
         if (row := await run_in_thread(db.get, CleverBotChannel, channel.id)) is None:
             raise CommandError(translations.channel_not_whitelisted)
+
+        if channel in self.states:
+            self.states.pop(channel)
 
         await run_in_thread(db.delete, row)
         await ctx.send(translations.channel_removed)
