@@ -195,10 +195,10 @@ whitelisted_channels_header: "Whitelisted channels:"
 no_whitelisted_channels: No whitelisted channels.
 channel_already_whitelisted: Channel is already whitelisted.
 channel_whitelisted: Channel has been whitelisted.
-log_channel_whitelisted: Channel {} has been whitelisted for ReactionPin.
+log_channel_whitelisted_rp: Channel {} has been whitelisted for ReactionPin.
 channel_not_whitelisted: Channel is not whitelisted.
 channel_removed: Channel has been removed from the whitelist.
-log_channel_removed: Channel {} has been removed from the ReactionPin whitelist.
+log_channel_removed_rp: Channel {} has been removed from the ReactionPin whitelist.
 pin_messages_enabled: Pin Messages are enabled.
 pin_messages_disabled: Pin Messages are disabled.
 pin_messages_now_enabled: Pin Messages have been enabled.
@@ -244,3 +244,7 @@ link_created: Link has been created between voice channel `{}` and role `@{}`.
 link_not_found: Link does not exist.
 link_deleted: Link has been deleted.
 log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
+
+# cleverbot
+log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
+log_channel_removed_cb: Channel {} has been removed from the CleverBot whitelist.

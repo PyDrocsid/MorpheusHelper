@@ -23,6 +23,7 @@ from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs.betheprofessional import BeTheProfessionalCog
+from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
@@ -335,5 +336,6 @@ register_cogs(
     MetaQuestionCog,
     InfoCog,
     ReactionRoleCog,
+    CleverBotCog,
 )
 bot.run(os.environ["TOKEN"])

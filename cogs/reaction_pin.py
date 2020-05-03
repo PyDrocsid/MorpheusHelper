@@ -87,7 +87,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help("reactionpin")
+            await ctx.send_help(ReactionPinCog.reactionpin)
 
     @reactionpin.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):
@@ -118,7 +118,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         await run_in_thread(ReactionPinChannel.create, channel.id)
         await ctx.send(translations.channel_whitelisted)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted(channel.mention))
+        await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_rp(channel.mention))
 
     @reactionpin.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
@@ -131,7 +131,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         await run_in_thread(db.delete, row)
         await ctx.send(translations.channel_removed)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_removed(channel.mention))
+        await send_to_changelog(ctx.guild, translations.f_log_channel_removed_rp(channel.mention))
 
     @reactionpin.command(name="pin_message", aliases=["pm"])
     async def change_pin_message(self, ctx: Context, enabled: bool = None):
