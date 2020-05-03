@@ -90,6 +90,17 @@ async def ping(ctx: Context):
         await ctx.send(translations.pong)
 
 
+@bot.command(aliases=["yn"])
+@guild_only()
+async def yesno(ctx: Context):
+    """
+    adds thumbsup and thumbsdown reactions to the message
+    """
+
+    await ctx.message.add_reaction(chr(0x1f44d))
+    await ctx.message.add_reaction(chr(0x1f44e))
+
+
 @bot.command(name="prefix")
 @permission_level(1)
 @guild_only()
