@@ -208,7 +208,7 @@ async def build_info_embed(authorized: bool) -> Embed:
     return embed
 
 
-@bot.command(name="info", aliases=["about"])
+@bot.command(name="info", aliases=["infos", "about"])
 async def info(ctx: Context):
     """
     show information about the bot
@@ -217,7 +217,7 @@ async def info(ctx: Context):
     await ctx.send(embed=await build_info_embed(False))
 
 
-@bot.command(name="admininfo")
+@bot.command(name="admininfo", aliases=["admininfos"])
 @permission_level(1)
 async def admininfo(ctx: Context):
     """
