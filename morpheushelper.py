@@ -65,7 +65,7 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix)
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
 
 
 @bot.event
