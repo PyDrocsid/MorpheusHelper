@@ -27,7 +27,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         self.bot = bot
 
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
-        if str(emoji) != EMOJI:
+        if str(emoji) != EMOJI or member.bot:
             return True
 
         access: bool = await check_access(member) > 0
@@ -51,7 +51,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         return False
 
     async def on_raw_reaction_remove(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
-        if str(emoji) != EMOJI:
+        if str(emoji) != EMOJI or member.bot:
             return True
 
         access: bool = await check_access(member) > 0
