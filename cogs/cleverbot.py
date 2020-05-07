@@ -4,7 +4,6 @@ from asyncio import Lock
 from typing import Optional, Dict
 
 from discord import TextChannel, Message, Guild
-from discord.abc import Messageable
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
@@ -15,17 +14,6 @@ from translations import translations
 from util import permission_level, send_to_changelog
 
 cleverbot_lock = Lock()
-
-
-send_message = Messageable.send
-
-
-async def send_message_wrapper(*args, **kwargs):
-    async with cleverbot_lock:
-        return await send_message(*args, **kwargs)
-
-
-Messageable.send = send_message_wrapper
 
 
 class CleverBotCog(Cog, name="CleverBot"):
@@ -39,20 +27,16 @@ class CleverBotCog(Cog, name="CleverBot"):
         if await run_in_thread(db.get, CleverBotChannel, message.channel.id) is None:
             return True
 
-        async with cleverbot_lock:
-            await message.guild.me.edit(nick="CleverBot")
-            async with message.channel.typing():
-                if message.channel in self.states:
-                    cleverbot: CleverBot = self.states[message.channel]
-                else:
-                    cleverbot = self.states[message.channel] = CleverBot()
-                response = await asyncio.get_running_loop().run_in_executor(
-                    None, lambda: cleverbot.say(message.content)
-                )
-                if not response:
-                    response = "..."
-                await send_message(message.channel, response)
-            await message.guild.me.edit(nick=None)
+        async with message.channel.typing():
+            if message.channel in self.states:
+                cleverbot: CleverBot = self.states[message.channel]
+            else:
+                cleverbot = self.states[message.channel] = CleverBot()
+            response = await asyncio.get_running_loop().run_in_executor(None, lambda: cleverbot.say(message.content))
+            if not response:
+                response = "..."
+
+            await message.channel.send(response)
 
         return True
 
