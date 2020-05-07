@@ -1,4 +1,5 @@
 import os
+import re
 import string
 from typing import Optional, Iterable
 
@@ -16,23 +17,25 @@ from discord import (
     Member,
     VoiceState,
     TextChannel,
-    NotFound,
 )
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs.betheprofessional import BeTheProfessionalCog
+from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
 from cogs.reaction_pin import ReactionPinCog
+from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
+from translations import translations
 from util import (
     permission_level,
     make_error,
@@ -62,14 +65,14 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix)
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
 
 
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
-    await bot.change_presence(status=Status.online, activity=Game(name="github.com/Defelo/MorpheusHelper"))
+    await bot.change_presence(status=Status.online, activity=Game(name=translations.profile_status))
 
     await call_event_handlers("ready")
 
@@ -81,10 +84,21 @@ async def ping(ctx: Context):
     """
 
     latency: Optional[float] = measure_latency()
-    out = "Pong!"
     if latency is not None:
-        out += f" ({latency * 1000:.0f} ms)"
-    await ctx.send(out)
+        await ctx.send(translations.f_pong_latency(latency * 1000))
+    else:
+        await ctx.send(translations.pong)
+
+
+@bot.command(aliases=["yn"])
+@guild_only()
+async def yesno(ctx: Context):
+    """
+    adds thumbsup and thumbsdown reactions to the message
+    """
+
+    await ctx.message.add_reaction(chr(0x1F44D))
+    await ctx.message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
@@ -96,15 +110,15 @@ async def change_prefix(ctx: Context, new_prefix: str):
     """
 
     if not 0 < len(new_prefix) <= 16:
-        raise CommandError("Length of prefix must be between 1 and 16.")
+        raise CommandError(translations.invalid_prefix_length)
 
     valid_chars = set(string.ascii_letters + string.digits + string.punctuation)
     if any(c not in valid_chars for c in new_prefix):
-        raise CommandError("Prefix contains invalid characters.")
+        raise CommandError(translations.prefix_invalid_chars)
 
     await set_prefix(new_prefix)
-    await ctx.send("Prefix has been updated.")
-    await send_to_changelog(ctx.guild, f"Bot prefix has been changed to `{new_prefix}`")
+    await ctx.send(translations.prefix_updated)
+    await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))
 
 
 @bot.group()
@@ -116,7 +130,7 @@ async def auth(ctx: Context):
     """
 
     if ctx.invoked_subcommand is None:
-        await ctx.send_help("auth")
+        await ctx.send_help(auth)
 
 
 @auth.command(name="list", aliases=["l", "?"])
@@ -132,9 +146,9 @@ async def auth_list(ctx: Context):
         else:
             await run_in_thread(db.delete, auth_role)
     if roles:
-        await ctx.send("The following roles are authorized to control this bot:\n" + "\n".join(roles))
+        await ctx.send(translations.authorized_roles_header + "\n" + "\n".join(roles))
     else:
-        await ctx.send("Except administrators nobody can control this bot.")
+        await ctx.send(translations.no_authorized_roles)
 
 
 @auth.command(name="add", aliases=["a", "+"])
@@ -145,11 +159,11 @@ async def auth_add(ctx: Context, *, role: Role):
 
     authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
     if authorization is not None:
-        raise CommandError(f"Role `@{role}` is already authorized.")
+        raise CommandError(translations.f_already_authorized(role))
 
     await run_in_thread(AuthorizedRole.create, role.id)
-    await ctx.send(f"Role `@{role}` has been authorized to control this bot.")
-    await send_to_changelog(ctx.guild, f"Role `@{role}` has been authorized to control this bot.")
+    await ctx.send(translations.f_role_authorized(role))
+    await send_to_changelog(ctx.guild, translations.f_log_role_authorized(role))
 
 
 @auth.command(name="remove", aliases=["del", "r", "d", "-"])
@@ -160,51 +174,41 @@ async def auth_del(ctx: Context, *, role: Role):
 
     authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
     if authorization is None:
-        raise CommandError(f"Role `@{role}` is not authorized.")
+        raise CommandError(translations.f_not_authorized(role))
 
     await run_in_thread(db.delete, authorization)
-    await ctx.send(f"Role `@{role}` has been unauthorized to control this bot.")
-    await send_to_changelog(ctx.guild, f"Role `@{role}` has been unauthorized to control this bot.")
+    await ctx.send(translations.f_role_unauthorized(role))
+    await send_to_changelog(ctx.guild, translations.f_log_role_unauthorized(role))
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(
-        title="MorpheusHelper",
-        color=0x007700,
-        description="Helper Bot for the Discord Server of The Morpheus Tutorials",
-    )
+    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
     embed.set_thumbnail(
         url="https://cdn.discordapp.com/avatars/686299664726622258/cb99c816286bdd1d988ec16d8ae85e15.png"
     )
     prefix = await get_prefix()
-    features = [
-        "Role system for topics you are interested in",
-        "Pin your own messages by reacting with :pushpin: in specific channels",
-        "Automatic role assignment upon entering a voice channel",
-        "Discord server invite whitelist",
-        "Meta question information command",
-    ]
+    features = translations.features
     if authorized:
-        features.append("Logging of message edit and delete events")
-        features.append("Send/Edit/Delete text and embed messages as the bot")
-        features.append("Media only channels")
+        features += translations.admin_features
     embed.add_field(
-        name="Features", value="\n".join(f":small_orange_diamond: {feature}" for feature in features), inline=False
-    )
-    embed.add_field(name="Author", value="<@370876111992913922>", inline=True)
-    embed.add_field(name="Contributors", value="<@212866839083089921>, <@330148908531580928>", inline=True)
-    embed.add_field(name="GitHub", value="https://github.com/Defelo/MorpheusHelper", inline=False)
-    embed.add_field(name="Prefix", value=f"`{prefix}` or {bot.user.mention}", inline=True)
-    embed.add_field(name="Help Command", value=f"`{prefix}help`", inline=True)
-    embed.add_field(
-        name="Bug Reports / Feature Requests",
-        value="Please create an issue in the GitHub repository or contact me (<@370876111992913922>) via Discord.",
+        name=translations.features_title,
+        value="\n".join(f":small_orange_diamond: {feature}" for feature in features),
         inline=False,
+    )
+    embed.add_field(name=translations.author_title, value="<@370876111992913922>", inline=True)
+    embed.add_field(
+        name=translations.contributors_title, value="<@212866839083089921>, <@330148908531580928>", inline=True
+    )
+    embed.add_field(name=translations.github_title, value="https://github.com/Defelo/MorpheusHelper", inline=False)
+    embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
+    embed.add_field(name=translations.help_command_title, value=f"`{prefix}help`", inline=True)
+    embed.add_field(
+        name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
     )
     return embed
 
 
-@bot.command(name="info", aliases=["about"])
+@bot.command(name="info", aliases=["infos", "about"])
 async def info(ctx: Context):
     """
     show information about the bot
@@ -213,7 +217,7 @@ async def info(ctx: Context):
     await ctx.send(embed=await build_info_embed(False))
 
 
-@bot.command(name="admininfo")
+@bot.command(name="admininfo", aliases=["admininfos"])
 @permission_level(1)
 async def admininfo(ctx: Context):
     """
@@ -225,7 +229,10 @@ async def admininfo(ctx: Context):
 
 @bot.event
 async def on_error(*_, **__):
-    sentry_sdk.capture_exception()
+    if sentry_dsn:
+        sentry_sdk.capture_exception()
+    else:
+        raise
 
 
 @bot.event
@@ -240,7 +247,7 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
     async def prepare():
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
-            raise NotFound
+            return
         return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
@@ -251,7 +258,7 @@ async def on_raw_reaction_remove(event: RawReactionActionEvent):
     async def prepare():
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
-            raise NotFound
+            return
         return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
@@ -262,8 +269,8 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
     async def prepare():
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
-            raise NotFound
-        return await channel.fetch_message(event.message_id)
+            return
+        return [await channel.fetch_message(event.message_id)]
 
     await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
 
@@ -281,7 +288,7 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
     async def prepare():
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
-            raise NotFound
+            return
         return channel, await channel.fetch_message(event.message_id)
 
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
@@ -314,12 +321,16 @@ async def on_message(message: Message):
     if not await call_event_handlers("message", message, identifier=message.id):
         return
 
-    if message.content.strip() in (f"<@!{bot.user.id}>", f"<@{bot.user.id}>"):
-        if message.guild is None:
-            await message.channel.send("Ping!")
-        else:
+    match = re.match(r"^<@[&!]?(\d+)>$", message.content.strip())
+    if match:
+        mentions = [bot.user.id]
+        if message.guild is not None:
+            for role in message.guild.me.roles:  # type: Role
+                if role.managed:
+                    mentions.append(role.id)
+        if int(match.group(1)) in mentions:
             await message.channel.send(embed=await build_info_embed(False))
-        return
+            return
 
     await bot.process_commands(message)
 
@@ -335,5 +346,7 @@ register_cogs(
     InvitesCog,
     MetaQuestionCog,
     InfoCog,
+    ReactionRoleCog,
+    CleverBotCog,
 )
 bot.run(os.environ["TOKEN"])

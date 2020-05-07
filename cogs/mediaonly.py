@@ -9,6 +9,7 @@ from requests import RequestException
 
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
+from translations import translations
 from util import permission_level, check_access, send_to_changelog
 
 
@@ -17,7 +18,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         self.bot = bot
 
     async def on_message(self, message: Message) -> bool:
-        if message.author.bot or await check_access(message.author):
+        if message.guild is None or message.author.bot or await check_access(message.author):
             return True
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return True
@@ -37,15 +38,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         channel: TextChannel = message.channel
         await message.delete()
-        await channel.send(
-            f"{message.author.mention} Only pictures are allowed in this channel. "
-            "For conversations please use the channels designated for this purpose.",
-            delete_after=30,
-        )
+        await channel.send(translations.f_deleted_nomedia(message.author.mention), delete_after=30)
         await send_to_changelog(
-            message.guild,
-            f"Deleted a message of {message.author.mention} in media only channel {message.channel.mention} "
-            f"because it did not contain an image.",
+            message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
         )
 
         return False
@@ -76,9 +71,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             else:
                 await run_in_thread(db.delete, channel)
         if out:
-            await ctx.send("Media only channels:\n" + "\n".join(out))
+            await ctx.send(translations.media_only_channels_header + "\n" + "\n".join(out))
         else:
-            await ctx.send("No media only channels.")
+            await ctx.send(translations.no_media_only_channels)
 
     @mediaonly.command(name="add", aliases=["a", "+"])
     async def add_channel(self, ctx: Context, channel: TextChannel):
@@ -87,11 +82,13 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         """
 
         if await run_in_thread(db.get, MediaOnlyChannel, channel.id) is not None:
-            raise CommandError("Channel is already a media only channel.")
+            raise CommandError(translations.channel_already_media_only)
+        if not channel.permissions_for(channel.guild.me).manage_messages:
+            raise CommandError(translations.media_only_not_changed_no_permissions)
 
         await run_in_thread(MediaOnlyChannel.create, channel.id)
-        await ctx.send("Channel is now a media only channel.")
-        await send_to_changelog(ctx.guild, f"Channel {channel.mention} is now a media only channel.")
+        await ctx.send(translations.channel_now_media_only)
+        await send_to_changelog(ctx.guild, translations.f_log_channel_now_media_only(channel.mention))
 
     @mediaonly.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
@@ -100,8 +97,8 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         """
 
         if (row := await run_in_thread(db.get, MediaOnlyChannel, channel.id)) is None:
-            raise CommandError("Channel is not a media only channel.")
+            raise CommandError(translations.channel_not_media_only)
 
         await run_in_thread(db.delete, row)
-        await ctx.send("Channel is not a media only channel anymore.")
-        await send_to_changelog(ctx.guild, f"Channel {channel.mention} is not a media only channel anymore.")
+        await ctx.send(translations.channel_not_media_only_anymore)
+        await send_to_changelog(ctx.guild, translations.f_log_channel_not_media_only_anymore(channel.mention))
