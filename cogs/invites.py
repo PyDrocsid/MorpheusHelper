@@ -2,7 +2,7 @@ import re
 from typing import Union, Optional
 
 import requests
-from discord import Invite, Member, Guild, Embed, Message, NotFound
+from discord import Invite, Member, Guild, Embed, Message, NotFound, Forbidden
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -46,6 +46,9 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             try:
                 invite = await self.bot.fetch_invite(url)
             except NotFound:
+                continue
+            except Forbidden:
+                forbidden.append(f"`{url}` (banned from this server)")
                 continue
             if invite.guild is None or invite.guild == message.guild:
                 continue
