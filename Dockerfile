@@ -11,6 +11,7 @@ ADD Pipfile.lock /app/
 
 RUN pipenv sync
 
+ADD cleverbot.py /app/
 ADD translations.py /app/
 ADD multilock.py /app/
 ADD database.py /app/
