@@ -12,3 +12,4 @@ services:
       DB_DATABASE: 'morpheushelper'
       DB_USER: 'morpheushelper'
       DB_PASSWORD: 'morpheushelper'
+      SENTRY_DSN: ''

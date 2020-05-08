@@ -1,50 +1,50 @@
+from typing import Optional
+
 from discord import Member, VoiceState, Guild, VoiceChannel, Role
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.role_voice_link import RoleVoiceLink
-from util import permission_level
+from translations import translations
+from util import permission_level, send_to_changelog
 
 
 class VoiceChannelCog(Cog, name="Voice Channels"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_ready(self):
-        for guild in self.bot.guilds:  # type: Guild
-            print(f"Updating roles for {guild}")
-            linked_roles = {}
-            for link in await run_in_thread(db.query, RoleVoiceLink, server=guild.id):
-                role = guild.get_role(link.role)
-                voice = guild.get_channel(link.voice_channel)
-                if role is not None and voice is not None:
-                    linked_roles.setdefault(role, set()).add(voice)
+    async def on_ready(self) -> bool:
+        guild: Guild = self.bot.guilds[0]
+        print(translations.updating_voice_roles)
+        linked_roles = {}
+        for link in await run_in_thread(db.query, RoleVoiceLink):
+            role = guild.get_role(link.role)
+            voice = guild.get_channel(link.voice_channel)
+            if role is not None and voice is not None:
+                linked_roles.setdefault(role, set()).add(voice)
 
-            for member in guild.members:
-                for role, channels in linked_roles.items():
-                    if member.voice is not None and member.voice.channel in channels:
-                        if role not in member.roles:
-                            await member.add_roles(role)
-                    else:
-                        if role in member.roles:
-                            await member.remove_roles(role)
-        print("Initialization complete")
+        for member in guild.members:
+            for role, channels in linked_roles.items():
+                if member.voice is not None and member.voice.channel in channels:
+                    if role not in member.roles:
+                        await member.add_roles(role)
+                else:
+                    if role in member.roles:
+                        await member.remove_roles(role)
+        print(translations.voice_init_done)
+        return True
 
-    @Cog.listener()
-    async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState):
+    async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState) -> bool:
         if before.channel == after.channel:
-            return
+            return True
 
         guild: Guild = member.guild
         if before.channel is not None:
             await member.remove_roles(
                 *(
                     role
-                    for link in await run_in_thread(
-                        db.query, RoleVoiceLink, server=guild.id, voice_channel=before.channel.id
-                    )
+                    for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=before.channel.id)
                     if (role := guild.get_role(link.role)) is not None
                 )
             )
@@ -52,14 +52,13 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.add_roles(
                 *(
                     role
-                    for link in await run_in_thread(
-                        db.query, RoleVoiceLink, server=guild.id, voice_channel=after.channel.id
-                    )
+                    for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=after.channel.id)
                     if (role := guild.get_role(link.role)) is not None
                 )
             )
+        return True
 
-    @commands.group()
+    @commands.group(aliases=["vc"])
     @permission_level(1)
     @guild_only()
     async def voice(self, ctx: Context):
@@ -68,65 +67,59 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help("voice")
+            await ctx.send_help(VoiceChannelCog.voice)
 
-    @voice.command(name="list")
+    @voice.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context):
         """
         list all links between voice channels and roles
         """
 
         out = []
-        for link in await run_in_thread(db.query, RoleVoiceLink, server=ctx.guild.id):
-            if (role := ctx.guild.get_role(link.role)) is None:
-                continue
-            if (voice := ctx.guild.get_channel(link.voice_channel)) is None:
-                continue
+        guild: Guild = ctx.guild
+        for link in await run_in_thread(db.all, RoleVoiceLink):
+            role: Optional[Role] = guild.get_role(link.role)
+            voice: Optional[VoiceChannel] = guild.get_channel(link.voice_channel)
+            if role is None or voice is None:
+                await run_in_thread(db.delete, link)
+            else:
+                out.append(f"`{voice}` (`{voice.id}`) -> `@{role}` (`{role.id}`)")
 
-            out.append(f"`{voice}` (`{voice.id}`) -> `@{role}` (`{role.id}`)")
+        await ctx.send("\n".join(out) or translations.no_links_created)
 
-        await ctx.send("\n".join(out) or "No links have been created yet.")
-
-    @voice.command(name="link")
+    @voice.command(name="link", aliases=["add", "a", "+"])
     async def create_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         """
         link a voice channel with a role
         """
 
-        if (
-            await run_in_thread(
-                db.first, RoleVoiceLink, server=ctx.guild.id, role=role.id, voice_channel=voice_channel.id
-            )
-            is not None
-        ):
-            raise CommandError("Link already exists.")
+        if await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=voice_channel.id) is not None:
+            raise CommandError(translations.link_already_exists)
 
         if role > ctx.me.top_role:
-            raise CommandError(f"Link could not be created because `@{role}` is higher than `@{ctx.me.top_role}`.")
+            raise CommandError(translations.f_link_not_created_too_high(role, ctx.me.top_role))
         if role.managed:
-            raise CommandError(f"Link could not be created because `@{role}` cannot be assigned manually.")
+            raise CommandError(translations.f_link_not_created_managed_role(role))
 
-        await run_in_thread(RoleVoiceLink.create, ctx.guild.id, role.id, voice_channel.id)
+        await run_in_thread(RoleVoiceLink.create, role.id, voice_channel.id)
         for member in voice_channel.members:
             await member.add_roles(role)
 
-        await ctx.send(f"Link has been created between voice channel `{voice_channel}` and role `@{role}`.")
+        await ctx.send(translations.f_link_created(voice_channel, role))
+        await send_to_changelog(ctx.guild, translations.f_link_created(voice_channel, role))
 
-    @voice.command(name="unlink")
+    @voice.command(name="unlink", aliases=["remove", "del", "u", "r", "d", "-"])
     async def remove_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         """
         delete the link between a voice channel and a role
         """
 
-        if (
-            link := await run_in_thread(
-                db.first, RoleVoiceLink, server=ctx.guild.id, role=role.id, voice_channel=voice_channel.id
-            )
-        ) is None:
-            raise CommandError("Link does not exist.")
+        if (link := await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=voice_channel.id)) is None:
+            raise CommandError(translations.link_not_found)
 
         await run_in_thread(db.delete, link)
         for member in voice_channel.members:
             await member.remove_roles(role)
 
-        await ctx.send(f"Link has been deleted.")
+        await ctx.send(translations.link_deleted)
+        await send_to_changelog(ctx.guild, translations.f_log_link_deleted(voice_channel, role))
