@@ -11,7 +11,9 @@ from util import permission_level, calculate_edit_distance
 
 
 def split_topics(topics: str) -> List[str]:
-    return [topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic]
+    return [
+        topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic
+    ]
 
 
 async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
@@ -28,10 +30,16 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
                     )
         else:
             if all_topics:
-                best_match = min(
-                    (r.name for r in all_topics), key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
+                if topic.lower() in {"windoof", "windowsphone"}:
+                    best_match = "Trash"
+                else:
+                    best_match = min(
+                        (r.name for r in all_topics),
+                        key=lambda a: calculate_edit_distance(a.lower(), topic.lower()),
+                    )
+                raise CommandError(
+                    f"Topic `{topic}` not found. Did you mean `{best_match}`?"
                 )
-                raise CommandError(f"Topic `{topic}` not found. Did you mean `{best_match}`?")
             else:
                 raise CommandError(f"Topic `{topic}` not found.")
         roles.append(role)
@@ -74,7 +82,11 @@ class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
         """
 
         member: Member = ctx.author
-        roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
+        roles: List[Role] = [
+            r
+            for r in await parse_topics(ctx.guild, topics, ctx.author)
+            if r not in member.roles
+        ]
 
         await member.add_roles(*roles)
         if len(roles) > 1:
@@ -120,7 +132,9 @@ class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
             await ctx.send_help(self.register_role)
             return
 
-        valid_chars = set(string.ascii_letters + string.digits + " !\"#$%&'()*+-./:<=>?[\\]^_`{|}~")
+        valid_chars = set(
+            string.ascii_letters + string.digits + " !\"#$%&'()*+-./:<=>?[\\]^_`{|}~"
+        )
         to_be_created: List[str] = []
         roles: List[Role] = []
         for topic in names:
@@ -143,7 +157,9 @@ class BeTheProfessionalCog(Cog, name="BeTheProfessional"):
                     f"Topic could not be registered because `@{role}` is higher than `@{ctx.me.top_role}`."
                 )
             if role.managed:
-                raise CommandError(f"Topic could not be registered because `@{role}` cannot be assigned manually.")
+                raise CommandError(
+                    f"Topic could not be registered because `@{role}` cannot be assigned manually."
+                )
             roles.append(role)
 
         for name in to_be_created:
