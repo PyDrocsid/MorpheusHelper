@@ -22,7 +22,9 @@ class CleverBotCog(Cog, name="CleverBot"):
         self.states: Dict[TextChannel, CleverBot] = {}
 
     async def on_message(self, message: Message) -> bool:
-        if message.guild is None or message.content[:1] not in string.ascii_letters or message.author.bot:
+        if message.guild is None or message.author.bot:
+            return True
+        if message.content[:1] not in string.ascii_letters + string.digits:
             return True
         if await run_in_thread(db.get, CleverBotChannel, message.channel.id) is None:
             return True
