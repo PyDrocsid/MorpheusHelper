@@ -248,3 +248,4 @@ log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
 log_channel_removed_cb: Channel {} has been removed from the CleverBot whitelist.
+session_reset: Session for {} was successfully reset.
