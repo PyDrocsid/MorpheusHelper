@@ -14,12 +14,15 @@ class InfoCog(Cog, name="Server Information"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.command(name="server")
+    @commands.group(name="server")
     @guild_only()
     async def server(self, ctx: Context):
         """
         displays information about this discord server
         """
+
+        if ctx.invoked_subcommand is not None:
+            return
 
         guild: Guild = ctx.guild
         embed = Embed(title=guild.name, description=translations.info_description, color=0x005180)
@@ -61,3 +64,17 @@ class InfoCog(Cog, name="Server Information"):
         )
 
         await ctx.send(embed=embed)
+
+    @server.command(name="bots")
+    async def list_bots(self, ctx: Context):
+        """
+        list all bots on the server
+        """
+
+        guild: Guild = ctx.guild
+        bots = [(str(m), m.status != Status.offline) for m in guild.members if m.bot]
+        bots.sort(key=lambda m: (-m[1], m[0]))
+        out = []
+        for (bot, online) in bots:
+            out.append(f"- `@{bot}` ({['offline', 'online'][online]})")
+        await ctx.send("\n".join(out))
