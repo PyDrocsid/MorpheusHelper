@@ -20,8 +20,10 @@ class CleverBot:
         self.ns = 1
         self.session.get("https://www.cleverbot.com/")
         self.set_cookie("_cbsid", "-1")
+        self.cnt = 0
 
     def say(self, msg):
+        self.cnt += 1
         msg = "".join([[c, " "][c in string.whitespace] for c in msg if 32 <= ord(c) < 256])
         if self.ns == 1:
             d = urlencode(

@@ -63,6 +63,8 @@ class CleverBotCog(Cog, name="CleverBot"):
             text_channel: Optional[TextChannel] = guild.get_channel(channel.channel)
             if text_channel is not None:
                 out.append(f"- {text_channel.mention}")
+                if text_channel in self.states:
+                    out[-1] += f" ({self.states[text_channel].cnt})"
         if out:
             await ctx.send(translations.whitelisted_channels_header + "\n" + "\n".join(out))
         else:
@@ -81,7 +83,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await ctx.send(translations.channel_whitelisted)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 
-    @cleverbot.command(name="remove", aliases=["del", "r", "d", "-"])
+    @cleverbot.command(name="remove", aliases=["del", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist
@@ -96,3 +98,13 @@ class CleverBotCog(Cog, name="CleverBot"):
         await run_in_thread(db.delete, row)
         await ctx.send(translations.channel_removed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
+
+    @cleverbot.command(name="reset")
+    async def reset_session(self, ctx: Context, channel: TextChannel):
+        """
+        reset cleverbot session for a channel
+        """
+
+        if channel in self.states:
+            self.states.pop(channel)
+        await ctx.send(translations.f_session_reset(channel.mention))
