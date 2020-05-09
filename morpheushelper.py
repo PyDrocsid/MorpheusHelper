@@ -7,8 +7,6 @@ import sentry_sdk
 from discord import (
     Message,
     Role,
-    Status,
-    Game,
     Embed,
     RawReactionActionEvent,
     RawReactionClearEvent,
@@ -71,8 +69,6 @@ bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=transl
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-
-    await bot.change_presence(status=Status.online, activity=Game(name=translations.profile_status))
 
     await call_event_handlers("ready")
 

@@ -1,5 +1,7 @@
 # profile
-profile_status: github.com/Defelo/MorpheusHelper
+profile_status:
+  - github.com/Defelo/MorpheusHelper
+  - Developed by Defelo#2022
 
 # ping
 pong: Pong!
