@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 from discord import Member, VoiceState, Guild, VoiceChannel, Role
@@ -5,6 +6,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
+from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from translations import translations
 from util import permission_level, send_to_changelog
@@ -35,41 +37,140 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         print(translations.voice_init_done)
         return True
 
+    async def member_join(self, member: Member, channel: VoiceChannel):
+        await member.add_roles(
+            *(
+                role
+                for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=channel.id)
+                if (role := member.guild.get_role(link.role)) is not None
+            )
+        )
+
+    async def member_leave(self, member: Member, channel: VoiceChannel):
+        await member.remove_roles(
+            *(
+                role
+                for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=channel.id)
+                if (role := member.guild.get_role(link.role)) is not None
+            )
+        )
+
     async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState) -> bool:
         if before.channel == after.channel:
             return True
 
-        guild: Guild = member.guild
-        if before.channel is not None:
-            await member.remove_roles(
-                *(
-                    role
-                    for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=before.channel.id)
-                    if (role := guild.get_role(link.role)) is not None
-                )
-            )
-        if after.channel is not None:
-            await member.add_roles(
-                *(
-                    role
-                    for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=after.channel.id)
-                    if (role := guild.get_role(link.role)) is not None
-                )
-            )
+        if before.channel is None:
+            await self.member_join(member, after.channel)
+        if after.channel is None:
+            await self.member_leave(member, before.channel)
         return True
+
+    async def update_dynamic_voice_group(self, group: DynamicVoiceGroup):
+        channels = []
+        for dyn_channel in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
+            channel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
+            if channel is not None:
+                channels.append(channel)
+            else:
+                await run_in_thread(db.delete, dyn_channel)
+        if not channels:
+            await db.delete(group)
+            return
+
+        channels.sort(key=lambda c: c.position)
+        for i, channel in enumerate(channels):
+            await channel.edit(name=f"{group.name} {i + 1}")
 
     @commands.group(aliases=["vc"])
     @permission_level(1)
     @guild_only()
     async def voice(self, ctx: Context):
         """
-        manage links between voice channels and roles
+        manage voice channels
         """
 
         if ctx.invoked_subcommand is None:
             await ctx.send_help(VoiceChannelCog.voice)
 
-    @voice.command(name="list", aliases=["l", "?"])
+    @voice.group(name="dynamic", aliases=["dyn", "d"])
+    async def dynamic(self, ctx: Context):
+        """
+        manage dynamic voice channels
+        """
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(VoiceChannelCog.dynamic)
+
+    @dynamic.command(name="list", aliases=["l", "?"])
+    async def list_dyn(self, ctx: Context):
+        """
+        list dynamic voice channels
+        """
+
+        out = []
+        for group in await run_in_thread(db.all, DynamicVoiceGroup):
+            cnt = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id))
+            if not cnt:
+                await run_in_thread(db.delete, group)
+                continue
+
+            out.append("- " + translations.f_group_list_entry(group.name, cnt - 1))
+
+        if out:
+            await ctx.send("\n".join(out))
+        else:
+            await ctx.send(translations.no_dyn_group)
+
+    @dynamic.command(name="add", aliases=["a", "+"])
+    async def add_dyn(self, ctx: Context, *, voice_channel: VoiceChannel):
+        """
+        create a new dynamic voice channel group
+        """
+
+        if await run_in_thread(db.get, DynamicVoiceChannel, voice_channel.id) is not None:
+            raise CommandError(translations.dyn_group_already_exists)
+
+        name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1)
+        group: DynamicVoiceGroup = await run_in_thread(DynamicVoiceGroup.create, name)
+        await run_in_thread(DynamicVoiceChannel.create, voice_channel.id, group.id)
+        await self.update_dynamic_voice_group(group)
+        await ctx.send(translations.dyn_group_created)
+        await send_to_changelog(ctx.guild, translations.f_log_dyn_group_created(name))
+
+    @dynamic.command(name="del", aliases=["remove", "r", "d", "-"])
+    async def remove_dyn(self, ctx: Context, *, voice_channel: VoiceChannel):
+        """
+        remove a dynamic voice channel group
+        """
+
+        dyn_channel: Optional[DynamicVoiceChannel] = await run_in_thread(db.get, DynamicVoiceChannel, voice_channel.id)
+        if dyn_channel is None:
+            raise CommandError(translations.dyn_group_not_found)
+        group: DynamicVoiceGroup = await run_in_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+        if group is None:
+            raise CommandError(translations.dyn_group_not_found)
+
+        await run_in_thread(db.delete, group)
+        for dync in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
+            channel: Optional[VoiceChannel] = self.bot.get_channel(dync.channel_id)
+            await run_in_thread(db.delete, dync)
+            if channel is not None and channel != voice_channel:
+                await channel.delete()
+
+        await voice_channel.edit(name=group.name)
+        await ctx.send(translations.dyn_group_removed)
+        await send_to_changelog(ctx.guild, translations.f_log_dyn_group_removed(group.name))
+
+    @voice.group(name="link", aliases=["l"])
+    async def link(self, ctx: Context):
+        """
+        manage links between voice channels and roles
+        """
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(VoiceChannelCog.link)
+
+    @link.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context):
         """
         list all links between voice channels and roles
@@ -87,7 +188,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         await ctx.send("\n".join(out) or translations.no_links_created)
 
-    @voice.command(name="link", aliases=["add", "a", "+"])
+    @link.command(name="add", aliases=["a", "+"])
     async def create_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         """
         link a voice channel with a role
@@ -108,7 +209,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await ctx.send(translations.f_link_created(voice_channel, role))
         await send_to_changelog(ctx.guild, translations.f_link_created(voice_channel, role))
 
-    @voice.command(name="unlink", aliases=["remove", "del", "u", "r", "d", "-"])
+    @link.command(name="del", aliases=["remove", "r", "d", "-"])
     async def remove_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
         """
         delete the link between a voice channel and a role

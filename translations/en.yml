@@ -247,6 +247,15 @@ link_not_found: Link does not exist.
 link_deleted: Link has been deleted.
 log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
 
+dyn_group_already_exists: This channel is already part of an existing voice channel group.
+dyn_group_created: Dynamic voice channel group has been created successfully.
+log_dyn_group_created: Dynamic voice channel group `{}` has been created.
+dyn_group_not_found: This channel is not part of any voice channel group.
+group_list_entry: "{} ({} active channels)"
+no_dyn_group: No dynamic voice channel groups have been created yet.
+dyn_group_removed: Dynamic voice channel group has been removed successfully.
+log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
+
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
 log_channel_removed_cb: Channel {} has been removed from the CleverBot whitelist.
