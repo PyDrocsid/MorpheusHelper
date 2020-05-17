@@ -262,3 +262,4 @@ log_news_unauthorized: User {} has been unauthorized to send news in {}.
 no_news_authorizations: No user has been authorized to send news yet.
 news_not_added_no_permissions: >
   User could not be authorized because I don't have `send_messages` permission in this channel.
+news_you_are_not_authorized: You are not authorized to send news in this channel.

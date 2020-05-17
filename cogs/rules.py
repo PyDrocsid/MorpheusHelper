@@ -1,39 +1,18 @@
-import io
 import re
 from http.client import HTTPException
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union
 
-from discord import TextChannel, Message, File, Forbidden, Permissions, Embed, Color, Member
+from discord import TextChannel, Message, Forbidden, Permissions, Color
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from translations import translations
-from util import permission_level
+from util import permission_level, read_normal_message, read_embed
 
 
 class RulesCog(Cog, name="Rule Commands"):
     def __init__(self, bot: Bot):
         self.bot = bot
-
-    async def read_normal_message(self, channel: TextChannel, author: Member) -> Tuple[str, List[File]]:
-        msg: Message = await self.bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
-        files = []
-        for attachment in msg.attachments:
-            file = io.BytesIO()
-            await attachment.save(file)
-            files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
-        return msg.content, files
-
-    async def read_embed(self, channel: TextChannel, author: Member) -> Embed:
-        await channel.send(translations.send_embed_title)
-        title: str = (
-            await self.bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
-        ).content
-        await channel.send(translations.send_embed_content)
-        content: str = (
-            await self.bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
-        ).content
-        return Embed(title=title, description=content)
 
     @commands.group(name="send")
     @permission_level(1)
@@ -56,7 +35,7 @@ class RulesCog(Cog, name="Rule Commands"):
             raise CommandError(translations.could_not_send_message)
 
         await ctx.send(translations.send_message)
-        content, files = await self.read_normal_message(ctx.channel, ctx.author)
+        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
         try:
             await channel.send(content=content, files=files)
         except (HTTPException, Forbidden):
@@ -82,7 +61,7 @@ class RulesCog(Cog, name="Rule Commands"):
         elif not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
-        embed = await self.read_embed(ctx.channel, ctx.author)
+        embed = await read_embed(self.bot, ctx.channel, ctx.author)
         if color is not None:
             embed.colour = color
         try:
@@ -113,7 +92,7 @@ class RulesCog(Cog, name="Rule Commands"):
             raise CommandError(translations.could_not_edit)
 
         await ctx.send(translations.send_new_message)
-        content, files = await self.read_normal_message(ctx.channel, ctx.author)
+        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
         await message.edit(content=content, files=files, embed=None)
         await ctx.send(translations.msg_edited)
 
@@ -132,7 +111,7 @@ class RulesCog(Cog, name="Rule Commands"):
             else:
                 color = int(color, 16)
 
-        embed = await self.read_embed(ctx.channel, ctx.author)
+        embed = await read_embed(self.bot, ctx.channel, ctx.author)
         if color is not None:
             embed.colour = color
         await message.edit(content=None, files=[], embed=embed)

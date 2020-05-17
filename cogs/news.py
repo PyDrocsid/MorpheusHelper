@@ -1,13 +1,14 @@
+import io
 from typing import Optional
 
-from discord import Member, TextChannel, Role, Guild
+from discord import Member, TextChannel, Role, Guild, File, HTTPException, Forbidden
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.news_authorization import NewsAuthorization
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, read_normal_message
 
 
 class NewsCog(Cog, name="News"):
@@ -100,4 +101,33 @@ class NewsCog(Cog, name="News"):
         send a news message
         """
 
-        pass
+        authorization: Optional[NewsAuthorization] = await run_in_thread(
+            db.first, NewsAuthorization, user_id=ctx.author.id, channel_id=channel.id
+        )
+        if authorization is None:
+            raise CommandError(translations.news_you_are_not_authorized)
+
+        if message is None:
+            message = ""
+
+        if not message and not ctx.message.attachments:
+            await ctx.send(translations.send_message)
+            message, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        else:
+            files = []
+            for attachment in ctx.message.attachments:
+                file = io.BytesIO()
+                await attachment.save(file)
+                files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
+
+        if authorization.notification_role_id is not None:
+            role: Optional[Role] = ctx.guild.get_role(authorization.notification_role_id)
+            if role is not None:
+                message = role.mention + " " + message
+
+        try:
+            await channel.send(content=message, files=files)
+        except (HTTPException, Forbidden):
+            raise CommandError(translations.msg_could_not_be_sent)
+        else:
+            await ctx.send(translations.msg_sent)
