@@ -40,6 +40,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             return True
 
         forbidden = []
+        legal_invite = False
         for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content):
             if (url := get_discord_invite(url)) is None:
                 continue
@@ -50,10 +51,15 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             except Forbidden:
                 forbidden.append(f"`{url}` (banned from this server)")
                 continue
-            if invite.guild is None or invite.guild == message.guild:
+            if invite.guild is None:
+                continue
+            if invite.guild == message.guild:
+                legal_invite = True
                 continue
             if await run_in_thread(db.get, AllowedInvite, invite.guild.id) is None:
                 forbidden.append(f"`{invite.code}` ({invite.guild.name})")
+            else:
+                legal_invite = True
         if forbidden:
             can_delete = message.channel.permissions_for(message.guild.me).manage_messages
             if can_delete:
@@ -77,6 +83,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     ),
                 )
             return False
+        elif legal_invite:
+            await message.add_reaction(chr(9989))
         return True
 
     async def on_message(self, message: Message):
