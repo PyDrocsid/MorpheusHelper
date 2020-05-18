@@ -1,5 +1,7 @@
 # profile
-profile_status: github.com/Defelo/MorpheusHelper
+profile_status:
+  - github.com/Defelo/MorpheusHelper
+  - Developed by Defelo#2022
 
 # ping
 pong: Pong!
@@ -249,3 +251,15 @@ log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
 log_channel_removed_cb: Channel {} has been removed from the CleverBot whitelist.
 session_reset: Session for {} was successfully reset.
+
+# news
+news_already_authorized: User is already authorized to send news in this channel.
+news_authorized: User has been authorized to send news in this channel.
+log_news_authorized: User {} has been authorized to send news in {}.
+news_not_authorized: User is not authorized to send news in this channel.
+news_unauthorized: User has been unauthorized to send news in this channel.
+log_news_unauthorized: User {} has been unauthorized to send news in {}.
+no_news_authorizations: No user has been authorized to send news yet.
+news_not_added_no_permissions: >
+  User could not be authorized because I don't have `send_messages` permission in this channel.
+news_you_are_not_authorized: You are not authorized to send news in this channel.

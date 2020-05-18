@@ -7,8 +7,6 @@ import sentry_sdk
 from discord import (
     Message,
     Role,
-    Status,
-    Game,
     Embed,
     RawReactionActionEvent,
     RawReactionClearEvent,
@@ -29,6 +27,8 @@ from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
+from cogs.news import NewsCog
+from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
@@ -71,8 +71,6 @@ bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=transl
 @bot.event
 async def on_ready():
     print(f"Logged in as {bot.user}")
-
-    await bot.change_presence(status=Status.online, activity=Game(name=translations.profile_status))
 
     await call_event_handlers("ready")
 
@@ -348,5 +346,7 @@ register_cogs(
     InfoCog,
     ReactionRoleCog,
     CleverBotCog,
+    NewsCog,
+    RandomStuffCog,
 )
 bot.run(os.environ["TOKEN"])

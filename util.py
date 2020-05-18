@@ -1,14 +1,16 @@
+import io
 import socket
 import time
-from typing import Optional
+from typing import Optional, Tuple, List
 
-from discord import Member, TextChannel, Guild, PartialEmoji
+from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed
 from discord.ext.commands import check, Context, CheckFailure, Bot, Cog, PartialEmojiConverter, BadArgument
 
 from database import run_in_thread, db
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
 from multilock import MultiLock
+from translations import translations
 
 
 class FixedEmojiConverter(PartialEmojiConverter):
@@ -111,6 +113,8 @@ async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
 
 def register_cogs(bot: Bot, *cogs):
     for cog_class in cogs:
+        if cog_class is None:
+            continue
         cog: Cog = cog_class(bot)
         for e in dir(cog):
             func = getattr(cog, e)
@@ -125,3 +129,21 @@ async def get_prefix() -> str:
 
 async def set_prefix(new_prefix: str):
     await run_in_thread(Settings.set, str, "prefix", new_prefix)
+
+
+async def read_normal_message(bot: Bot, channel: TextChannel, author: Member) -> Tuple[str, List[File]]:
+    msg: Message = await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
+    files = []
+    for attachment in msg.attachments:
+        file = io.BytesIO()
+        await attachment.save(file)
+        files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
+    return msg.content, files
+
+
+async def read_embed(bot: Bot, channel: TextChannel, author: Member) -> Embed:
+    await channel.send(translations.send_embed_title)
+    title: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
+    await channel.send(translations.send_embed_content)
+    content: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
+    return Embed(title=title, description=content)

@@ -1,6 +1,6 @@
-from discord import Embed, Guild, Status
+from discord import Embed, Guild, Status, Game
 from discord import Role
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context
 from discord.utils import get
 
@@ -13,6 +13,20 @@ from translations import translations
 class InfoCog(Cog, name="Server Information"):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.current_status = 0
+
+    async def on_ready(self):
+        try:
+            self.status_loop.start()
+        except RuntimeError:
+            self.status_loop.restart()
+
+    @tasks.loop(seconds=20)
+    async def status_loop(self):
+        await self.bot.change_presence(
+            status=Status.online, activity=Game(name=translations.profile_status[self.current_status])
+        )
+        self.current_status = (self.current_status + 1) % len(translations.profile_status)
 
     @commands.group(name="server")
     @guild_only()
