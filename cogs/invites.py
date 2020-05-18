@@ -66,7 +66,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 await message.delete()
             prefix = await get_prefix()
             await message.channel.send(
-                translations.f_illegal_invite_link(message.author.mention, prefix + "invites list")
+                translations.f_illegal_invite_link(message.author.mention, prefix + "invites list"), delete_after=30
             )
             if can_delete:
                 await send_to_changelog(
