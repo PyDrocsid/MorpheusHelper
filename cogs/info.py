@@ -1,6 +1,6 @@
-from discord import Embed, Guild, Status
+from discord import Embed, Guild, Status, Game
 from discord import Role
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context
 from discord.utils import get
 
@@ -13,13 +13,30 @@ from translations import translations
 class InfoCog(Cog, name="Server Information"):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.current_status = 0
 
-    @commands.command(name="server")
+    async def on_ready(self):
+        try:
+            self.status_loop.start()
+        except RuntimeError:
+            self.status_loop.restart()
+
+    @tasks.loop(seconds=20)
+    async def status_loop(self):
+        await self.bot.change_presence(
+            status=Status.online, activity=Game(name=translations.profile_status[self.current_status])
+        )
+        self.current_status = (self.current_status + 1) % len(translations.profile_status)
+
+    @commands.group(name="server")
     @guild_only()
     async def server(self, ctx: Context):
         """
         displays information about this discord server
         """
+
+        if ctx.invoked_subcommand is not None:
+            return
 
         guild: Guild = ctx.guild
         embed = Embed(title=guild.name, description=translations.info_description, color=0x005180)
@@ -61,3 +78,17 @@ class InfoCog(Cog, name="Server Information"):
         )
 
         await ctx.send(embed=embed)
+
+    @server.command(name="bots")
+    async def list_bots(self, ctx: Context):
+        """
+        list all bots on the server
+        """
+
+        guild: Guild = ctx.guild
+        bots = [(str(m), m.status != Status.offline) for m in guild.members if m.bot]
+        bots.sort(key=lambda m: (-m[1], m[0]))
+        out = []
+        for (bot, online) in bots:
+            out.append(f"- `@{bot}` ({['offline', 'online'][online]})")
+        await ctx.send("\n".join(out))
