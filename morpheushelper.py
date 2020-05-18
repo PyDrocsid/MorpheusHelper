@@ -27,6 +27,7 @@ from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
+from cogs.news import NewsCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
@@ -344,5 +345,6 @@ register_cogs(
     InfoCog,
     ReactionRoleCog,
     CleverBotCog,
+    NewsCog,
 )
 bot.run(os.environ["TOKEN"])
