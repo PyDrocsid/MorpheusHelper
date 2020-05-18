@@ -28,6 +28,7 @@ from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
 from cogs.news import NewsCog
+from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
@@ -346,5 +347,6 @@ register_cogs(
     ReactionRoleCog,
     CleverBotCog,
     NewsCog,
+    RandomStuffCog,
 )
 bot.run(os.environ["TOKEN"])

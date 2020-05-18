@@ -113,6 +113,8 @@ async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
 
 def register_cogs(bot: Bot, *cogs):
     for cog_class in cogs:
+        if cog_class is None:
+            continue
         cog: Cog = cog_class(bot)
         for e in dir(cog):
             func = getattr(cog, e)
