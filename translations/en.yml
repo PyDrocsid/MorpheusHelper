@@ -40,6 +40,7 @@ features_title: Features
 author_title: Author
 contributors_title: Contributors
 github_title: GitHub
+version: Version
 prefix_title: Prefix
 help_command_title: Help Command
 bugs_features_title: Bug Reports / Feature Requests
