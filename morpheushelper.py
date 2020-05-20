@@ -1,6 +1,7 @@
 import os
 import re
 import string
+import time
 from typing import Optional, Iterable
 
 import sentry_sdk
@@ -15,7 +16,9 @@ from discord import (
     Member,
     VoiceState,
     TextChannel,
+    User,
 )
+from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
@@ -70,11 +73,32 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
 
 
+def get_owner() -> User:
+    return bot.get_user(370876111992913922)
+
+
 @bot.event
 async def on_ready():
+    await get_owner().send("logged in")
+
     print(f"Logged in as {bot.user}")
 
+    try:
+        status_loop.start()
+    except RuntimeError:
+        status_loop.restart()
+
     await call_event_handlers("ready")
+
+
+@tasks.loop(seconds=20)
+async def status_loop():
+    messages = await get_owner().history(limit=1).flatten()
+    content = "heartbeat: " + time.ctime()
+    if messages and messages[0].content.startswith("heartbeat: "):
+        await messages[0].edit(content=content)
+    else:
+        await get_owner().send(content)
 
 
 @bot.command()
