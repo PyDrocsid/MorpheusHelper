@@ -9,6 +9,7 @@ from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.logging import LoggingCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.voice_channel import VoiceChannelCog
+from cogs.helpersystem import HelperSystemCog
 from database import db, run_in_thread
 from models.authorized_role import AuthorizedRole
 from models.settings import Settings
@@ -204,4 +205,5 @@ bot.add_cog(VoiceChannelCog(bot))
 bot.add_cog(ReactionPinCog(bot))
 bot.add_cog(BeTheProfessionalCog(bot))
 bot.add_cog(LoggingCog(bot))
+bot.add_cog(HelperSystemCog(bot))
 bot.run(os.environ["TOKEN"])
