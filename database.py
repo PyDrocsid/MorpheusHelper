@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import BoundedSemaphore
 from os import environ as env
 from typing import TypeVar, Optional, Union, Iterable, Type, List
 
@@ -13,7 +14,10 @@ T = TypeVar("T")
 class DB:
     def __init__(self, hostname, port, database, username, password):
         self.engine: Engine = create_engine(
-            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}", pool_pre_ping=True
+            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}",
+            pool_pre_ping=True,
+            pool_size=10,
+            max_overflow=20,
         )
 
         self._SessionFactory: sessionmaker = sessionmaker(bind=self.engine, expire_on_commit=False)
@@ -49,15 +53,20 @@ class DB:
         return self._Session()
 
 
-async def run_in_thread(function, *args, **kwargs):
-    def inner():
-        out = function(*args, **kwargs)
-        db.session.commit()
-        db.close()
-        return out
+thread_semaphore = BoundedSemaphore(5)
 
-    result = await asyncio.get_running_loop().run_in_executor(None, inner)
-    return result
+
+async def run_in_thread(function, *args, **kwargs):
+    async with thread_semaphore:
+
+        def inner():
+            out = function(*args, **kwargs)
+            db.session.commit()
+            db.close()
+            return out
+
+        result = await asyncio.get_running_loop().run_in_executor(None, inner)
+        return result
 
 
 db: DB = DB(
