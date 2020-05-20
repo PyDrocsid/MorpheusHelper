@@ -93,6 +93,14 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
     async def on_message_edit(self, _, after: Message):
         return await self.check_message(after)
 
+    async def check_invite(self, url: str) -> bool:
+        try:
+            await self.bot.fetch_invite(url)
+        except NotFound:
+            return False
+        else:
+            return True
+
     @commands.group(aliases=["i"])
     @guild_only()
     async def invites(self, ctx: Context):
@@ -111,7 +119,10 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         out = []
         for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
-            out.append(f"- {row.guild_name} ({row.code})")
+            if await self.check_invite(row.code):
+                out.append(f"- {row.guild_name} ({row.code})")
+            else:
+                out.append(f"- {row.guild_name}")
         if out:
             await ctx.send(translations.allowed_servers_header + "\n```\n" + "\n".join(out) + "```")
         else:
@@ -139,10 +150,15 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             raise CommandError(translations.allowed_server_not_found)
 
         date = row.created_at
+        if await self.check_invite(row.code):
+            invite_title = translations.invite_link
+        else:
+            invite_title = translations.invite_link_expired
+
         embed = Embed(title=translations.allowed_server, color=0x007700)
         embed.add_field(name=translations.server_name, value=row.guild_name)
         embed.add_field(name=translations.server_id, value=row.guild_id)
-        embed.add_field(name=translations.invite_link, value=f"https://discord.gg/{row.code}")
+        embed.add_field(name=invite_title, value=f"https://discord.gg/{row.code}")
         embed.add_field(name=translations.applicant, value=f"<@{row.applicant}>")
         embed.add_field(name=translations.approver, value=f"<@{row.approver}>")
         embed.add_field(name=translations.date, value=f"{date.day:02}.{date.month:02}.{date.year:02}")
@@ -165,6 +181,27 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
         await ctx.send(translations.server_whitelisted)
         await send_to_changelog(ctx.guild, translations.f_log_server_whitelisted(guild.name))
+
+    @invites.command(name="update", aliases=["u"])
+    async def update_invite(self, ctx: Context, invite: Invite):
+        """
+        update the invite link of an allowed discord server
+        """
+
+        if invite.guild is None:
+            raise CommandError(translations.invalid_invite)
+
+        guild: Guild = invite.guild
+        row: Optional[AllowedInvite] = await run_in_thread(db.get, AllowedInvite, guild.id)
+        if row is None:
+            raise CommandError(translations.server_not_whitelisted)
+
+        if not await check_access(ctx.author) and ctx.author.id != row.applicant:
+            raise CommandError(translations.not_allowed)
+
+        await run_in_thread(AllowedInvite.update, guild.id, invite.code)
+        await ctx.send(translations.f_invite_updated(row.guild_name))
+        await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, row.guild_name))
 
     @invites.command(name="remove", aliases=["r", "del", "d", "-"])
     @permission_level(1)

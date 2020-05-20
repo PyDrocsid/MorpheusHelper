@@ -28,3 +28,8 @@ class AllowedInvite(db.Base):
         )
         db.add(row)
         return row
+
+    @staticmethod
+    def update(guild_id: int, code: str):
+        row = db.get(AllowedInvite, guild_id)
+        row.code = code
