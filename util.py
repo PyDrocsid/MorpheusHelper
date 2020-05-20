@@ -46,7 +46,7 @@ def permission_level(level: int):
     @check
     async def admin_only(ctx: Context):
         if await check_access(ctx.author) < level:
-            raise CheckFailure("You are not allowed to use this command.")
+            raise CheckFailure(translations.not_allowed)
 
         return True
 

@@ -1,6 +1,7 @@
 import os
 import re
 import string
+import time
 from typing import Optional, Iterable
 
 import sentry_sdk
@@ -15,7 +16,9 @@ from discord import (
     Member,
     VoiceState,
     TextChannel,
+    User,
 )
+from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
@@ -34,6 +37,7 @@ from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db, run_in_thread
+from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from models.authorized_role import AuthorizedRole
 from translations import translations
 from util import (
@@ -54,6 +58,7 @@ if sentry_dsn:
         attach_stacktrace=True,
         shutdown_timeout=5,
         integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
+        release=f"morpheushelper@{VERSION}",
     )
 
 db.create_tables()
@@ -68,11 +73,32 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
 
 
+def get_owner() -> User:
+    return bot.get_user(370876111992913922)
+
+
 @bot.event
 async def on_ready():
+    await get_owner().send("logged in")
+
     print(f"Logged in as {bot.user}")
 
+    try:
+        status_loop.start()
+    except RuntimeError:
+        status_loop.restart()
+
     await call_event_handlers("ready")
+
+
+@tasks.loop(seconds=20)
+async def status_loop():
+    messages = await get_owner().history(limit=1).flatten()
+    content = "heartbeat: " + time.ctime()
+    if messages and messages[0].content.startswith("heartbeat: "):
+        await messages[0].edit(content=content)
+    else:
+        await get_owner().send(content)
 
 
 @bot.command()
@@ -181,9 +207,7 @@ async def auth_del(ctx: Context, *, role: Role):
 
 async def build_info_embed(authorized: bool) -> Embed:
     embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
-    embed.set_thumbnail(
-        url="https://cdn.discordapp.com/avatars/686299664726622258/cb99c816286bdd1d988ec16d8ae85e15.png"
-    )
+    embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
     if authorized:
@@ -194,10 +218,9 @@ async def build_info_embed(authorized: bool) -> Embed:
         inline=False,
     )
     embed.add_field(name=translations.author_title, value="<@370876111992913922>", inline=True)
-    embed.add_field(
-        name=translations.contributors_title, value="<@212866839083089921>, <@330148908531580928>", inline=True
-    )
-    embed.add_field(name=translations.github_title, value="https://github.com/Defelo/MorpheusHelper", inline=False)
+    embed.add_field(name=translations.contributors_title, value=", ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
+    embed.add_field(name=translations.version_title, value=VERSION, inline=True)
+    embed.add_field(name=translations.github_title, value=GITHUB_LINK, inline=False)
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
     embed.add_field(name=translations.help_command_title, value=f"`{prefix}help`", inline=True)
     embed.add_field(
