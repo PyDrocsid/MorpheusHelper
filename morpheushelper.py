@@ -55,7 +55,7 @@ if sentry_dsn:
         attach_stacktrace=True,
         shutdown_timeout=5,
         integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
-        release=f"morpheushelper@{VERSION}"
+        release=f"morpheushelper@{VERSION}",
     )
 
 db.create_tables()
@@ -183,9 +183,7 @@ async def auth_del(ctx: Context, *, role: Role):
 
 async def build_info_embed(authorized: bool) -> Embed:
     embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
-    embed.set_thumbnail(
-        url=MORPHEUS_ICON
-    )
+    embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
     if authorized:
@@ -196,9 +194,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         inline=False,
     )
     embed.add_field(name=translations.author_title, value="<@370876111992913922>", inline=True)
-    embed.add_field(
-        name=translations.contributors_title, value=", ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True
-    )
+    embed.add_field(name=translations.contributors_title, value=", ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
     embed.add_field(name=translations.version_title, value=VERSION, inline=True)
     embed.add_field(name=translations.github_title, value=GITHUB_LINK, inline=False)
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
