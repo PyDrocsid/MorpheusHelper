@@ -1,13 +1,14 @@
 import re
 from typing import Optional
 
-from discord import Member, VoiceState, Guild, VoiceChannel, Role
+from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
+from multilock import MultiLock
 from translations import translations
 from util import permission_level, send_to_changelog
 
@@ -15,6 +16,7 @@ from util import permission_level, send_to_changelog
 class VoiceChannelCog(Cog, name="Voice Channels"):
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.channel_lock = MultiLock()
 
     async def on_ready(self) -> bool:
         guild: Guild = self.bot.guilds[0]
@@ -46,6 +48,21 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             )
         )
 
+        group: DynamicVoiceGroup = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
+        if group is None:
+            return
+
+        number = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id)) + 1
+        chan: VoiceChannel = await channel.clone(name=group.name + " " + str(number))
+        await chan.edit(position=channel.position + number)
+        try:
+            await member.move_to(chan)
+        except HTTPException:
+            await chan.delete()
+        else:
+            await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id)
+        await self.update_dynamic_voice_group(group)
+
     async def member_leave(self, member: Member, channel: VoiceChannel):
         await member.remove_roles(
             *(
@@ -55,17 +72,40 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             )
         )
 
+        if len(channel.members) > 0:
+            return
+
+        dyn_channel: Optional[DynamicVoiceChannel] = await run_in_thread(db.get, DynamicVoiceChannel, channel.id)
+        if dyn_channel is None:
+            return
+        group: DynamicVoiceGroup = await run_in_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+        if group is None:
+            return
+
+        await channel.delete()
+        await run_in_thread(db.delete, dyn_channel)
+        await self.update_dynamic_voice_group(group)
+
     async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState) -> bool:
         if before.channel == after.channel:
             return True
 
-        if before.channel is None:
-            await self.member_join(member, after.channel)
-        if after.channel is None:
-            await self.member_leave(member, before.channel)
+        if (channel := before.channel) is not None:
+            await self.channel_lock.acquire(channel.id)
+            await self.member_leave(member, channel)
+            self.channel_lock.release(channel.id)
+        if (channel := after.channel) is not None:
+            await self.channel_lock.acquire(channel.id)
+            await self.member_join(member, channel)
+            self.channel_lock.release(channel.id)
         return True
 
     async def update_dynamic_voice_group(self, group: DynamicVoiceGroup):
+        base_channel = self.bot.get_channel(group.channel_id)
+        if base_channel is None:
+            await run_in_thread(db.delete, group)
+            return
+
         channels = []
         for dyn_channel in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
             channel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
@@ -73,13 +113,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 channels.append(channel)
             else:
                 await run_in_thread(db.delete, dyn_channel)
-        if not channels:
-            await db.delete(group)
-            return
 
         channels.sort(key=lambda c: c.position)
         for i, channel in enumerate(channels):
-            await channel.edit(name=f"{group.name} {i + 1}")
+            await channel.edit(name=f"{group.name} {i + 1}", position=base_channel.position + i + 1)
 
     @commands.group(aliases=["vc"])
     @permission_level(1)
@@ -110,11 +147,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         out = []
         for group in await run_in_thread(db.all, DynamicVoiceGroup):
             cnt = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id))
-            if not cnt:
+            channel: Optional[VoiceChannel] = ctx.guild.get_channel(group.channel_id)
+            if channel is None:
                 await run_in_thread(db.delete, group)
                 continue
 
-            out.append("- " + translations.f_group_list_entry(group.name, cnt - 1))
+            out.append("- " + translations.f_group_list_entry(group.name, cnt))
 
         if out:
             await ctx.send("\n".join(out))
@@ -129,11 +167,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         if await run_in_thread(db.get, DynamicVoiceChannel, voice_channel.id) is not None:
             raise CommandError(translations.dyn_group_already_exists)
+        if await run_in_thread(db.first, DynamicVoiceGroup, channel_id=voice_channel.id) is not None:
+            raise CommandError(translations.dyn_group_already_exists)
 
         name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1)
-        group: DynamicVoiceGroup = await run_in_thread(DynamicVoiceGroup.create, name)
-        await run_in_thread(DynamicVoiceChannel.create, voice_channel.id, group.id)
-        await self.update_dynamic_voice_group(group)
+        await run_in_thread(DynamicVoiceGroup.create, name, voice_channel.id)
+        await voice_channel.edit(name=f"New {name}")
         await ctx.send(translations.dyn_group_created)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_created(name))
 
@@ -143,10 +182,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         remove a dynamic voice channel group
         """
 
-        dyn_channel: Optional[DynamicVoiceChannel] = await run_in_thread(db.get, DynamicVoiceChannel, voice_channel.id)
-        if dyn_channel is None:
-            raise CommandError(translations.dyn_group_not_found)
-        group: DynamicVoiceGroup = await run_in_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+        group: DynamicVoiceGroup = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=voice_channel.id)
         if group is None:
             raise CommandError(translations.dyn_group_not_found)
 
@@ -154,7 +190,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         for dync in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
             channel: Optional[VoiceChannel] = self.bot.get_channel(dync.channel_id)
             await run_in_thread(db.delete, dync)
-            if channel is not None and channel != voice_channel:
+            if channel is not None:
                 await channel.delete()
 
         await voice_channel.edit(name=group.name)

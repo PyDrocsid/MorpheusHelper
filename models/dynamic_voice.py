@@ -23,9 +23,10 @@ class DynamicVoiceGroup(db.Base):
 
     id: Union[Column, int] = Column(Integer, primary_key=True, unique=True)
     name: Union[Column, str] = Column(String(32))
+    channel_id: Union[Column, int] = Column(BigInteger)
 
     @staticmethod
-    def create(name: str) -> "DynamicVoiceGroup":
-        row = DynamicVoiceGroup(name=name)
+    def create(name: str, channel_id: int) -> "DynamicVoiceGroup":
+        row = DynamicVoiceGroup(name=name, channel_id=channel_id)
         db.add(row)
         return row
