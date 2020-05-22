@@ -52,6 +52,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if group is None:
             return
 
+        if channel.category is not None and len(channel.category.channels) >= 50 or len(channel.guild.channels) >= 500:
+            await member.move_to(None)
+            return
+
         number = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id)) + 1
         chan: VoiceChannel = await channel.clone(name=group.name + " " + str(number))
         await chan.edit(position=channel.position + number)
@@ -170,7 +174,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if await run_in_thread(db.first, DynamicVoiceGroup, channel_id=voice_channel.id) is not None:
             raise CommandError(translations.dyn_group_already_exists)
 
-        name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1)
+        name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1) or voice_channel.name
         await run_in_thread(DynamicVoiceGroup.create, name, voice_channel.id)
         await voice_channel.edit(name=f"New {name}")
         await ctx.send(translations.dyn_group_created)
