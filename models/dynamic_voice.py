@@ -10,10 +10,11 @@ class DynamicVoiceChannel(db.Base):
 
     channel_id: Union[Column, int] = Column(BigInteger, primary_key=True, unique=True)
     group_id: Union[Column, int] = Column(Integer)
+    text_chat_id: Union[Column, int] = Column(BigInteger)
 
     @staticmethod
-    def create(channel_id: int, group_id: int) -> "DynamicVoiceChannel":
-        row = DynamicVoiceChannel(channel_id=channel_id, group_id=group_id)
+    def create(channel_id: int, group_id: int, text_chat_id: int) -> "DynamicVoiceChannel":
+        row = DynamicVoiceChannel(channel_id=channel_id, group_id=group_id, text_chat_id=text_chat_id)
         db.add(row)
         return row
 

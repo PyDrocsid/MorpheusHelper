@@ -1,7 +1,8 @@
 import re
-from typing import Optional
+from typing import Optional, Union
 
-from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException
+from discord import CategoryChannel, PermissionOverwrite
+from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -48,6 +49,13 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             )
         )
 
+        dyn_channel: DynamicVoiceChannel = await run_in_thread(db.first, DynamicVoiceChannel, channel_id=channel.id)
+        if dyn_channel is not None:
+            text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
+            if text_chat is not None:
+                await text_chat.set_permissions(member, read_messages=True)
+            return
+
         group: DynamicVoiceGroup = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
         if group is None:
             return
@@ -56,15 +64,20 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.move_to(None)
             return
 
+        guild: Guild = channel.guild
         number = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id)) + 1
         chan: VoiceChannel = await channel.clone(name=group.name + " " + str(number))
+        category: Union[CategoryChannel, Guild] = channel.category or guild
+        text_chat: TextChannel = await category.create_text_channel(
+            chan.name, overwrites={guild.default_role: PermissionOverwrite(read_messages=False)}
+        )
         await chan.edit(position=channel.position + number)
         try:
             await member.move_to(chan)
         except HTTPException:
             await chan.delete()
         else:
-            await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id)
+            await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id, text_chat.id)
         await self.update_dynamic_voice_group(group)
 
     async def member_leave(self, member: Member, channel: VoiceChannel):
@@ -75,6 +88,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 if (role := member.guild.get_role(link.role)) is not None
             )
         )
+
+        dyn_channel: DynamicVoiceChannel = await run_in_thread(db.first, DynamicVoiceChannel, channel_id=channel.id)
+        if dyn_channel is not None:
+            text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
+            if text_chat is not None:
+                await text_chat.set_permissions(member, overwrite=None)
 
         if len(channel.members) > 0:
             return
@@ -87,6 +106,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             return
 
         await channel.delete()
+        if (text_channel := self.bot.get_channel(dyn_channel.text_chat_id)) is not None:
+            await text_channel.delete()
         await run_in_thread(db.delete, dyn_channel)
         await self.update_dynamic_voice_group(group)
 
@@ -105,7 +126,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         return True
 
     async def update_dynamic_voice_group(self, group: DynamicVoiceGroup):
-        base_channel = self.bot.get_channel(group.channel_id)
+        base_channel: Optional[VoiceChannel] = self.bot.get_channel(group.channel_id)
         if base_channel is None:
             await run_in_thread(db.delete, group)
             return
@@ -113,14 +134,18 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         channels = []
         for dyn_channel in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
             channel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
-            if channel is not None:
-                channels.append(channel)
+            text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
+            if channel is not None and text_chat is not None:
+                channels.append((channel, text_chat))
             else:
                 await run_in_thread(db.delete, dyn_channel)
 
-        channels.sort(key=lambda c: c.position)
-        for i, channel in enumerate(channels):
-            await channel.edit(name=f"{group.name} {i + 1}", position=base_channel.position + i + 1)
+        channels.sort(key=lambda c: c[0].position)
+
+        for i, (channel, text_chat) in enumerate(channels):
+            name = f"{group.name} {i + 1}"
+            await channel.edit(name=name, position=base_channel.position + i + 1)
+            await text_chat.edit(name=name)
 
     @commands.group(aliases=["vc"])
     @permission_level(1)
