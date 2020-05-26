@@ -5,6 +5,7 @@ from discord import CategoryChannel, PermissionOverwrite
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.utils import get
 
 from database import run_in_thread, db
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
@@ -60,7 +61,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if group is None:
             return
 
-        if channel.category is not None and len(channel.category.channels) >= 50 or len(channel.guild.channels) >= 500:
+        if channel.category is not None and len(channel.category.channels) >= 49 or len(channel.guild.channels) >= 499:
             await member.move_to(None)
             return
 
@@ -68,9 +69,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         number = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id)) + 1
         chan: VoiceChannel = await channel.clone(name=group.name + " " + str(number))
         category: Union[CategoryChannel, Guild] = channel.category or guild
-        text_chat: TextChannel = await category.create_text_channel(
-            chan.name, overwrites={guild.default_role: PermissionOverwrite(read_messages=False)}
-        )
+        overwrites = {guild.default_role: PermissionOverwrite(read_messages=False)}
+        if (team_role := get(guild.roles, name="Team")) is not None:
+            overwrites[team_role] = PermissionOverwrite(read_messages=True)
+        text_chat: TextChannel = await category.create_text_channel(chan.name, overwrites=overwrites)
         await chan.edit(position=channel.position + number)
         try:
             await member.move_to(chan)
@@ -218,9 +220,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await run_in_thread(db.delete, group)
         for dync in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
             channel: Optional[VoiceChannel] = self.bot.get_channel(dync.channel_id)
+            text_channel: Optional[TextChannel] = self.bot.get_channel(dync.text_chat_id)
             await run_in_thread(db.delete, dync)
             if channel is not None:
                 await channel.delete()
+            if text_channel is not None:
+                await text_channel.delete()
 
         await voice_channel.edit(name=group.name)
         await ctx.send(translations.dyn_group_removed)
