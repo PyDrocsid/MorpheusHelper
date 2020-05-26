@@ -73,20 +73,24 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
 
 
-def get_owner() -> User:
-    return bot.get_user(370876111992913922)
+def get_owner() -> Optional[User]:
+    owner_id = os.getenv("OWNER_ID")
+    if owner_id:
+        return bot.get_user(int(owner_id))
 
 
 @bot.event
 async def on_ready():
-    await get_owner().send("logged in")
+    if (owner := get_owner()) is not None:
+        await owner.send("logged in")
 
     print(f"Logged in as {bot.user}")
 
-    try:
-        status_loop.start()
-    except RuntimeError:
-        status_loop.restart()
+    if get_owner() is not None:
+        try:
+            status_loop.start()
+        except RuntimeError:
+            status_loop.restart()
 
     await call_event_handlers("ready")
 
