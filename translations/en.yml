@@ -268,6 +268,7 @@ dyn_group_removed: Dynamic voice channel group has been removed successfully.
 log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
 dyn_voice_joined: "{} joined this channel."
 dyn_voice_left: "{} left this channel."
+error_visibility: "`visibility` must either be `public` or `private`."
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.

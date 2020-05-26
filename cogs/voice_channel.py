@@ -70,17 +70,19 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         number = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id)) + 1
         chan: VoiceChannel = await channel.clone(name=group.name + " " + str(number))
         category: Union[CategoryChannel, Guild] = channel.category or guild
-        overwrites = {guild.default_role: PermissionOverwrite(read_messages=False)}
+        overwrites = {guild.default_role: PermissionOverwrite(read_messages=False, connect=False)}
         if (team_role := get(guild.roles, name="Team")) is not None:
-            overwrites[team_role] = PermissionOverwrite(read_messages=True)
+            overwrites[team_role] = PermissionOverwrite(read_messages=True, connect=True)
         text_chat: TextChannel = await category.create_text_channel(chan.name, overwrites=overwrites)
         await chan.edit(position=channel.position + number)
+        if not group.public:
+            await chan.edit(overwrites={**overwrites, member: PermissionOverwrite(read_messages=True, connect=True)})
         try:
             await member.move_to(chan)
         except HTTPException:
             await chan.delete()
         else:
-            await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id, text_chat.id)
+            await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id, text_chat.id, member.id)
         await self.update_dynamic_voice_group(group)
 
     async def member_leave(self, member: Member, channel: VoiceChannel):
@@ -185,7 +187,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 await run_in_thread(db.delete, group)
                 continue
 
-            out.append("- " + translations.f_group_list_entry(group.name, cnt))
+            out.append(f"- [{['private', 'public'][group.public]}] " + translations.f_group_list_entry(group.name, cnt))
 
         if out:
             await ctx.send("\n".join(out))
@@ -193,10 +195,14 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send(translations.no_dyn_group)
 
     @dynamic.command(name="add", aliases=["a", "+"])
-    async def add_dyn(self, ctx: Context, *, voice_channel: VoiceChannel):
+    async def add_dyn(self, ctx: Context, visibility: str, *, voice_channel: VoiceChannel):
         """
         create a new dynamic voice channel group
         """
+
+        if visibility.lower() not in ["public", "private"]:
+            raise CommandError(translations.error_visibility)
+        public = visibility.lower() == "public"
 
         if await run_in_thread(db.get, DynamicVoiceChannel, voice_channel.id) is not None:
             raise CommandError(translations.dyn_group_already_exists)
@@ -204,7 +210,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(translations.dyn_group_already_exists)
 
         name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1) or voice_channel.name
-        await run_in_thread(DynamicVoiceGroup.create, name, voice_channel.id)
+        await run_in_thread(DynamicVoiceGroup.create, name, voice_channel.id, public)
         await voice_channel.edit(name=f"New {name}")
         await ctx.send(translations.dyn_group_created)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_created(name))
