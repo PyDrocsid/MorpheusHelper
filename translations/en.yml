@@ -266,6 +266,8 @@ group_list_entry: "{} ({} active channels)"
 no_dyn_group: No dynamic voice channel groups have been created yet.
 dyn_group_removed: Dynamic voice channel group has been removed successfully.
 log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
+dyn_voice_joined: "{} joined this channel."
+dyn_voice_left: "{} left this channel."
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.

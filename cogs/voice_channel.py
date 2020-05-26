@@ -55,6 +55,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
             if text_chat is not None:
                 await text_chat.set_permissions(member, read_messages=True)
+                await text_chat.send(translations.f_dyn_voice_joined(member.mention))
             return
 
         group: DynamicVoiceGroup = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
@@ -96,6 +97,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
             if text_chat is not None:
                 await text_chat.set_permissions(member, overwrite=None)
+                await text_chat.send(translations.f_dyn_voice_left(member.mention))
 
         if len(channel.members) > 0:
             return
