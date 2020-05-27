@@ -272,6 +272,12 @@ error_visibility: "`visibility` must either be `public` or `private`."
 not_in_private_voice: You have to be in a private voice channel to use this command.
 private_voice_owner_required: You are not the owner of this voice channel.
 private_voice_closed: Private voice channel has been closed successfully.
+user_added_to_private_voice: "{} has been invited to join this private voice channel."
+user_added_to_private_voice_response: User has been added to this private voice channel.
+user_removed_from_private_voice: "{} has been removed from this private voice channel."
+user_removed_from_private_voice_response: User has been removed from this private voice channel.
+cannot_remove_yourself: You cannot remove yourself from this private voice channel.
+member_could_not_be_kicked: You cannot remove a team member from this voice channel.
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.

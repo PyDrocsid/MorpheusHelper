@@ -266,6 +266,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
     @voice.command(name="close", aliases=["c"])
     async def close(self, ctx: Context):
+        """
+        close a private voice channel
+        """
+
         group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await run_in_thread(db.delete, dyn_channel)
         if text_channel is not None:
@@ -274,6 +278,39 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await self.update_dynamic_voice_group(group)
         if text_channel != ctx.channel:
             await ctx.send(translations.private_voice_closed)
+
+    @voice.command(name="invite", aliases=["i", "add", "a", "+"])
+    async def invite(self, ctx: Context, member: Member):
+        """
+        invite a member into a private voice channel
+        """
+
+        group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        await voice_channel.set_permissions(member, read_messages=True, connect=True)
+        if text_channel is not None:
+            await text_channel.send(translations.f_user_added_to_private_voice(member.mention))
+        if text_channel != ctx.channel:
+            await ctx.send(translations.user_added_to_private_voice_response)
+
+    @voice.command(name="remove", aliases=["r", "kick", "k", "-"])
+    async def remove(self, ctx: Context, member: Member):
+        """
+        remove a member from a private voice channel
+        """
+
+        group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        if member == ctx.author:
+            raise CommandError(translations.cannot_remove_yourself)
+
+        await voice_channel.set_permissions(member, overwrite=None)
+        if member.guild_permissions.administrator or any(role.name == "Team" for role in member.roles):
+            raise CommandError(translations.member_could_not_be_kicked)
+
+        await member.move_to(None)
+        if text_channel is not None:
+            await text_channel.send(translations.f_user_removed_from_private_voice(member.mention))
+        if text_channel != ctx.channel:
+            await ctx.send(translations.user_removed_from_private_voice_response)
 
     @voice.group(name="link", aliases=["l"])
     @permission_level(1)
