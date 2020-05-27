@@ -1,5 +1,5 @@
 import re
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 from discord import CategoryChannel, PermissionOverwrite
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
@@ -12,7 +12,7 @@ from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from multilock import MultiLock
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, check_access
 
 
 class VoiceChannelCog(Cog, name="Voice Channels"):
@@ -40,6 +40,28 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                         await member.remove_roles(role)
         print(translations.voice_init_done)
         return True
+
+    async def get_dynamic_voice_channel(
+        self, member: Member, owner_required: bool
+    ) -> Tuple[DynamicVoiceGroup, DynamicVoiceChannel, VoiceChannel, Optional[TextChannel]]:
+        if member.voice is None or member.voice.channel is None:
+            raise CommandError(translations.not_in_private_voice)
+
+        channel: VoiceChannel = member.voice.channel
+        dyn_channel: DynamicVoiceChannel = await run_in_thread(db.first, DynamicVoiceChannel, channel_id=channel.id)
+        if dyn_channel is None:
+            raise CommandError(translations.not_in_private_voice)
+        group: DynamicVoiceGroup = await run_in_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+        if group is None or group.public:
+            raise CommandError(translations.not_in_private_voice)
+
+        if owner_required and dyn_channel.owner != member.id and not await check_access(member):
+            raise CommandError(translations.private_voice_owner_required)
+
+        voice_channel: VoiceChannel = self.bot.get_channel(dyn_channel.channel_id)
+        text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
+
+        return group, dyn_channel, voice_channel, text_chat
 
     async def member_join(self, member: Member, channel: VoiceChannel):
         await member.add_roles(
@@ -70,7 +92,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         number = len(await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id)) + 1
         chan: VoiceChannel = await channel.clone(name=group.name + " " + str(number))
         category: Union[CategoryChannel, Guild] = channel.category or guild
-        overwrites = {guild.default_role: PermissionOverwrite(read_messages=False, connect=False)}
+        overwrites = {
+            guild.default_role: PermissionOverwrite(read_messages=False, connect=False),
+            guild.me: PermissionOverwrite(read_messages=True),
+        }
         if (team_role := get(guild.roles, name="Team")) is not None:
             overwrites[team_role] = PermissionOverwrite(read_messages=True, connect=True)
         text_chat: TextChannel = await category.create_text_channel(chan.name, overwrites=overwrites)
@@ -154,7 +179,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await text_chat.edit(name=name)
 
     @commands.group(aliases=["vc"])
-    @permission_level(1)
     @guild_only()
     async def voice(self, ctx: Context):
         """
@@ -165,6 +189,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send_help(VoiceChannelCog.voice)
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
+    @permission_level(1)
     async def dynamic(self, ctx: Context):
         """
         manage dynamic voice channels
@@ -239,7 +264,19 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await ctx.send(translations.dyn_group_removed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_removed(group.name))
 
+    @voice.command(name="close", aliases=["c"])
+    async def close(self, ctx: Context):
+        group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        await run_in_thread(db.delete, dyn_channel)
+        if text_channel is not None:
+            await text_channel.delete()
+        await voice_channel.delete()
+        await self.update_dynamic_voice_group(group)
+        if text_channel != ctx.channel:
+            await ctx.send(translations.private_voice_closed)
+
     @voice.group(name="link", aliases=["l"])
+    @permission_level(1)
     async def link(self, ctx: Context):
         """
         manage links between voice channels and roles
