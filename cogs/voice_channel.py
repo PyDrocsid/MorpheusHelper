@@ -337,8 +337,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
-        if member == ctx.author:
-            raise CommandError(translations.cannot_remove_yourself)
+        if member == ctx.author or member == self.bot.user:
+            raise CommandError(translations.cannot_remove_member)
 
         await voice_channel.set_permissions(member, overwrite=None)
         if member.guild_permissions.administrator or any(role.name == "Team" for role in member.roles):
@@ -365,6 +365,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         if member not in voice_channel.members:
             raise CommandError(translations.user_not_in_this_channel)
+        if member.bot:
+            raise CommandError(translations.bot_no_owner_transfer)
 
         await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, member.id)
         if text_channel is not None:

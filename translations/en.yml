@@ -276,10 +276,11 @@ user_added_to_private_voice: "{} has been invited to join this private voice cha
 user_added_to_private_voice_response: User has been added to this private voice channel.
 user_removed_from_private_voice: "{} has been removed from this private voice channel."
 user_removed_from_private_voice_response: User has been removed from this private voice channel.
-cannot_remove_yourself: You cannot remove yourself from this private voice channel.
+cannot_remove_member: This member could not be removed.
 member_could_not_be_kicked: You cannot remove a team member from this voice channel.
 user_not_in_this_channel: User is not in the same private voice channel.
 owner_of_private_voice: "Owner of this private voice channel: {}"
+bot_no_owner_transfer: You cannot transfer ownership to a bot.
 private_voice_owner_changed: "{} is now the owner of this private voice channel."
 private_voice_owner_changed_response: "Owner of this private voice channel has been changed."
 link_on_dynamic_channel_not_created: >
