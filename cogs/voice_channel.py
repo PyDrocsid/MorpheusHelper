@@ -401,12 +401,14 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await ctx.send("\n".join(out) or translations.no_links_created)
 
     @link.command(name="add", aliases=["a", "+"])
-    async def create_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
+    async def create_link(self, ctx: Context, channel: VoiceChannel, *, role: Role):
         """
         link a voice channel with a role
         """
 
-        if await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=voice_channel.id) is not None:
+        if await run_in_thread(db.get, DynamicVoiceChannel, channel.id) is not None:
+            raise CommandError(translations.link_on_dynamic_channel_not_created)
+        if await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=channel.id) is not None:
             raise CommandError(translations.link_already_exists)
 
         if role > ctx.me.top_role:
@@ -414,25 +416,40 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if role.managed:
             raise CommandError(translations.f_link_not_created_managed_role(role))
 
-        await run_in_thread(RoleVoiceLink.create, role.id, voice_channel.id)
-        for member in voice_channel.members:
+        await run_in_thread(RoleVoiceLink.create, role.id, channel.id)
+        for member in channel.members:
             await member.add_roles(role)
 
-        await ctx.send(translations.f_link_created(voice_channel, role))
-        await send_to_changelog(ctx.guild, translations.f_link_created(voice_channel, role))
+        group: Optional[DynamicVoiceGroup] = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
+        for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
+            dchannel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
+            if dchannel is not None:
+                for member in dchannel.members:
+                    await member.add_roles(role)
+
+        await ctx.send(translations.f_link_created(channel, role))
+        await send_to_changelog(ctx.guild, translations.f_link_created(channel, role))
 
     @link.command(name="del", aliases=["remove", "r", "d", "-"])
-    async def remove_link(self, ctx: Context, voice_channel: VoiceChannel, *, role: Role):
+    async def remove_link(self, ctx: Context, channel: VoiceChannel, *, role: Role):
         """
         delete the link between a voice channel and a role
         """
 
-        if (link := await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=voice_channel.id)) is None:
+        if (link := await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=channel.id)) is None:
             raise CommandError(translations.link_not_found)
 
         await run_in_thread(db.delete, link)
-        for member in voice_channel.members:
+        for member in channel.members:
             await member.remove_roles(role)
 
+        group: Optional[DynamicVoiceGroup] = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
+        if group is not None:
+            for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
+                dchannel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
+                if dchannel is not None:
+                    for member in dchannel.members:
+                        await member.remove_roles(role)
+
         await ctx.send(translations.link_deleted)
-        await send_to_changelog(ctx.guild, translations.f_log_link_deleted(voice_channel, role))
+        await send_to_changelog(ctx.guild, translations.f_log_link_deleted(channel, role))

@@ -282,6 +282,9 @@ user_not_in_this_channel: User is not in the same private voice channel.
 owner_of_private_voice: "Owner of this private voice channel: {}"
 private_voice_owner_changed: "{} is now the owner of this private voice channel."
 private_voice_owner_changed_response: "Owner of this private voice channel has been changed."
+link_on_dynamic_channel_not_created: >
+  Link could not be created for dynamic voice channel.
+  Specify the parent channel instead.
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
