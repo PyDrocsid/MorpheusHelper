@@ -312,6 +312,28 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if text_channel != ctx.channel:
             await ctx.send(translations.user_removed_from_private_voice_response)
 
+    @voice.command(name="owner", aliases=["o"])
+    async def owner(self, ctx: Context, member: Optional[Member]):
+        """
+        transfer ownership of a private voice channel
+        """
+
+        change = member is not None
+        _, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, change)
+
+        if not change:
+            await ctx.send(translations.f_owner_of_private_voice(f"<@{dyn_channel.owner}>"))
+            return
+
+        if member not in voice_channel.members:
+            raise CommandError(translations.user_not_in_this_channel)
+
+        await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, member.id)
+        if text_channel is not None:
+            await text_channel.send(translations.f_private_voice_owner_changed(member.mention))
+        if text_channel != ctx.channel:
+            await ctx.send(translations.private_voice_owner_changed_response)
+
     @voice.group(name="link", aliases=["l"])
     @permission_level(1)
     async def link(self, ctx: Context):

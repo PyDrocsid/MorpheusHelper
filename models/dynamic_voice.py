@@ -19,6 +19,11 @@ class DynamicVoiceChannel(db.Base):
         db.add(row)
         return row
 
+    @staticmethod
+    def change_owner(channel_id: int, owner: int):
+        row: DynamicVoiceChannel = db.get(DynamicVoiceChannel, channel_id)
+        row.owner = owner
+
 
 class DynamicVoiceGroup(db.Base):
     __tablename__ = "dynamic_voice_group"
