@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.reactionrole import ReactionRole
 from translations import translations
-from util import permission_level, send_to_changelog, FixedEmojiConverter
+from util import permission_level, send_to_changelog, FixedEmojiConverter, MODERATOR
 
 
 async def get_role(message: Message, emoji: PartialEmoji) -> Optional[Role]:
@@ -46,7 +46,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         return False
 
     @commands.group(name="reactionrole", aliases=["rr"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def reactionrole(self, ctx: Context):
         """

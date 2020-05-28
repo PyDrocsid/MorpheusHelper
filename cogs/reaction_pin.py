@@ -17,7 +17,7 @@ from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
 from translations import translations
-from util import permission_level, make_error, check_access, send_to_changelog
+from util import permission_level, make_error, check_access, send_to_changelog, MODERATOR
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -79,7 +79,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         return True
 
     @commands.group(aliases=["rp"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def reactionpin(self, ctx: Context):
         """

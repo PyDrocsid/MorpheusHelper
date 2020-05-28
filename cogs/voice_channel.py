@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.role_voice_link import RoleVoiceLink
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, MODERATOR
 
 
 class VoiceChannelCog(Cog, name="Voice Channels"):
@@ -59,7 +59,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         return True
 
     @commands.group(aliases=["vc"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def voice(self, ctx: Context):
         """

@@ -274,3 +274,11 @@ no_news_authorizations: No user has been authorized to send news yet.
 news_not_added_no_permissions: >
   User could not be authorized because I don't have `send_messages` permission in this channel.
 news_you_are_not_authorized: You are not authorized to send news in this channel.
+
+# mod tools
+no_role_set: No role set.
+role_set: Role has been set successfully.
+log_role_set_admin: "Administrator role has been set to `@{}` ({})"
+log_role_set_mod: "Moderator role has been set to `@{}` ({})"
+log_role_set_supp: "Supporter role has been set to `@{}` ({})"
+log_role_set_team: "Team role has been set to `@{}` ({})"

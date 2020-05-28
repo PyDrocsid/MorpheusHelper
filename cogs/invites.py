@@ -9,7 +9,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
 from translations import translations
-from util import permission_level, check_access, send_to_changelog, get_prefix
+from util import permission_level, check_access, send_to_changelog, get_prefix, SUPPORTER
 
 
 def get_discord_invite(url) -> Optional[str]:
@@ -165,7 +165,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await ctx.send(embed=embed)
 
     @invites.command(name="add", aliases=["+", "a"])
-    @permission_level(1)
+    @permission_level(SUPPORTER)
     async def add_invite(self, ctx: Context, invite: Invite, applicant: Member):
         """
         allow a new discord server
@@ -204,7 +204,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, row.guild_name))
 
     @invites.command(name="remove", aliases=["r", "del", "d", "-"])
-    @permission_level(1)
+    @permission_level(SUPPORTER)
     async def remove_invite(self, ctx: Context, *, server: Union[Invite, int, str]):
         """
         disallow a discord server

@@ -11,7 +11,7 @@ from cleverbot import CleverBot
 from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, SUPPORTER, MODERATOR
 
 cleverbot_lock = Lock()
 
@@ -45,7 +45,6 @@ class CleverBotCog(Cog, name="CleverBot"):
         return True
 
     @commands.group(aliases=["cb"])
-    @permission_level(1)
     @guild_only()
     async def cleverbot(self, ctx: Context):
         """
@@ -56,6 +55,7 @@ class CleverBotCog(Cog, name="CleverBot"):
             await ctx.send_help(CleverBotCog.cleverbot)
 
     @cleverbot.command(name="list", aliases=["l", "?"])
+    @permission_level(SUPPORTER)
     async def list_channels(self, ctx: Context):
         """
         list cleverbot channels
@@ -75,6 +75,7 @@ class CleverBotCog(Cog, name="CleverBot"):
             await ctx.send(translations.no_whitelisted_channels)
 
     @cleverbot.command(name="add", aliases=["a", "+"])
+    @permission_level(MODERATOR)
     async def add_channel(self, ctx: Context, channel: TextChannel):
         """
         add channel to whitelist
@@ -88,6 +89,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 
     @cleverbot.command(name="remove", aliases=["del", "d", "-"])
+    @permission_level(MODERATOR)
     async def remove_channel(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist
@@ -104,6 +106,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
 
     @cleverbot.command(name="reset")
+    @permission_level(SUPPORTER)
     async def reset_session(self, ctx: Context, channel: TextChannel):
         """
         reset cleverbot session for a channel

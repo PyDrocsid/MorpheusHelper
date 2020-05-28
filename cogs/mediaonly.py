@@ -10,7 +10,7 @@ from requests import RequestException
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from translations import translations
-from util import permission_level, check_access, send_to_changelog
+from util import permission_level, check_access, send_to_changelog, MODERATOR
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -46,7 +46,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         return False
 
     @commands.group(aliases=["mo"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def mediaonly(self, ctx: Context):
         """

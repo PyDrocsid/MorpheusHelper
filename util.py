@@ -6,8 +6,7 @@ from typing import Optional, Tuple, List
 from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed
 from discord.ext.commands import check, Context, CheckFailure, Bot, Cog, PartialEmojiConverter, BadArgument
 
-from database import run_in_thread, db
-from models.authorized_role import AuthorizedRole
+from database import run_in_thread
 from models.settings import Settings
 from multilock import MultiLock
 from translations import translations
@@ -28,36 +27,44 @@ def make_error(message) -> str:
     return f":x: Error: {message}"
 
 
+PUBLIC, SUPPORTER, MODERATOR, ADMINISTRATOR, OWNER = range(5)
+
+
 async def check_access(member: Member) -> int:
     if member.id == 370876111992913922:
-        return 3
-
-    if member.guild_permissions.administrator:
-        return 2
+        return OWNER
 
     roles = set(role.id for role in member.roles)
-    for authorization in await run_in_thread(db.query, AuthorizedRole):
-        if authorization.role in roles:
-            return 1
-    return 0
+
+    async def has_role(role_name):
+        return await run_in_thread(Settings.get, int, role_name + "_role") in roles
+
+    if member.guild_permissions.administrator or await has_role("admin"):
+        return ADMINISTRATOR
+    if await has_role("mod"):
+        return MODERATOR
+    if await has_role("supp"):
+        return SUPPORTER
+
+    return PUBLIC
 
 
 def permission_level(level: int):
     @check
-    async def admin_only(ctx: Context):
+    async def inner(ctx: Context):
         if await check_access(ctx.author) < level:
             raise CheckFailure(translations.not_allowed)
 
         return True
 
-    return admin_only
+    return inner
 
 
 def calculate_edit_distance(a: str, b: str) -> int:
     dp = [[max(i, j) for j in range(len(b) + 1)] for i in range(len(a) + 1)]
     for i in range(1, len(a) + 1):
         for j in range(1, len(b) + 1):
-            dp[i][j] = min(dp[i - 1][j - 1] + (a[i - 1] != b[j - 1]), dp[i - 1][j] + 1, dp[i][j - 1] + 1,)
+            dp[i][j] = min(dp[i - 1][j - 1] + (a[i - 1] != b[j - 1]), dp[i - 1][j] + 1, dp[i][j - 1] + 1)
     return dp[len(a)][len(b)]
 
 

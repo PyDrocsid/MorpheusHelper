@@ -8,7 +8,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.btp_role import BTPRole
 from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog
+from util import permission_level, calculate_edit_distance, send_to_changelog, MODERATOR
 
 
 def split_topics(topics: str) -> List[str]:
@@ -106,7 +106,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await ctx.send(translations.no_topic_removed)
 
     @commands.command(name="*")
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def register_role(self, ctx: Context, *, topics: str):
         """
@@ -157,7 +157,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await send_to_changelog(ctx.guild, translations.f_log_topic_registered(roles[0]))
 
     @commands.command(name="/")
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def unregister_role(self, ctx: Context, *, topics: str):
         """
