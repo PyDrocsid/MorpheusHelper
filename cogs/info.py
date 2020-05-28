@@ -1,12 +1,14 @@
+from typing import Optional
+
 from discord import Embed, Guild, Status, Game
 from discord import Role
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context
-from discord.utils import get
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
+from models.settings import Settings
 from translations import translations
 
 
@@ -49,18 +51,21 @@ class InfoCog(Cog, name="Server Information"):
         )
         embed.add_field(name=translations.owner, value=guild.owner.mention)
 
+        async def get_role(role_name) -> Optional[Role]:
+            return guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
+
         role: Role
-        if (role := get(guild.roles, name="Admin")) is not None and role.members:
+        if (role := await get_role("admin")) is not None and role.members:
             embed.add_field(
                 name=translations.f_cnt_admins(len(role.members)),
                 value="\n".join(":small_orange_diamond: " + m.mention for m in role.members),
             )
-        if (role := get(guild.roles, name="Moderator")) is not None and role.members:
+        if (role := await get_role("mod")) is not None and role.members:
             embed.add_field(
                 name=translations.f_cnt_mods(len(role.members)),
                 value="\n".join(":small_orange_diamond: " + m.mention for m in role.members),
             )
-        if (role := get(guild.roles, name="Supporter")) is not None and role.members:
+        if (role := await get_role("supp")) is not None and role.members:
             embed.add_field(
                 name=translations.f_cnt_supps(len(role.members)),
                 value="\n".join(":small_orange_diamond: " + m.mention for m in role.members),

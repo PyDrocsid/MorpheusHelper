@@ -87,7 +87,7 @@ creation_date: Creation Date
 cnt_members: "{} Members"
 cnt_online: "{} online"
 owner: Owner
-cnt_admins: "{} Admins"
+cnt_admins: "{} Administrators"
 cnt_mods: "{} Moderators"
 cnt_supps: "{} Supporters"
 cnt_bots: "{} Bots"
