@@ -11,6 +11,7 @@ requests = "*"
 sentry-sdk = "*"
 pyyaml = "*"
 pycryptodome = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.8"
