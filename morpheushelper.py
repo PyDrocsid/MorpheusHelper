@@ -36,6 +36,7 @@ from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
+from programmerhumor import ProgrammerHumor
 from database import db, run_in_thread
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from models.authorized_role import AuthorizedRole
@@ -89,8 +90,10 @@ async def on_ready():
     if get_owner() is not None:
         try:
             status_loop.start()
+            programmerhumor_loop.start()
         except RuntimeError:
             status_loop.restart()
+            programmerhumor_loop.restart()
 
     await call_event_handlers("ready")
 
@@ -103,6 +106,11 @@ async def status_loop():
         await messages[0].edit(content=content)
     else:
         await get_owner().send(content)
+
+
+@task.loop(hours=1)
+async def programmerhumor_loop():
+    await ProgrammerHumor.run(bot.get_channel(341284235581194241))  # videos-und-memes
 
 
 @bot.command()
