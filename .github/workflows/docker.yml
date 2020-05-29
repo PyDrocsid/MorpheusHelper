@@ -31,4 +31,6 @@ jobs:
           docker buildx build \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
             --output "type=image,push=true" \
+            --cache-to defelo/morpheushelper:cache \
+            --cache-from defelo/morpheushelper:cache \
             -t defelo/morpheushelper:$tag .
