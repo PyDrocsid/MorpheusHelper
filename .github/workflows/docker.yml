@@ -28,6 +28,7 @@ jobs:
           else
               tag=$branch
           fi
+
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
           docker buildx build \
             --platform linux/amd64,linux/arm/v7,linux/arm64 \
