@@ -1,13 +1,14 @@
 from typing import Optional
 
-from discord import Role, Guild
+from discord import Role, Guild, Member, Forbidden, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context
 
 from database import run_in_thread
+from models.mod import Warn
 from models.settings import Settings
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog
+from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
@@ -78,3 +79,19 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         await configure_role(ctx, "mute", role)
+
+    @commands.command(name="warn")
+    @permission_level(SUPPORTER)
+    @guild_only()
+    async def warn(self, ctx: Context, member: Member, *, reason: str):
+        """
+        warn a member
+        """
+
+        try:
+            await member.send(translations.f_warned(ctx.author.mention, ctx.guild.name, reason))
+        except (Forbidden, HTTPException):
+            await ctx.send(translations.no_dm)
+        await run_in_thread(Warn.create, member.id, ctx.author.id, reason)
+        await ctx.send(translations.warned_response)
+        await send_to_changelog(ctx.guild, translations.f_log_warned(ctx.author.mention, member.mention, reason))

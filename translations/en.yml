@@ -321,3 +321,8 @@ log_role_set_mod: "Moderator role has been set to `@{}` ({})"
 log_role_set_supp: "Supporter role has been set to `@{}` ({})"
 log_role_set_team: "Team role has been set to `@{}` ({})"
 log_role_set_mute: "Mute role has been set to `@{}` ({})"
+
+no_dm: User does not allow direct messages.
+warned: "{} just warned you on {}:```\n{}\n```"
+warned_response: User warned.
+log_warned: "{} warned {} because of `{}`."
