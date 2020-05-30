@@ -14,19 +14,19 @@ class ModCog(Cog, name="Mod Tools"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="mod")
+    @commands.group(name="team")
     @permission_level(ADMINISTRATOR)
     @guild_only()
-    async def mod(self, ctx: Context):
+    async def team(self, ctx: Context):
         """
-        mod tools
+        configure team roles
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ModCog.mod)
+            await ctx.send_help(ModCog.team)
 
-    @mod.command(name="administrator", aliases=["admin", "a"])
-    async def administrator(self, ctx: Context, role: Optional[Role]):
+    @team.command(name="administrator", aliases=["admin", "a"])
+    async def set_admin(self, ctx: Context, role: Optional[Role]):
         """
         set administrator role
         """
@@ -43,8 +43,8 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.send(translations.role_set)
             await ctx.send(translations.f_log_role_set_admin(role.name, role.id))
 
-    @mod.command(name="moderator", aliases=["mod", "m"])
-    async def moderator(self, ctx: Context, role: Optional[Role]):
+    @team.command(name="moderator", aliases=["mod", "m"])
+    async def set_mod(self, ctx: Context, role: Optional[Role]):
         """
         set moderator role
         """
@@ -61,8 +61,8 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.send(translations.role_set)
             await ctx.send(translations.f_log_role_set_mod(role.name, role.id))
 
-    @mod.command(name="supporter", aliases=["supp", "s"])
-    async def supporter(self, ctx: Context, role: Optional[Role]):
+    @team.command(name="supporter", aliases=["supp", "s"])
+    async def set_supp(self, ctx: Context, role: Optional[Role]):
         """
         set supporter role
         """
@@ -79,8 +79,8 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.send(translations.role_set)
             await ctx.send(translations.f_log_role_set_supp(role.name, role.id))
 
-    @mod.command(name="team", aliases=["t"])
-    async def team(self, ctx: Context, role: Optional[Role]):
+    @team.command(name="team", aliases=["t"])
+    async def set_team(self, ctx: Context, role: Optional[Role]):
         """
         set team role
         """
