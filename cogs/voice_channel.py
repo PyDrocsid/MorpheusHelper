@@ -13,7 +13,7 @@ from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from multilock import MultiLock
 from translations import translations
-from util import permission_level, send_to_changelog, check_access, get_prefix
+from util import permission_level, send_to_changelog, check_access, get_prefix, MODERATOR
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -231,7 +231,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send_help(VoiceChannelCog.voice)
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     async def dynamic(self, ctx: Context):
         """
         manage dynamic voice channels
@@ -379,7 +379,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send(translations.private_voice_owner_changed_response)
 
     @voice.group(name="link", aliases=["l"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     async def link(self, ctx: Context):
         """
         manage links between voice channels and roles
