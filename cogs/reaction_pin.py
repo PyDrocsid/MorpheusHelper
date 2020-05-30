@@ -6,7 +6,6 @@ from discord import (
     Guild,
     Member,
     MessageType,
-    Role,
     HTTPException,
     PartialEmoji,
 )
@@ -34,7 +33,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if not (await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return True
 
-        blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
+        blocked_role = await run_in_thread(Settings.get, int, "mute_role", None)
         if access or (member == message.author and all(r.id != blocked_role for r in member.roles)):
             if message.type != MessageType.default:
                 await message.remove_reaction(emoji, member)
@@ -152,19 +151,3 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             else:
                 await ctx.send(translations.pin_messages_now_disabled)
                 await send_to_changelog(ctx.guild, translations.pin_messages_now_disabled)
-
-    @reactionpin.command(name="blocked_role", aliases=["br"])
-    async def change_blocked_role(self, ctx: Context, role: Role = None):
-        """
-        change the blocked role
-        """
-
-        if role is None:
-            role_id: Optional[int] = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
-            if role_id is None or (role := ctx.guild.get_role(role_id)) is None:
-                await ctx.send(translations.no_blocked_role)
-            else:
-                await ctx.send(translations.f_blocked_role(role))
-        else:
-            await run_in_thread(Settings.set, int, "reactionpin_blocked_role", role.id)
-            await ctx.send(translations.blocked_role_updated)
