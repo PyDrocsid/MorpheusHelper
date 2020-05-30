@@ -36,8 +36,8 @@ features:
   - Meta question information command
   - Cleverbot integration
   - Server information command
-  - Metaquestion command
   - ReactionRoles
+  - Dynamic voice channels
 admin_features:
   - Logging of message edit and delete events
   - Send/Edit/Delete text and embed messages as the bot
@@ -51,7 +51,9 @@ version_title: Version
 prefix_title: Prefix
 help_command_title: Help Command
 bugs_features_title: Bug Reports / Feature Requests
-bugs_features: Please create an issue in the GitHub repository or contact me (<@370876111992913922>) via Discord.
+bugs_features: >
+  Please [create an issue](https://github.com/Defelo/MorpheusHelper/issues/new) in the GitHub repository
+  or contact me (<@370876111992913922>) via Discord.
 
 # betheprofessional
 youre_not_the_first_one: "Topic `{}` not found.\nYou're not the first one to try this, {}"
@@ -257,6 +259,42 @@ link_created: Link has been created between voice channel `{}` and role `@{}`.
 link_not_found: Link does not exist.
 link_deleted: Link has been deleted.
 log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
+
+dyn_group_already_exists: This channel is already part of an existing voice channel group.
+dyn_group_created: Dynamic voice channel group has been created successfully.
+log_dyn_group_created: Dynamic voice channel group `{}` has been created.
+dyn_group_not_found: This channel is not part of any voice channel group.
+group_list_entry: "{} ({} active channels)"
+no_dyn_group: No dynamic voice channel groups have been created yet.
+dyn_group_removed: Dynamic voice channel group has been removed successfully.
+log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
+dyn_voice_created: Channel has been created by {}.
+dyn_voice_joined: "{} joined this channel."
+dyn_voice_left: "{} left this channel."
+private_dyn_voice_help: |
+  Private voice channel commands:
+  `{prefix}vc invite <member>` - add a member to this voice channel
+  `{prefix}vc remove <member>` - kick and remove a member from this voice channel
+  `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
+  `{prefix}vc close` - manually close this voice channel
+error_visibility: "`visibility` must either be `public` or `private`."
+not_in_private_voice: You have to be in a private voice channel to use this command.
+private_voice_owner_required: You are not the owner of this voice channel.
+private_voice_closed: Private voice channel has been closed successfully.
+user_added_to_private_voice: "{} has been invited to join this private voice channel."
+user_added_to_private_voice_response: User has been added to this private voice channel.
+user_removed_from_private_voice: "{} has been removed from this private voice channel."
+user_removed_from_private_voice_response: User has been removed from this private voice channel.
+cannot_remove_member: This member could not be removed.
+member_could_not_be_kicked: You cannot remove a team member from this voice channel.
+user_not_in_this_channel: User is not in the same private voice channel.
+owner_of_private_voice: "Owner of this private voice channel: {}"
+bot_no_owner_transfer: You cannot transfer ownership to a bot.
+private_voice_owner_changed: "{} is now the owner of this private voice channel."
+private_voice_owner_changed_response: "Owner of this private voice channel has been changed."
+link_on_dynamic_channel_not_created: >
+  Link could not be created for dynamic voice channel.
+  Specify the parent channel instead.
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.

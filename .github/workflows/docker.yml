@@ -1,0 +1,36 @@
+name: Docker Image
+on:
+  push:
+    branches:
+      - master
+      - experimental
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: crazy-max/ghaction-docker-buildx@v1
+        with:
+          version: latest
+
+      - name: Build Docker Image
+        run: |
+          branch=${GITHUB_REF#refs/heads/}
+          if [[ $branch = "master" ]]
+          then
+              tag="latest"
+          else
+              tag=$branch
+          fi
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+          docker buildx build \
+            --platform linux/amd64,linux/arm/v7,linux/arm64 \
+            --output "type=image,push=true" \
+            --cache-to defelo/morpheushelper:cache \
+            --cache-from defelo/morpheushelper:cache \
+            -t defelo/morpheushelper:$tag .
