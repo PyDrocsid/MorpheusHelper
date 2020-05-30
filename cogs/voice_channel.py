@@ -215,6 +215,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             name = f"{group.name} {i + 1}"
             await channel.edit(name=name, position=base_channel.position + i + 1)
             await text_chat.edit(name=name)
+        await base_channel.edit(position=base_channel.position)
 
     @commands.group(aliases=["vc"])
     @guild_only()
