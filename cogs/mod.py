@@ -10,89 +10,71 @@ from translations import translations
 from util import permission_level, ADMINISTRATOR
 
 
+async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
+    guild: Guild = ctx.guild
+    if role is None:
+        role = guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
+        if role is None:
+            await ctx.send(translations.no_role_set)
+        else:
+            await ctx.send(f"`@{role}` ({role.id})")
+    else:
+        await run_in_thread(Settings.set, int, role_name + "_role", role.id)
+        await ctx.send(translations.role_set)
+        await ctx.send(getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
+
+
 class ModCog(Cog, name="Mod Tools"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="team")
+    @commands.group(name="roles")
     @permission_level(ADMINISTRATOR)
     @guild_only()
-    async def team(self, ctx: Context):
+    async def roles(self, ctx: Context):
         """
-        configure team roles
+        configure roles
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ModCog.team)
+            await ctx.send_help(ModCog.roles)
 
-    @team.command(name="administrator", aliases=["admin", "a"])
+    @roles.command(name="administrator", aliases=["admin"])
     async def set_admin(self, ctx: Context, role: Optional[Role]):
         """
         set administrator role
         """
 
-        guild: Guild = ctx.guild
-        if role is None:
-            role = guild.get_role(await run_in_thread(Settings.get, int, "admin_role"))
-            if role is None:
-                await ctx.send(translations.no_role_set)
-            else:
-                await ctx.send(f"`@{role}` ({role.id})")
-        else:
-            await run_in_thread(Settings.set, int, "admin_role", role.id)
-            await ctx.send(translations.role_set)
-            await ctx.send(translations.f_log_role_set_admin(role.name, role.id))
+        await configure_role(ctx, "admin", role)
 
-    @team.command(name="moderator", aliases=["mod", "m"])
+    @roles.command(name="moderator", aliases=["mod"])
     async def set_mod(self, ctx: Context, role: Optional[Role]):
         """
         set moderator role
         """
 
-        guild: Guild = ctx.guild
-        if role is None:
-            role = guild.get_role(await run_in_thread(Settings.get, int, "mod_role"))
-            if role is None:
-                await ctx.send(translations.no_role_set)
-            else:
-                await ctx.send(f"`@{role}` ({role.id})")
-        else:
-            await run_in_thread(Settings.set, int, "mod_role", role.id)
-            await ctx.send(translations.role_set)
-            await ctx.send(translations.f_log_role_set_mod(role.name, role.id))
+        await configure_role(ctx, "mod", role)
 
-    @team.command(name="supporter", aliases=["supp", "s"])
+    @roles.command(name="supporter", aliases=["supp"])
     async def set_supp(self, ctx: Context, role: Optional[Role]):
         """
         set supporter role
         """
 
-        guild: Guild = ctx.guild
-        if role is None:
-            role = guild.get_role(await run_in_thread(Settings.get, int, "supp_role"))
-            if role is None:
-                await ctx.send(translations.no_role_set)
-            else:
-                await ctx.send(f"`@{role}` ({role.id})")
-        else:
-            await run_in_thread(Settings.set, int, "supp_role", role.id)
-            await ctx.send(translations.role_set)
-            await ctx.send(translations.f_log_role_set_supp(role.name, role.id))
+        await configure_role(ctx, "supp", role)
 
-    @team.command(name="team", aliases=["t"])
+    @roles.command(name="team")
     async def set_team(self, ctx: Context, role: Optional[Role]):
         """
         set team role
         """
 
-        guild: Guild = ctx.guild
-        if role is None:
-            role = guild.get_role(await run_in_thread(Settings.get, int, "team_role"))
-            if role is None:
-                await ctx.send(translations.no_role_set)
-            else:
-                await ctx.send(f"`@{role}` ({role.id})")
-        else:
-            await run_in_thread(Settings.set, int, "team_role", role.id)
-            await ctx.send(translations.role_set)
-            await ctx.send(translations.f_log_role_set_team(role.name, role.id))
+        await configure_role(ctx, "team", role)
+
+    @roles.command(name="mute")
+    async def set_mute(self, ctx: Context, role: Optional[Role]):
+        """
+        set mute role
+        """
+
+        await configure_role(ctx, "mute", role)
