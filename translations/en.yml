@@ -323,6 +323,8 @@ log_role_set_team: "Team role has been set to `@{}` ({})"
 log_role_set_mute: "Mute role has been set to `@{}` ({})"
 
 no_dm: User does not allow direct messages.
+reported_response: User reported.
+log_reported: "{} reported {} because of `{}`."
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: User warned.
 log_warned: "{} warned {} because of `{}`."

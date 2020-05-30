@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context
 
 from database import run_in_thread
-from models.mod import Warn
+from models.mod import Warn, Report
 from models.settings import Settings
 from translations import translations
 from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER
@@ -79,6 +79,17 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         await configure_role(ctx, "mute", role)
+
+    @commands.command(name="report")
+    @guild_only()
+    async def report(self, ctx: Context, member: Member, *, reason: str):
+        """
+        report a member
+        """
+
+        await run_in_thread(Report.create, member.id, ctx.author.id, reason)
+        await ctx.send(translations.reported_response)
+        await send_to_changelog(ctx.guild, translations.f_log_reported(ctx.author.mention, member.mention, reason))
 
     @commands.command(name="warn")
     @permission_level(SUPPORTER)
