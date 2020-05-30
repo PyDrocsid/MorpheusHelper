@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context
 from database import run_in_thread
 from models.settings import Settings
 from translations import translations
-from util import permission_level
+from util import permission_level, ADMINISTRATOR
 
 
 class ModCog(Cog, name="Mod Tools"):
@@ -15,7 +15,7 @@ class ModCog(Cog, name="Mod Tools"):
         self.bot = bot
 
     @commands.group(name="mod")
-    @permission_level(2)
+    @permission_level(ADMINISTRATOR)
     @guild_only()
     async def mod(self, ctx: Context):
         """
