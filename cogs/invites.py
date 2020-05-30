@@ -9,7 +9,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
 from translations import translations
-from util import permission_level, check_access, send_to_changelog, get_prefix, SUPPORTER
+from util import permission_level, check_permissions, send_to_changelog, get_prefix, SUPPORTER
 
 
 def get_discord_invite(url) -> Optional[str]:
@@ -36,7 +36,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         self.bot = bot
 
     async def check_message(self, message: Message) -> bool:
-        if message.guild is None or message.author.bot or await check_access(message.author):
+        if message.guild is None or message.author.bot or await check_permissions(message.author, SUPPORTER):
             return True
 
         forbidden = []
@@ -196,7 +196,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if row is None:
             raise CommandError(translations.server_not_whitelisted)
 
-        if not await check_access(ctx.author) and ctx.author.id != row.applicant:
+        if not await check_permissions(ctx.author, SUPPORTER) and ctx.author.id != row.applicant:
             raise CommandError(translations.not_allowed)
 
         await run_in_thread(AllowedInvite.update, guild.id, invite.code)

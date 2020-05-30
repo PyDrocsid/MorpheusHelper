@@ -10,7 +10,7 @@ from requests import RequestException
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from translations import translations
-from util import permission_level, check_access, send_to_changelog, MODERATOR
+from util import permission_level, check_permissions, send_to_changelog, MODERATOR
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -18,7 +18,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         self.bot = bot
 
     async def on_message(self, message: Message) -> bool:
-        if message.guild is None or message.author.bot or await check_access(message.author):
+        if message.guild is None or message.author.bot or await check_permissions(message.author, MODERATOR):
             return True
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return True

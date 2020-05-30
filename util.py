@@ -30,7 +30,7 @@ def make_error(message) -> str:
 PUBLIC, SUPPORTER, MODERATOR, ADMINISTRATOR, OWNER = range(5)
 
 
-async def check_access(member: Member) -> int:
+async def get_permission_level(member: Member) -> int:
     if member.id == 370876111992913922:
         return OWNER
 
@@ -49,10 +49,14 @@ async def check_access(member: Member) -> int:
     return PUBLIC
 
 
+async def check_permissions(member: Member, minimum_permission_level: int) -> bool:
+    return await get_permission_level(member) >= minimum_permission_level
+
+
 def permission_level(level: int):
     @check
     async def inner(ctx: Context):
-        if await check_access(ctx.author) < level:
+        if not await check_permissions(ctx.author, level):
             raise CheckFailure(translations.not_allowed)
 
         return True

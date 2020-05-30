@@ -13,7 +13,7 @@ from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from multilock import MultiLock
 from translations import translations
-from util import permission_level, send_to_changelog, check_access, get_prefix, MODERATOR
+from util import permission_level, send_to_changelog, check_permissions, get_prefix, MODERATOR, SUPPORTER
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -91,7 +91,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if group is None or group.public:
             raise CommandError(translations.not_in_private_voice)
 
-        if owner_required and dyn_channel.owner != member.id and not await check_access(member):
+        if owner_required and dyn_channel.owner != member.id and not await check_permissions(member, SUPPORTER):
             raise CommandError(translations.private_voice_owner_required)
 
         voice_channel: VoiceChannel = self.bot.get_channel(dyn_channel.channel_id)
