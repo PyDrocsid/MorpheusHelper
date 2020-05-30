@@ -423,11 +423,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.add_roles(role)
 
         group: Optional[DynamicVoiceGroup] = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
-        for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
-            dchannel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
-            if dchannel is not None:
-                for member in dchannel.members:
-                    await member.add_roles(role)
+        if group is not None:
+            for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
+                dchannel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
+                if dchannel is not None:
+                    for member in dchannel.members:
+                        await member.add_roles(role)
 
         await ctx.send(translations.f_link_created(channel, role))
         await send_to_changelog(ctx.guild, translations.f_link_created(channel, role))
