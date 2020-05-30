@@ -13,7 +13,7 @@ from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from multilock import MultiLock
 from translations import translations
-from util import permission_level, send_to_changelog, check_access
+from util import permission_level, send_to_changelog, check_access, get_prefix
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -143,6 +143,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         else:
             await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id, text_chat.id, member.id)
         await self.update_dynamic_voice_group(group)
+        await text_chat.send(translations.f_dyn_voice_created(member.mention))
+        if not group.public:
+            await text_chat.send(translations.f_private_dyn_voice_help(prefix=await get_prefix()))
 
     async def member_leave(self, member: Member, channel: VoiceChannel):
         await member.remove_roles(*await gather_roles(member.guild, channel.id))
