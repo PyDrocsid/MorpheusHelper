@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context
 from database import run_in_thread
 from models.settings import Settings
 from translations import translations
-from util import permission_level, ADMINISTRATOR
+from util import permission_level, ADMINISTRATOR, send_to_changelog
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
@@ -21,7 +21,7 @@ async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
     else:
         await run_in_thread(Settings.set, int, role_name + "_role", role.id)
         await ctx.send(translations.role_set)
-        await ctx.send(getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
+        await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
 
 
 class ModCog(Cog, name="Mod Tools"):
