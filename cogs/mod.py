@@ -1,14 +1,15 @@
+from datetime import datetime, timedelta
 from typing import Optional
 
 from discord import Role, Guild, Member, Forbidden, HTTPException
-from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context
+from discord.ext import commands, tasks
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
-from database import run_in_thread
-from models.mod import Warn, Report
+from database import run_in_thread, db
+from models.mod import Warn, Report, Mute
 from models.settings import Settings
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER
+from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, check_permissions
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
@@ -28,6 +29,28 @@ async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
 class ModCog(Cog, name="Mod Tools"):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    async def on_ready(self):
+        try:
+            self.mod_loop.start()
+        except RuntimeError:
+            self.mod_loop.restart()
+        return True
+
+    @tasks.loop(seconds=10)
+    async def mod_loop(self):
+        guild: Guild = self.bot.guilds[0]
+        mute_role: Optional[Role] = guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
+        if mute_role is None:
+            return
+
+        for mute in await run_in_thread(db.query, Mute, active=True):
+            if datetime.now() >= mute.timestamp + timedelta(days=mute.days):
+                member: Optional[Member] = guild.get_member(mute.member)
+                if member is not None:
+                    await member.remove_roles(mute_role)
+                await send_to_changelog(guild, translations.f_log_unmuted(member.mention))
+                await run_in_thread(Mute.deactivate, mute.id)
 
     @commands.group(name="roles")
     @permission_level(ADMINISTRATOR)
@@ -106,3 +129,33 @@ class ModCog(Cog, name="Mod Tools"):
         await run_in_thread(Warn.create, member.id, ctx.author.id, reason)
         await ctx.send(translations.warned_response)
         await send_to_changelog(ctx.guild, translations.f_log_warned(ctx.author.mention, member.mention, reason))
+
+    @commands.command(name="mute")
+    @permission_level(SUPPORTER)
+    @guild_only()
+    async def mute(self, ctx: Context, member: Member, days: int, *, reason: str):
+        """
+        mute a member
+        """
+
+        if not 0 < days < (1 << 31):
+            raise CommandError(translations.invalid_mute_time)
+
+        if member.bot or await check_permissions(member, SUPPORTER):
+            raise CommandError(translations.cannot_mute)
+
+        mute_role: Optional[Role] = ctx.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
+        if mute_role is None:
+            raise CommandError(translations.mute_role_not_set)
+
+        if mute_role in member.roles:
+            raise CommandError(translations.already_muted)
+
+        await member.add_roles(mute_role)
+        try:
+            await member.send(translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason))
+        except (Forbidden, HTTPException):
+            await ctx.send(translations.no_dm)
+        await run_in_thread(Mute.create, member.id, ctx.author.id, days, reason)
+        await ctx.send(translations.muted_response)
+        await send_to_changelog(ctx.guild, translations.f_log_muted(ctx.author.mention, member.mention, days, reason))

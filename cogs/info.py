@@ -22,6 +22,7 @@ class InfoCog(Cog, name="Server Information"):
             self.status_loop.start()
         except RuntimeError:
             self.status_loop.restart()
+        return True
 
     @tasks.loop(seconds=20)
     async def status_loop(self):

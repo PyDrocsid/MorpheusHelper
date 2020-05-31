@@ -14,7 +14,7 @@ T = TypeVar("T")
 class DB:
     def __init__(self, hostname, port, database, username, password):
         self.engine: Engine = create_engine(
-            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}",
+            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}?charset=utf8mb4",
             pool_pre_ping=True,
             pool_size=10,
             max_overflow=20,

@@ -328,3 +328,11 @@ log_reported: "{} reported {} because of `{}`."
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: User warned.
 log_warned: "{} warned {} because of `{}`."
+invalid_mute_time: Invalid mute time.
+mute_role_not_set: User could not be muted because no mute role is configured.
+cannot_mute: This member cannot be muted.
+already_muted: User is already muted.
+muted: "{} just muted you on {} for {} days:```\n{}\n```"
+muted_response: User muted.
+log_muted: "{} muted {} for {} days because of `{}`."
+log_unmuted: "Unmuted {} because the mute time for this user has expired."
