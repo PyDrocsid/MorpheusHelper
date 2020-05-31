@@ -321,6 +321,8 @@ log_role_set_mod: "Moderator role has been set to `@{}` ({})"
 log_role_set_supp: "Supporter role has been set to `@{}` ({})"
 log_role_set_team: "Team role has been set to `@{}` ({})"
 log_role_set_mute: "Mute role has been set to `@{}` ({})"
+role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
+role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.
 
 no_dm: User does not allow direct messages.
 reported_response: User reported.

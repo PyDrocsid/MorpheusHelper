@@ -12,7 +12,7 @@ from translations import translations
 from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, check_permissions
 
 
-async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
+async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
     guild: Guild = ctx.guild
     if role is None:
         role = guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
@@ -21,6 +21,11 @@ async def configure_role(ctx: Context, role_name: str, role: Optional[Role]):
         else:
             await ctx.send(f"`@{role}` ({role.id})")
     else:
+        if check_assignable:
+            if role > ctx.me.top_role:
+                raise CommandError(translations.f_role_not_set_too_high(role, ctx.me.top_role))
+            if role.managed:
+                raise CommandError(translations.f_role_not_set_managed_role(role))
         await run_in_thread(Settings.set, int, role_name + "_role", role.id)
         await ctx.send(translations.role_set)
         await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
@@ -101,7 +106,7 @@ class ModCog(Cog, name="Mod Tools"):
         set mute role
         """
 
-        await configure_role(ctx, "mute", role)
+        await configure_role(ctx, "mute", role, check_assignable=True)
 
     @commands.command(name="report")
     @guild_only()
