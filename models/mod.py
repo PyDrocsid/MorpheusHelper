@@ -75,3 +75,26 @@ class Kick(db.Base):
         row = Kick(member=member, mod=mod, timestamp=datetime.now(), reason=reason)
         db.add(row)
         return row
+
+
+class Ban(db.Base):
+    __tablename__ = "ban"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    mod: Union[Column, int] = Column(BigInteger)
+    timestamp: Union[Column, datetime] = Column(DateTime)
+    days: Union[Column, int] = Column(Integer)
+    reason: Union[Column, str] = Column(Text(collation="utf8_bin"))
+    active: Union[Column, bool] = Column(Boolean)
+
+    @staticmethod
+    def create(member: int, mod: int, days: int, reason: str) -> "Ban":
+        row = Ban(member=member, mod=mod, timestamp=datetime.now(), days=days, reason=reason, active=True)
+        db.add(row)
+        return row
+
+    @staticmethod
+    def deactivate(ban_id: int):
+        row = db.get(Ban, ban_id)
+        row.active = False

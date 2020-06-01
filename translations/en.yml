@@ -347,3 +347,12 @@ kicked: "{} just kicked you from {}:```\n{}\n```"
 kicked_response: User kicked.
 log_kicked: "{} kicked {} because of `{}`."
 cannot_kick: User could not be kicked because I don't have `kick_members` permission on this server.
+invalid_ban_time: Invalid ban time.
+cannot_ban: This member cannot be banned.
+cannot_ban_permissions: User could not be banned because I don't have `ban_members` permission on this server.
+banned: "{} just banned you from {} for {} days:```\n{}\n```"
+banned_inf: "{} just banned you from {}:```\n{}\n```"
+banned_response: User banned.
+log_banned: "{} banned {} for {} days because of `{}`."
+log_banned_inf: "{} banned {} because of `{}`."
+log_unbanned_expired: "Unbanned {} because the ban time for this user has expired."
