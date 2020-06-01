@@ -36,6 +36,14 @@ class ModCog(Cog, name="Mod Tools"):
         self.bot = bot
 
     async def on_ready(self):
+        guild: Guild = self.bot.guilds[0]
+        mute_role: Optional[Role] = guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
+        if mute_role is not None:
+            for mute in await run_in_thread(db.query, Mute, active=True):
+                member: Optional[Member] = guild.get_member(mute.member)
+                if member is not None:
+                    await member.add_roles(mute_role)
+
         try:
             self.mod_loop.start()
         except RuntimeError:
@@ -56,6 +64,16 @@ class ModCog(Cog, name="Mod Tools"):
                     await member.remove_roles(mute_role)
                 await send_to_changelog(guild, translations.f_log_unmuted_expired(member.mention))
                 await run_in_thread(Mute.deactivate, mute.id)
+
+    async def on_member_join(self, member: Member):
+        mute_role: Optional[Role] = member.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
+        if mute_role is None:
+            return True
+
+        if await run_in_thread(db.first, Mute, active=True, member=member.id) is not None:
+            await member.add_roles(mute_role)
+
+        return True
 
     @commands.group(name="roles")
     @permission_level(ADMINISTRATOR)
@@ -178,7 +196,7 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command(name="unmute")
     @permission_level(SUPPORTER)
     @guild_only()
-    async def mute(self, ctx: Context, member: Member, *, reason: str):
+    async def unmute(self, ctx: Context, member: Member, *, reason: str):
         """
         unmute a member
         """

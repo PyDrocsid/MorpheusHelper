@@ -280,6 +280,11 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 
 
 @bot.event
+async def on_member_join(member: Member):
+    await call_event_handlers("member_join", member, identifier=member.id)
+
+
+@bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
         await call_event_handlers("self_message", message, identifier=message.id)
