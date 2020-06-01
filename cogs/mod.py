@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
-from models.mod import Warn, Report, Mute
+from models.mod import Warn, Report, Mute, Kick
 from models.settings import Settings
 from translations import translations
 from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, check_permissions
@@ -214,3 +214,23 @@ class ModCog(Cog, name="Mod Tools"):
             await run_in_thread(Mute.deactivate, mute.id)
         await ctx.send(translations.unmuted_response)
         await send_to_changelog(ctx.guild, translations.f_log_unmuted(ctx.author.mention, member.mention, reason))
+
+    @commands.command(name="kick")
+    @permission_level(SUPPORTER)
+    @guild_only()
+    async def kick(self, ctx: Context, member: Member, *, reason: str):
+        """
+        kick a member
+        """
+
+        if not ctx.guild.me.guild_permissions.kick_members:
+            raise CommandError(translations.cannot_kick)
+
+        try:
+            await member.send(translations.f_kicked(ctx.author.mention, ctx.guild.name, reason))
+        except (Forbidden, HTTPException):
+            await ctx.send(translations.no_dm)
+        await member.kick()
+        await run_in_thread(Kick.create, member.id, ctx.author.id, reason)
+        await ctx.send(translations.kicked_response)
+        await send_to_changelog(ctx.guild, translations.f_log_kicked(ctx.author.mention, member.mention, reason))

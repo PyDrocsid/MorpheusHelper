@@ -59,3 +59,19 @@ class Mute(db.Base):
     def deactivate(mute_id: int):
         row = db.get(Mute, mute_id)
         row.active = False
+
+
+class Kick(db.Base):
+    __tablename__ = "kick"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    mod: Union[Column, int] = Column(BigInteger)
+    timestamp: Union[Column, datetime] = Column(DateTime)
+    reason: Union[Column, str] = Column(Text(collation="utf8_bin"))
+
+    @staticmethod
+    def create(member: int, mod: int, reason: str) -> "Kick":
+        row = Kick(member=member, mod=mod, timestamp=datetime.now(), reason=reason)
+        db.add(row)
+        return row

@@ -343,3 +343,7 @@ log_unmuted_expired: "Unmuted {} because the mute time for this user has expired
 unmuted_response: User unmuted.
 log_unmuted: "{} unmuted {} because of `{}`."
 not_muted: User is not muted.
+kicked: "{} just kicked you from {}:```\n{}\n```"
+kicked_response: User kicked.
+log_kicked: "{} kicked {} because of `{}`."
+cannot_kick: User could not be kicked because I don't have `kick_members` permission on this server.
