@@ -111,7 +111,7 @@ async def status_loop():
         await get_owner().send(content)
 
 
-@task.loop(hours=1)
+@tasks.loop(hours=5)
 async def programmerhumor_loop():
     await ProgrammerHumor.run(bot.get_channel(341284235581194241))  # videos-und-memes
 
