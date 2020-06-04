@@ -90,10 +90,13 @@ async def on_ready():
     if get_owner() is not None:
         try:
             status_loop.start()
-            programmerhumor_loop.start()
         except RuntimeError:
             status_loop.restart()
-            programmerhumor_loop.restart()
+
+    try:
+        programmerhumor_loop.start()
+    except RuntimeError:
+        programmerhumor_loop.restart()
 
     await call_event_handlers("ready")
 
