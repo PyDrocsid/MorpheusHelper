@@ -17,6 +17,7 @@ ADD multilock.py /app/
 ADD database.py /app/
 ADD util.py /app/
 ADD info.py /app/
+ADD programmerhumor.py /app/
 ADD models /app/models/
 ADD cogs /app/cogs/
 ADD morpheushelper.py /app/
