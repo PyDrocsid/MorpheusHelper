@@ -225,7 +225,7 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog(ctx.guild, translations.f_log_unmuted(ctx.author.mention, member.mention, reason))
 
     @commands.command(name="kick")
-    @permission_level(SUPPORTER)
+    @permission_level(MODERATOR)
     @guild_only()
     async def kick(self, ctx: Context, member: Member, *, reason: str):
         """

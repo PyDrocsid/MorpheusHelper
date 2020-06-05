@@ -16,7 +16,7 @@ from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
 from translations import translations
-from util import permission_level, make_error, check_permissions, send_to_changelog, MODERATOR
+from util import permission_level, make_error, check_permissions, send_to_changelog, MODERATOR, SUPPORTER
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -29,7 +29,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot:
             return True
 
-        access: bool = await check_permissions(member, MODERATOR)
+        access: bool = await check_permissions(member, SUPPORTER)
         if not (await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return True
 
@@ -53,7 +53,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot:
             return True
 
-        access: bool = await check_permissions(member, MODERATOR)
+        access: bool = await check_permissions(member, SUPPORTER)
         is_reactionpin_channel = await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None
         if message.pinned and (access or (is_reactionpin_channel and member == message.author)):
             await message.unpin()
