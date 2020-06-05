@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Union
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User
 from discord.ext import commands, tasks
@@ -59,7 +59,7 @@ class ModCog(Cog, name="Mod Tools"):
                 user: Optional[User] = await self.bot.fetch_user(ban.member)
                 if user is not None:
                     await guild.unban(user)
-                await send_to_changelog(guild, translations.f_log_unbanned_expired(f"<@{ban.member}>"))
+                await send_to_changelog(guild, translations.f_log_unbanned_expired(f"<@{ban.member}>", ban.member_name))
                 await run_in_thread(Ban.deactivate, ban.id)
 
         mute_role: Optional[Role] = guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
@@ -71,7 +71,9 @@ class ModCog(Cog, name="Mod Tools"):
                 member: Optional[Member] = guild.get_member(mute.member)
                 if member is not None:
                     await member.remove_roles(mute_role)
-                await send_to_changelog(guild, translations.f_log_unmuted_expired(f"<@{mute.member}>"))
+                await send_to_changelog(
+                    guild, translations.f_log_unmuted_expired(f"<@{mute.member}>", mute.member_name)
+                )
                 await run_in_thread(Mute.deactivate, mute.id)
 
     async def on_member_join(self, member: Member):
@@ -142,9 +144,11 @@ class ModCog(Cog, name="Mod Tools"):
         report a member
         """
 
-        await run_in_thread(Report.create, member.id, ctx.author.id, reason)
+        await run_in_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.reported_response)
-        await send_to_changelog(ctx.guild, translations.f_log_reported(ctx.author.mention, member.mention, reason))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_reported(ctx.author.mention, member.mention, member, reason)
+        )
 
     @commands.command(name="warn")
     @permission_level(SUPPORTER)
@@ -158,9 +162,11 @@ class ModCog(Cog, name="Mod Tools"):
             await member.send(translations.f_warned(ctx.author.mention, ctx.guild.name, reason))
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
-        await run_in_thread(Warn.create, member.id, ctx.author.id, reason)
+        await run_in_thread(Warn.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.warned_response)
-        await send_to_changelog(ctx.guild, translations.f_log_warned(ctx.author.mention, member.mention, reason))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_warned(ctx.author.mention, member.mention, member, reason)
+        )
 
     @commands.command(name="mute")
     @permission_level(SUPPORTER)
@@ -192,15 +198,17 @@ class ModCog(Cog, name="Mod Tools"):
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
         if days is not None:
-            await run_in_thread(Mute.create, member.id, ctx.author.id, days, reason)
+            await run_in_thread(Mute.create, member.id, str(member), ctx.author.id, days, reason)
             await ctx.send(translations.muted_response)
             await send_to_changelog(
-                ctx.guild, translations.f_log_muted(ctx.author.mention, member.mention, days, reason)
+                ctx.guild, translations.f_log_muted(ctx.author.mention, member.mention, member, days, reason)
             )
         else:
-            await run_in_thread(Mute.create, member.id, ctx.author.id, -1, reason)
+            await run_in_thread(Mute.create, member.id, str(member), ctx.author.id, -1, reason)
             await ctx.send(translations.muted_response)
-            await send_to_changelog(ctx.guild, translations.f_log_muted_inf(ctx.author.mention, member.mention, reason))
+            await send_to_changelog(
+                ctx.guild, translations.f_log_muted_inf(ctx.author.mention, member.mention, member, reason)
+            )
 
     @commands.command(name="unmute")
     @permission_level(SUPPORTER)
@@ -222,7 +230,9 @@ class ModCog(Cog, name="Mod Tools"):
         for mute in await run_in_thread(db.query, Mute, active=True, member=member.id):
             await run_in_thread(Mute.deactivate, mute.id)
         await ctx.send(translations.unmuted_response)
-        await send_to_changelog(ctx.guild, translations.f_log_unmuted(ctx.author.mention, member.mention, reason))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_unmuted(ctx.author.mention, member.mention, member, reason)
+        )
 
     @commands.command(name="kick")
     @permission_level(MODERATOR)
@@ -240,45 +250,81 @@ class ModCog(Cog, name="Mod Tools"):
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
         await member.kick()
-        await run_in_thread(Kick.create, member.id, ctx.author.id, reason)
+        await run_in_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.kicked_response)
-        await send_to_changelog(ctx.guild, translations.f_log_kicked(ctx.author.mention, member.mention, reason))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_kicked(ctx.author.mention, member.mention, member, reason)
+        )
 
     @commands.command(name="ban")
     @permission_level(MODERATOR)
     @guild_only()
-    async def ban(self, ctx: Context, member: Member, days: Optional[int], *, reason: str):
+    async def ban(self, ctx: Context, user: Union[Member, User, int], days: Optional[int], *, reason: str):
         """
-        ban a member
+        ban a user
         """
 
         if not ctx.guild.me.guild_permissions.ban_members:
-            raise CommandError(translations.cannot_ban)
+            raise CommandError(translations.cannot_ban_permissions)
 
         if days is not None and not 0 < days < (1 << 31):
             raise CommandError(translations.invalid_ban_time)
 
-        if member.bot or await check_permissions(member, SUPPORTER):
+        if isinstance(user, int):
+            user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
+            if user is None:
+                raise CommandError(translations.user_not_found)
+
+        if user.bot or (isinstance(user, Member) and await check_permissions(user, SUPPORTER)):
             raise CommandError(translations.cannot_ban)
 
         try:
             if days is not None:
-                await member.send(translations.f_banned(ctx.author.mention, ctx.guild.name, days, reason))
+                await user.send(translations.f_banned(ctx.author.mention, ctx.guild.name, days, reason))
             else:
-                await member.send(translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason))
+                await user.send(translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason))
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
 
-        await member.ban(delete_message_days=1)
+        await ctx.guild.ban(user, delete_message_days=1)
         if days is not None:
-            await run_in_thread(Ban.create, member.id, ctx.author.id, days, reason)
+            await run_in_thread(Ban.create, user.id, str(user), ctx.author.id, days, reason)
             await ctx.send(translations.banned_response)
             await send_to_changelog(
-                ctx.guild, translations.f_log_banned(ctx.author.mention, member.mention, days, reason)
+                ctx.guild, translations.f_log_banned(ctx.author.mention, user.mention, user, days, reason)
             )
         else:
-            await run_in_thread(Ban.create, member.id, ctx.author.id, -1, reason)
+            await run_in_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason)
             await ctx.send(translations.banned_response)
             await send_to_changelog(
-                ctx.guild, translations.f_log_banned_inf(ctx.author.mention, member.mention, reason)
+                ctx.guild, translations.f_log_banned_inf(ctx.author.mention, user.mention, user, reason)
             )
+
+    @commands.command(name="unban")
+    @permission_level(MODERATOR)
+    @guild_only()
+    async def unban(self, ctx: Context, user: Union[User, int], *, reason: str):
+        """
+        unban a user
+        """
+
+        if not ctx.guild.me.guild_permissions.ban_members:
+            raise CommandError(translations.cannot_unban_permissions)
+
+        if isinstance(user, int):
+            user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
+            if user is None:
+                raise CommandError(translations.user_not_found)
+
+        if ctx.guild.get_member(user.id) is not None:
+            raise CommandError(translations.not_banned)
+
+        try:
+            await ctx.guild.unban(user)
+        except HTTPException:
+            raise CommandError(translations.not_banned)
+
+        for ban in await run_in_thread(db.query, Ban, active=True, member=user.id):
+            await run_in_thread(Ban.deactivate, ban.id)
+        await ctx.send(translations.unbanned_response)
+        await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))

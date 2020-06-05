@@ -326,10 +326,10 @@ role_not_set_managed_role: Role could not be set because `@{}` cannot be assigne
 
 no_dm: User does not allow direct messages.
 reported_response: User reported.
-log_reported: "{} reported {} because of `{}`."
+log_reported: "{} reported {} (`{}`) because of `{}`."
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: User warned.
-log_warned: "{} warned {} because of `{}`."
+log_warned: "{} warned {} (`{}`) because of `{}`."
 invalid_mute_time: Invalid mute time.
 mute_role_not_set: User could not be muted because no mute role is configured.
 cannot_mute: This member cannot be muted.
@@ -337,15 +337,15 @@ already_muted: User is already muted.
 muted: "{} just muted you on {} for {} days:```\n{}\n```"
 muted_inf: "{} just muted you on {}:```\n{}\n```"
 muted_response: User muted.
-log_muted: "{} muted {} for {} days because of `{}`."
-log_muted_inf: "{} muted {} because of `{}`."
-log_unmuted_expired: "Unmuted {} because the mute time for this user has expired."
+log_muted: "{} muted {} (`{}`) for {} days because of `{}`."
+log_muted_inf: "{} muted {} (`{}`) because of `{}`."
+log_unmuted_expired: "Unmuted {} (`{}`) because the mute time for this user has expired."
 unmuted_response: User unmuted.
-log_unmuted: "{} unmuted {} because of `{}`."
+log_unmuted: "{} unmuted {} (`{}`) because of `{}`."
 not_muted: User is not muted.
 kicked: "{} just kicked you from {}:```\n{}\n```"
 kicked_response: User kicked.
-log_kicked: "{} kicked {} because of `{}`."
+log_kicked: "{} kicked {} (`{}`) because of `{}`."
 cannot_kick: User could not be kicked because I don't have `kick_members` permission on this server.
 invalid_ban_time: Invalid ban time.
 cannot_ban: This member cannot be banned.
@@ -353,6 +353,11 @@ cannot_ban_permissions: User could not be banned because I don't have `ban_membe
 banned: "{} just banned you from {} for {} days:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
 banned_response: User banned.
-log_banned: "{} banned {} for {} days because of `{}`."
-log_banned_inf: "{} banned {} because of `{}`."
-log_unbanned_expired: "Unbanned {} because the ban time for this user has expired."
+log_banned: "{} banned {} (`{}`) for {} days because of `{}`."
+log_banned_inf: "{} banned {} (`{}`) because of `{}`."
+log_unbanned_expired: "Unbanned {} (`{}`) because the ban time for this user has expired."
+not_banned: This member is not banned.
+unbanned_response: User unbanned.
+log_unbanned: "{} unbanned {} (`{}`) because of `{}`."
+cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
+user_not_found: User not found.
