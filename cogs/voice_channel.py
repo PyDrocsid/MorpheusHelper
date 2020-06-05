@@ -6,11 +6,11 @@ from discord import CategoryChannel, PermissionOverwrite
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
-from discord.utils import get
 
 from database import run_in_thread, db
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
+from models.settings import Settings
 from multilock import MultiLock
 from translations import translations
 from util import permission_level, send_to_changelog, check_permissions, get_prefix, MODERATOR, SUPPORTER
@@ -130,7 +130,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             guild.default_role: PermissionOverwrite(read_messages=False, connect=False),
             guild.me: PermissionOverwrite(read_messages=True),
         }
-        if (team_role := get(guild.roles, name="Team")) is not None:
+        if (team_role := guild.get_role(await run_in_thread(Settings.get, int, "team_role"))) is not None:
             overwrites[team_role] = PermissionOverwrite(read_messages=True, connect=True)
         text_chat: TextChannel = await category.create_text_channel(chan.name, overwrites=overwrites)
         await chan.edit(position=channel.position + number)
@@ -345,7 +345,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(translations.cannot_remove_member)
 
         await voice_channel.set_permissions(member, overwrite=None)
-        if member.guild_permissions.administrator or any(role.name == "Team" for role in member.roles):
+        team_role = await run_in_thread(Settings.get, int, "team_role")
+        if member.guild_permissions.administrator or any(role.id == team_role for role in member.roles):
             raise CommandError(translations.member_could_not_be_kicked)
 
         await member.move_to(None)
