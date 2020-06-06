@@ -45,6 +45,9 @@ class DB:
     def first(self, model: Type[T], **kwargs) -> Optional[T]:
         return self.query(model, **kwargs).first()
 
+    def count(self, model: Type[T], **kwargs) -> int:
+        return self.query(model, **kwargs).count()
+
     def get(self, model: Type[T], primary_key) -> Optional[T]:
         return self.session.query(model).get(primary_key)
 

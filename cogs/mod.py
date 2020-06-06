@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union
 
-from discord import Role, Guild, Member, Forbidden, HTTPException, User
+from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -328,3 +328,60 @@ class ModCog(Cog, name="Mod Tools"):
             await run_in_thread(Ban.deactivate, ban.id)
         await ctx.send(translations.unbanned_response)
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
+
+    @commands.command(name="stats")
+    @permission_level(SUPPORTER)
+    @guild_only()
+    async def stats(self, ctx: Context, user: Union[User, int]):
+        """
+        show statistics about a user
+        """
+
+        if isinstance(user, int):
+            try:
+                user = await self.bot.fetch_user(user)
+            except NotFound:
+                pass
+
+        user_id = user if isinstance(user, int) else user.id
+        embed = Embed(title=translations.stats, color=0x35992C)
+        if isinstance(user, int):
+            embed.set_author(name=str(user))
+        else:
+            embed.set_author(name=str(user), icon_url=user.avatar_url)
+
+        async def count(cls):
+            if cls is Report:
+                active = await run_in_thread(db.count, cls, reporter=user_id)
+            else:
+                active = await run_in_thread(db.count, cls, mod=user_id)
+            passive = await run_in_thread(db.count, cls, member=user_id)
+            return translations.f_active_passive(active, passive)
+
+        embed.add_field(name=translations.reported_cnt, value=await count(Report))
+        embed.add_field(name=translations.warned_cnt, value=await count(Warn))
+        embed.add_field(name=translations.muted_cnt, value=await count(Mute))
+        embed.add_field(name=translations.kicked_cnt, value=await count(Kick))
+        embed.add_field(name=translations.banned_cnt, value=await count(Ban))
+
+        if (ban := await run_in_thread(db.first, Ban, member=user_id, active=True)) is not None:
+            if ban.days != -1:
+                expiry_date: datetime = ban.timestamp + timedelta(days=ban.days)
+                days_left = (expiry_date - datetime.now()).days + 1
+                status = translations.f_status_banned_days(ban.days, days_left)
+            else:
+                status = translations.status_banned
+        elif (mute := await run_in_thread(db.first, Mute, member=user_id, active=True)) is not None:
+            if mute.days != -1:
+                expiry_date: datetime = mute.timestamp + timedelta(days=mute.days)
+                days_left = (expiry_date - datetime.now()).days + 1
+                status = translations.f_status_muted_days(mute.days, days_left)
+            else:
+                status = translations.status_muted
+        elif (member := ctx.guild.get_member(user_id)) is not None:
+            status = translations.f_member_since(member.joined_at.strftime("%d.%m.%Y %H:%M:%S"))
+        else:
+            status = translations.not_a_member
+        embed.add_field(name=translations.status, value=status, inline=False)
+
+        await ctx.send(embed=embed)

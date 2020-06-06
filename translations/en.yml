@@ -361,3 +361,18 @@ unbanned_response: User unbanned.
 log_unbanned: "{} unbanned {} (`{}`) because of `{}`."
 cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
 user_not_found: User not found.
+
+stats: User Statistics
+reported_cnt: ":speech_balloon:  Reported"
+warned_cnt: ":warning:  Warned"
+muted_cnt: ":mute:  Muted"
+kicked_cnt: ":x:  Kicked"
+banned_cnt: ":no_entry:  Banned"
+active_passive: "active: `{}`\npassive: `{}`"
+status: Status
+member_since: ":clock2:  Member since {} (UTC)"
+not_a_member: ":x:  User is not a member of this server."
+status_banned: ":no_entry:  User is banned from this server."
+status_banned_days: ":no_entry:  User is banned for {} days from this server ({} days left)."
+status_muted: ":mute:  User is muted on this server."
+status_muted_days: ":mute:  User is muted for {} days on this server ({} days left)."
