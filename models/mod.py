@@ -18,7 +18,9 @@ class Report(db.Base):
 
     @staticmethod
     def create(member: int, member_name: str, reporter: int, reason: str) -> "Report":
-        row = Report(member=member, member_name=member_name, reporter=reporter, timestamp=datetime.now(), reason=reason)
+        row = Report(
+            member=member, member_name=member_name, reporter=reporter, timestamp=datetime.utcnow(), reason=reason
+        )
         db.add(row)
         return row
 
@@ -35,7 +37,7 @@ class Warn(db.Base):
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, reason: str) -> "Warn":
-        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.now(), reason=reason)
+        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
         db.add(row)
         return row
 
@@ -60,7 +62,7 @@ class Mute(db.Base):
             member=member,
             member_name=member_name,
             mod=mod,
-            timestamp=datetime.now(),
+            timestamp=datetime.utcnow(),
             days=days,
             reason=reason,
             active=True,
@@ -90,7 +92,7 @@ class Kick(db.Base):
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, reason: str) -> "Kick":
-        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.now(), reason=reason)
+        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
         db.add(row)
         return row
 
@@ -115,7 +117,7 @@ class Ban(db.Base):
             member=member,
             member_name=member_name,
             mod=mod,
-            timestamp=datetime.now(),
+            timestamp=datetime.utcnow(),
             days=days,
             reason=reason,
             active=True,

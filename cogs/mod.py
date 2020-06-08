@@ -144,6 +144,9 @@ class ModCog(Cog, name="Mod Tools"):
         report a member
         """
 
+        if member.bot:
+            raise CommandError(translations.cannot_report)
+
         await run_in_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.reported_response)
         await send_to_changelog(
@@ -157,6 +160,9 @@ class ModCog(Cog, name="Mod Tools"):
         """
         warn a member
         """
+
+        if member.bot:
+            raise CommandError(translations.cannot_warn)
 
         try:
             await member.send(translations.f_warned(ctx.author.mention, ctx.guild.name, reason))
@@ -243,6 +249,9 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         if not ctx.guild.me.guild_permissions.kick_members:
+            raise CommandError(translations.cannot_kick_permissions)
+
+        if member.bot or member.top_role >= ctx.guild.me.top_role:
             raise CommandError(translations.cannot_kick)
 
         try:
@@ -275,7 +284,7 @@ class ModCog(Cog, name="Mod Tools"):
             if user is None:
                 raise CommandError(translations.user_not_found)
 
-        if user.bot or (isinstance(user, Member) and await check_permissions(user, SUPPORTER)):
+        if user.bot or (isinstance(user, Member) and user.top_role >= ctx.guild.me.top_role):
             raise CommandError(translations.cannot_ban)
 
         try:

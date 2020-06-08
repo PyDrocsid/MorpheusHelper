@@ -325,8 +325,10 @@ role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
 role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.
 
 no_dm: User does not allow direct messages.
+cannot_report: This member cannot be reported.
 reported_response: User reported.
 log_reported: "{} reported {} (`{}`) because of `{}`."
+cannot_warn: This member cannot be warned.
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: User warned.
 log_warned: "{} warned {} (`{}`) because of `{}`."
@@ -346,7 +348,7 @@ not_muted: User is not muted.
 kicked: "{} just kicked you from {}:```\n{}\n```"
 kicked_response: User kicked.
 log_kicked: "{} kicked {} (`{}`) because of `{}`."
-cannot_kick: User could not be kicked because I don't have `kick_members` permission on this server.
+cannot_kick_permissions: User could not be kicked because I don't have `kick_members` permission on this server.
 invalid_ban_time: Invalid ban time.
 cannot_ban: This member cannot be banned.
 cannot_ban_permissions: User could not be banned because I don't have `ban_members` permission on this server.
