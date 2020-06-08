@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, Union
+from typing import Optional, Union, List, Tuple
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
@@ -228,7 +228,7 @@ class ModCog(Cog, name="Mod Tools"):
         await member.remove_roles(mute_role)
 
         for mute in await run_in_thread(db.query, Mute, active=True, member=member.id):
-            await run_in_thread(Mute.deactivate, mute.id)
+            await run_in_thread(Mute.deactivate, mute.id, reason)
         await ctx.send(translations.unmuted_response)
         await send_to_changelog(
             ctx.guild, translations.f_log_unmuted(ctx.author.mention, member.mention, member, reason)
@@ -325,7 +325,7 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.not_banned)
 
         for ban in await run_in_thread(db.query, Ban, active=True, member=user.id):
-            await run_in_thread(Ban.deactivate, ban.id)
+            await run_in_thread(Ban.deactivate, ban.id, reason)
         await ctx.send(translations.unbanned_response)
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
 
@@ -385,3 +385,71 @@ class ModCog(Cog, name="Mod Tools"):
         embed.add_field(name=translations.status, value=status, inline=False)
 
         await ctx.send(embed=embed)
+
+    @commands.command(name="userlogs", aliases=["userlog", "ulog"])
+    @permission_level(SUPPORTER)
+    @guild_only()
+    async def userlogs(self, ctx: Context, user: Union[User, int]):
+        """
+        show moderation log of a user
+        """
+
+        if isinstance(user, int):
+            try:
+                user = await self.bot.fetch_user(user)
+            except NotFound:
+                pass
+
+        user_id = user if isinstance(user, int) else user.id
+
+        out: List[Tuple[datetime, str]] = []
+        for report in await run_in_thread(db.query, Report, member=user_id):
+            out.append((report.timestamp, translations.f_ulog_reported(f"<@{report.reporter}>", report.reason)))
+        for warn in await run_in_thread(db.query, Warn, member=user_id):
+            out.append((warn.timestamp, translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason)))
+        for mute in await run_in_thread(db.query, Mute, member=user_id):
+            if mute.days == -1:
+                out.append((mute.timestamp, translations.f_ulog_muted_inf(f"<@{mute.mod}>", mute.reason)))
+            else:
+                out.append((mute.timestamp, translations.f_ulog_muted(f"<@{mute.mod}>", mute.days, mute.reason)))
+            if not mute.active:
+                if mute.unmute_reason is None:
+                    out.append((mute.deactivation_timestamp, translations.ulog_unmuted_expired))
+                else:
+                    out.append(
+                        (mute.deactivation_timestamp, translations.f_ulog_unmuted(f"<@{mute.mod}>", mute.unmute_reason))
+                    )
+        for kick in await run_in_thread(db.query, Kick, member=user_id):
+            out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
+        for ban in await run_in_thread(db.query, Ban, member=user_id):
+            if ban.days == -1:
+                out.append((ban.timestamp, translations.f_ulog_banned_inf(f"<@{ban.mod}>", ban.reason)))
+            else:
+                out.append((ban.timestamp, translations.f_ulog_banned(f"<@{ban.mod}>", ban.days, ban.reason)))
+            if not ban.active:
+                if ban.unban_reason is None:
+                    out.append((ban.deactivation_timestamp, translations.ulog_unbanned_expired))
+                else:
+                    out.append(
+                        (ban.deactivation_timestamp, translations.f_ulog_unbanned(f"<@{ban.mod}>", ban.unban_reason))
+                    )
+
+        out.sort()
+        embeds = []
+        for i, row in enumerate(out):
+            if i % 25 == 0:
+                embed = Embed(color=0x34B77E)
+                if i == 0:
+                    embed.title = translations.userlogs
+                    if isinstance(user, int):
+                        embed.set_author(name=str(user))
+                    else:
+                        embed.set_author(name=str(user), icon_url=user.avatar_url)
+                embeds.append(embed)
+            embeds[-1].add_field(name=row[0].strftime("%d.%m.%Y %H:%M:%S"), value=row[1], inline=False)
+        if out:
+            embeds[-1].set_footer(text=translations.utc_note)
+            for embed in embeds:
+                await ctx.send(embed=embed)
+        else:
+            await ctx.send(translations.ulog_empty)

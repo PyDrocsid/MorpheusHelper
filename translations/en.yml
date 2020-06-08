@@ -376,3 +376,17 @@ status_banned: ":no_entry:  User is banned from this server."
 status_banned_days: ":no_entry:  User is banned for {} days from this server ({} days left)."
 status_muted: ":mute:  User is muted on this server."
 status_muted_days: ":mute:  User is muted for {} days on this server ({} days left)."
+userlogs: User Logs
+ulog_empty: No entries for this user.
+ulog_reported: ":speech_balloon:  **Reported** by {} because of `{}`"
+ulog_warned: ":warning:  **Warned** by {} because of `{}`"
+ulog_muted: ":mute:  **Muted** by {} for {} days because of `{}`"
+ulog_muted_inf: ":mute:  **Muted** by {} because of `{}`"
+ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
+ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
+ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
+ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
+ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
+ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
+ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
+utc_note: Timestamps in UTC

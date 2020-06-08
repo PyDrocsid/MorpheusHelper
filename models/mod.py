@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Union
+from typing import Union, Optional
 
 from sqlalchemy import Column, Integer, BigInteger, DateTime, Text, Boolean
 
@@ -51,6 +51,8 @@ class Mute(db.Base):
     days: Union[Column, int] = Column(Integer)
     reason: Union[Column, str] = Column(Text(collation="utf8_bin"))
     active: Union[Column, bool] = Column(Boolean)
+    deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
+    unmute_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8_bin"), nullable=True)
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Mute":
@@ -62,14 +64,18 @@ class Mute(db.Base):
             days=days,
             reason=reason,
             active=True,
+            deactivation_timestamp=None,
+            unmute_reason=None,
         )
         db.add(row)
         return row
 
     @staticmethod
-    def deactivate(mute_id: int):
-        row = db.get(Mute, mute_id)
+    def deactivate(mute_id: int, reason: str = None):
+        row: Mute = db.get(Mute, mute_id)
         row.active = False
+        row.deactivation_timestamp = datetime.now()
+        row.unmute_reason = reason
 
 
 class Kick(db.Base):
@@ -100,6 +106,8 @@ class Ban(db.Base):
     days: Union[Column, int] = Column(Integer)
     reason: Union[Column, str] = Column(Text(collation="utf8_bin"))
     active: Union[Column, bool] = Column(Boolean)
+    deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
+    unban_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8_bin"), nullable=True)
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Ban":
@@ -111,11 +119,15 @@ class Ban(db.Base):
             days=days,
             reason=reason,
             active=True,
+            deactivation_timestamp=None,
+            unban_reason=None,
         )
         db.add(row)
         return row
 
     @staticmethod
-    def deactivate(ban_id: int):
-        row = db.get(Ban, ban_id)
+    def deactivate(ban_id: int, unban_reason: str = None):
+        row: Ban = db.get(Ban, ban_id)
         row.active = False
+        row.deactivation_timestamp = datetime.now()
+        row.unban_reason = unban_reason
