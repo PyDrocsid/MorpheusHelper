@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
-from models.mod import Warn, Report, Mute, Kick, Ban
+from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave
 from models.settings import Settings
 from translations import translations
 from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, check_permissions, MODERATOR
@@ -77,6 +77,7 @@ class ModCog(Cog, name="Mod Tools"):
                 await run_in_thread(Mute.deactivate, mute.id)
 
     async def on_member_join(self, member: Member):
+        await run_in_thread(Join.create, member.id, str(member))
         mute_role: Optional[Role] = member.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is None:
             return True
@@ -85,6 +86,9 @@ class ModCog(Cog, name="Mod Tools"):
             await member.add_roles(mute_role)
 
         return True
+
+    async def on_member_remove(self, member: Member):
+        await run_in_thread(Leave.create, member.id, str(member))
 
     @commands.group(name="roles")
     @permission_level(ADMINISTRATOR)
@@ -412,6 +416,10 @@ class ModCog(Cog, name="Mod Tools"):
         user_id = user if isinstance(user, int) else user.id
 
         out: List[Tuple[datetime, str]] = []
+        for join in await run_in_thread(db.query, Join, member=user_id):
+            out.append((join.timestamp, translations.ulog_joined))
+        for leave in await run_in_thread(db.query, Leave, member=user_id):
+            out.append((leave.timestamp, translations.ulog_left))
         for report in await run_in_thread(db.query, Report, member=user_id):
             out.append((report.timestamp, translations.f_ulog_reported(f"<@{report.reporter}>", report.reason)))
         for warn in await run_in_thread(db.query, Warn, member=user_id):

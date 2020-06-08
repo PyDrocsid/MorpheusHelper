@@ -6,6 +6,34 @@ from sqlalchemy import Column, Integer, BigInteger, DateTime, Text, Boolean
 from database import db
 
 
+class Join(db.Base):
+    __tablename__ = "join"
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    member_name: Union[Column, str] = Column(Text(collation="utf8_bin"))
+    timestamp: Union[Column, datetime] = Column(DateTime)
+
+    @staticmethod
+    def create(member: int, member_name: str) -> "Join":
+        row = Join(member=member, member_name=member_name, timestamp=datetime.utcnow())
+        db.add(row)
+        return row
+
+
+class Leave(db.Base):
+    __tablename__ = "leave"
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    member_name: Union[Column, str] = Column(Text(collation="utf8_bin"))
+    timestamp: Union[Column, datetime] = Column(DateTime)
+
+    @staticmethod
+    def create(member: int, member_name: str) -> "Leave":
+        row = Leave(member=member, member_name=member_name, timestamp=datetime.utcnow())
+        db.add(row)
+        return row
+
+
 class Report(db.Base):
     __tablename__ = "report"
 

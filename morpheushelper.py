@@ -285,6 +285,11 @@ async def on_member_join(member: Member):
 
 
 @bot.event
+async def on_member_remove(member: Member):
+    await call_event_handlers("member_remove", member, identifier=member.id)
+
+
+@bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
         await call_event_handlers("self_message", message, identifier=message.id)

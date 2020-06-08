@@ -380,6 +380,8 @@ status_muted: ":mute:  User is muted on this server."
 status_muted_days: ":mute:  User is muted for {} days on this server ({} days left)."
 userlogs: User Logs
 ulog_empty: No entries for this user.
+ulog_joined: ":tada:  **Joined** this server."
+ulog_left: ":door:  **Left** this server."
 ulog_reported: ":speech_balloon:  **Reported** by {} because of `{}`"
 ulog_warned: ":warning:  **Warned** by {} because of `{}`"
 ulog_muted: ":mute:  **Muted** by {} for {} days because of `{}`"
