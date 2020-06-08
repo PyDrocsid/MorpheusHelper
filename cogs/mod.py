@@ -148,6 +148,9 @@ class ModCog(Cog, name="Mod Tools"):
         report a member
         """
 
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
+
         await run_in_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.reported_response)
         await send_to_changelog(
@@ -220,7 +223,7 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command(name="unmute")
     @permission_level(SUPPORTER)
     @guild_only()
-    async def unmute(self, ctx: Context, member: Member, *, reason: str):
+    async def unmute(self, ctx: Context, user: Union[Member, User, int], *, reason: str):
         """
         unmute a member
         """
@@ -232,16 +235,26 @@ class ModCog(Cog, name="Mod Tools"):
         if mute_role is None:
             raise CommandError(translations.mute_role_not_set)
 
-        if mute_role not in member.roles:
+        if isinstance(user, int):
+            user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
+            if user is None:
+                raise CommandError(translations.user_not_found)
+
+        if isinstance(user, Member):
+            if mute_role not in user.roles:
+                raise CommandError(translations.not_muted)
+            await user.remove_roles(mute_role)
+
+        was_muted = False
+        for mute in await run_in_thread(db.query, Mute, active=True, member=user.id):
+            was_muted = was_muted or mute.active
+            await run_in_thread(Mute.deactivate, mute.id, reason)
+        if not was_muted:
             raise CommandError(translations.not_muted)
 
-        await member.remove_roles(mute_role)
-
-        for mute in await run_in_thread(db.query, Mute, active=True, member=member.id):
-            await run_in_thread(Mute.deactivate, mute.id, reason)
         await ctx.send(translations.unmuted_response)
         await send_to_changelog(
-            ctx.guild, translations.f_log_unmuted(ctx.author.mention, member.mention, member, reason)
+            ctx.guild, translations.f_log_unmuted(ctx.author.mention, user.mention, user, reason)
         )
 
     @commands.command(name="kick")
