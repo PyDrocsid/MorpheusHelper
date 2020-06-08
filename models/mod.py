@@ -104,7 +104,7 @@ class Mute(db.Base):
     def deactivate(mute_id: int, reason: str = None):
         row: Mute = db.get(Mute, mute_id)
         row.active = False
-        row.deactivation_timestamp = datetime.now()
+        row.deactivation_timestamp = datetime.utcnow()
         row.unmute_reason = reason
 
 
@@ -159,5 +159,5 @@ class Ban(db.Base):
     def deactivate(ban_id: int, unban_reason: str = None):
         row: Ban = db.get(Ban, ban_id)
         row.active = False
-        row.deactivation_timestamp = datetime.now()
+        row.deactivation_timestamp = datetime.utcnow()
         row.unban_reason = unban_reason

@@ -9,7 +9,7 @@ from database import run_in_thread, db
 from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave
 from models.settings import Settings
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, check_permissions, MODERATOR
+from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, MODERATOR
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
@@ -148,9 +148,6 @@ class ModCog(Cog, name="Mod Tools"):
         report a member
         """
 
-        if member.bot:
-            raise CommandError(translations.cannot_report)
-
         await run_in_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.reported_response)
         await send_to_changelog(
@@ -165,8 +162,8 @@ class ModCog(Cog, name="Mod Tools"):
         warn a member
         """
 
-        if member.bot:
-            raise CommandError(translations.cannot_warn)
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
 
         try:
             await member.send(translations.f_warned(ctx.author.mention, ctx.guild.name, reason))
@@ -186,11 +183,11 @@ class ModCog(Cog, name="Mod Tools"):
         mute a member
         """
 
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
+
         if days is not None and not 0 < days < (1 << 31):
             raise CommandError(translations.invalid_mute_time)
-
-        if member.bot or await check_permissions(member, SUPPORTER):
-            raise CommandError(translations.cannot_mute)
 
         mute_role: Optional[Role] = ctx.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is None:
@@ -228,6 +225,9 @@ class ModCog(Cog, name="Mod Tools"):
         unmute a member
         """
 
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
+
         mute_role: Optional[Role] = ctx.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is None:
             raise CommandError(translations.mute_role_not_set)
@@ -252,10 +252,13 @@ class ModCog(Cog, name="Mod Tools"):
         kick a member
         """
 
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
+
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
 
-        if member.bot or member.top_role >= ctx.guild.me.top_role:
+        if member.top_role >= ctx.guild.me.top_role:
             raise CommandError(translations.cannot_kick)
 
         try:
@@ -277,6 +280,9 @@ class ModCog(Cog, name="Mod Tools"):
         ban a user
         """
 
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
+
         if not ctx.guild.me.guild_permissions.ban_members:
             raise CommandError(translations.cannot_ban_permissions)
 
@@ -288,7 +294,7 @@ class ModCog(Cog, name="Mod Tools"):
             if user is None:
                 raise CommandError(translations.user_not_found)
 
-        if user.bot or (isinstance(user, Member) and user.top_role >= ctx.guild.me.top_role):
+        if isinstance(user, Member) and user.top_role >= ctx.guild.me.top_role:
             raise CommandError(translations.cannot_ban)
 
         try:
@@ -320,6 +326,9 @@ class ModCog(Cog, name="Mod Tools"):
         """
         unban a user
         """
+
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
 
         if not ctx.guild.me.guild_permissions.ban_members:
             raise CommandError(translations.cannot_unban_permissions)
@@ -452,18 +461,24 @@ class ModCog(Cog, name="Mod Tools"):
                     )
 
         out.sort()
-        embeds = []
-        for i, row in enumerate(out):
-            if i % 25 == 0:
+        embeds = [Embed(color=0x34B77E)]
+        embeds[0].title = translations.userlogs
+        if isinstance(user, int):
+            embeds[0].set_author(name=str(user))
+        else:
+            embeds[0].set_author(name=str(user), icon_url=user.avatar_url)
+        i = 0
+        total = 0
+        for row in out:
+            name = row[0].strftime("%d.%m.%Y %H:%M:%S")
+            value = row[1]
+            if i == 25 or total + len(name) + len(value) >= 5800:
                 embed = Embed(color=0x34B77E)
-                if i == 0:
-                    embed.title = translations.userlogs
-                    if isinstance(user, int):
-                        embed.set_author(name=str(user))
-                    else:
-                        embed.set_author(name=str(user), icon_url=user.avatar_url)
                 embeds.append(embed)
-            embeds[-1].add_field(name=row[0].strftime("%d.%m.%Y %H:%M:%S"), value=row[1], inline=False)
+                total = 0
+            total += len(name) + len(value)
+            embeds[-1].add_field(name=name, value=value, inline=False)
+            i += 1
         if out:
             embeds[-1].set_footer(text=translations.utc_note)
             for embed in embeds:
