@@ -30,6 +30,7 @@ from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
+from cogs.mod import ModCog
 from cogs.news import NewsCog
 from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
@@ -37,9 +38,8 @@ from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from programmerhumor import ProgrammerHumor
-from database import db, run_in_thread
+from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
-from models.authorized_role import AuthorizedRole
 from translations import translations
 from util import (
     permission_level,
@@ -50,6 +50,8 @@ from util import (
     register_cogs,
     get_prefix,
     set_prefix,
+    MODERATOR,
+    SUPPORTER,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -141,7 +143,7 @@ async def yesno(ctx: Context):
 
 
 @bot.command(name="prefix")
-@permission_level(1)
+@permission_level(MODERATOR)
 @guild_only()
 async def change_prefix(ctx: Context, new_prefix: str):
     """
@@ -158,66 +160,6 @@ async def change_prefix(ctx: Context, new_prefix: str):
     await set_prefix(new_prefix)
     await ctx.send(translations.prefix_updated)
     await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))
-
-
-@bot.group()
-@permission_level(2)
-@guild_only()
-async def auth(ctx: Context):
-    """
-    manage roles authorized to control this bot
-    """
-
-    if ctx.invoked_subcommand is None:
-        await ctx.send_help(auth)
-
-
-@auth.command(name="list", aliases=["l", "?"])
-async def auth_list(ctx: Context):
-    """
-    list authorized roles
-    """
-
-    roles = []
-    for auth_role in await run_in_thread(db.all, AuthorizedRole):
-        if (role := ctx.guild.get_role(auth_role.role)) is not None:
-            roles.append(f" - `@{role}` (`{role.id}`)")
-        else:
-            await run_in_thread(db.delete, auth_role)
-    if roles:
-        await ctx.send(translations.authorized_roles_header + "\n" + "\n".join(roles))
-    else:
-        await ctx.send(translations.no_authorized_roles)
-
-
-@auth.command(name="add", aliases=["a", "+"])
-async def auth_add(ctx: Context, *, role: Role):
-    """
-    authorize role to control this bot
-    """
-
-    authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
-    if authorization is not None:
-        raise CommandError(translations.f_already_authorized(role))
-
-    await run_in_thread(AuthorizedRole.create, role.id)
-    await ctx.send(translations.f_role_authorized(role))
-    await send_to_changelog(ctx.guild, translations.f_log_role_authorized(role))
-
-
-@auth.command(name="remove", aliases=["del", "r", "d", "-"])
-async def auth_del(ctx: Context, *, role: Role):
-    """
-    unauthorize role to control this bot
-    """
-
-    authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
-    if authorization is None:
-        raise CommandError(translations.f_not_authorized(role))
-
-    await run_in_thread(db.delete, authorization)
-    await ctx.send(translations.f_role_unauthorized(role))
-    await send_to_changelog(ctx.guild, translations.f_log_role_unauthorized(role))
 
 
 async def build_info_embed(authorized: bool) -> Embed:
@@ -254,7 +196,7 @@ async def info(ctx: Context):
 
 
 @bot.command(name="admininfo", aliases=["admininfos"])
-@permission_level(1)
+@permission_level(SUPPORTER)
 async def admininfo(ctx: Context):
     """
     show information about the bot (admin view)
@@ -349,6 +291,16 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 
 
 @bot.event
+async def on_member_join(member: Member):
+    await call_event_handlers("member_join", member, identifier=member.id)
+
+
+@bot.event
+async def on_member_remove(member: Member):
+    await call_event_handlers("member_remove", member, identifier=member.id)
+
+
+@bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
         await call_event_handlers("self_message", message, identifier=message.id)
@@ -386,5 +338,6 @@ register_cogs(
     CleverBotCog,
     NewsCog,
     RandomStuffCog,
+    ModCog,
 )
 bot.run(os.environ["TOKEN"])

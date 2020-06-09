@@ -14,7 +14,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread
 from models.settings import Settings
 from translations import translations
-from util import permission_level, calculate_edit_distance
+from util import permission_level, calculate_edit_distance, MODERATOR
 
 
 def add_field(embed: Embed, name: str, text: str):
@@ -102,7 +102,7 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     @commands.group(name="logging", aliases=["log"])
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def logging(self, ctx: Context):
         """

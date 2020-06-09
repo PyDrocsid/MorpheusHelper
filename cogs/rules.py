@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from translations import translations
-from util import permission_level, read_normal_message, read_embed
+from util import permission_level, read_normal_message, read_embed, MODERATOR
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -15,7 +15,7 @@ class RulesCog(Cog, name="Rule Commands"):
         self.bot = bot
 
     @commands.group(name="send")
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def send(self, ctx: Context):
         """
@@ -72,7 +72,7 @@ class RulesCog(Cog, name="Rule Commands"):
             await ctx.send(translations.msg_sent)
 
     @commands.group(name="edit")
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def edit(self, ctx: Context):
         """
@@ -118,7 +118,7 @@ class RulesCog(Cog, name="Rule Commands"):
         await ctx.send(translations.msg_edited)
 
     @commands.command(name="delete")
-    @permission_level(1)
+    @permission_level(MODERATOR)
     @guild_only()
     async def delete(self, ctx: Context, message: Message):
         """

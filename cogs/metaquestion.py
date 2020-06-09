@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, Context, guild_only
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from translations import translations
-from util import check_access
+from util import check_permissions, MODERATOR, SUPPORTER
 
 WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
 
@@ -39,7 +39,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         if emoji.name == "metaquestion":
             media_only = (
-                not await check_access(member)
+                not await check_permissions(member, MODERATOR)
                 and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
             )
             if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
@@ -60,7 +60,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                 pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
                 if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
                     author_id = int(match.group(1))
-                    if not (author_id == member.id or await check_access(member)):
+                    if not (author_id == member.id or await check_permissions(member, SUPPORTER)):
                         await message.remove_reaction(emoji, member)
                         return False
                     break
