@@ -2,7 +2,7 @@ import random
 import re
 from typing import Optional, Union, Tuple, List
 
-from discord import CategoryChannel, PermissionOverwrite
+from discord import CategoryChannel, PermissionOverwrite, NotFound
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
@@ -148,13 +148,19 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await text_chat.send(translations.f_private_dyn_voice_help(prefix=await get_prefix()))
 
     async def member_leave(self, member: Member, channel: VoiceChannel):
-        await member.remove_roles(*await gather_roles(member.guild, channel.id))
+        try:
+            await member.remove_roles(*await gather_roles(member.guild, channel.id))
+        except NotFound:  # member left the server
+            pass
 
         dyn_channel: DynamicVoiceChannel = await run_in_thread(db.first, DynamicVoiceChannel, channel_id=channel.id)
         if dyn_channel is not None:
             group: Optional[DynamicVoiceGroup] = await run_in_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
             if group is not None:
-                await member.remove_roles(*await gather_roles(member.guild, group.channel_id))
+                try:
+                    await member.remove_roles(*await gather_roles(member.guild, group.channel_id))
+                except NotFound:  # member left the server
+                    pass
 
             text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
             if text_chat is not None:
