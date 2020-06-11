@@ -17,6 +17,7 @@ from discord import (
     VoiceState,
     TextChannel,
     User,
+    NotFound,
 )
 from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
@@ -215,7 +216,11 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+        try:
+            message = await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
+        return message, event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
@@ -226,7 +231,11 @@ async def on_raw_reaction_remove(event: RawReactionActionEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+        try:
+            message = await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
+        return message, event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
@@ -237,7 +246,10 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return [await channel.fetch_message(event.message_id)]
+        try:
+            return [await channel.fetch_message(event.message_id)]
+        except NotFound:
+            return
 
     await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
 
@@ -256,7 +268,10 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return channel, await channel.fetch_message(event.message_id)
+        try:
+            return channel, await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
 
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
 
