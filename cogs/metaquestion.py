@@ -1,6 +1,6 @@
 import re
 
-from discord import Embed, Member, Message, PartialEmoji
+from discord import Embed, Member, Message, PartialEmoji, Forbidden
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
@@ -43,7 +43,10 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                 and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
             )
             if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
-                await message.remove_reaction(emoji, member)
+                try:
+                    await message.remove_reaction(emoji, member)
+                except Forbidden:
+                    pass
                 return False
 
             for reaction in message.reactions:
@@ -61,7 +64,10 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                 if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
                     author_id = int(match.group(1))
                     if not (author_id == member.id or await check_permissions(member, SUPPORTER)):
-                        await message.remove_reaction(emoji, member)
+                        try:
+                            await message.remove_reaction(emoji, member)
+                        except Forbidden:
+                            pass
                         return False
                     break
             else:
