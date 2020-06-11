@@ -17,6 +17,8 @@ from discord import (
     VoiceState,
     TextChannel,
     User,
+    NotFound,
+    Forbidden,
 )
 from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
@@ -78,18 +80,21 @@ bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=transl
 
 def get_owner() -> Optional[User]:
     owner_id = os.getenv("OWNER_ID")
-    if owner_id:
+    if owner_id and owner_id.isnumeric():
         return bot.get_user(int(owner_id))
 
 
 @bot.event
 async def on_ready():
     if (owner := get_owner()) is not None:
-        await owner.send("logged in")
+        try:
+            await owner.send("logged in")
+        except Forbidden:
+            pass
 
     print(f"Logged in as {bot.user}")
 
-    if get_owner() is not None:
+    if owner is not None:
         try:
             status_loop.start()
         except RuntimeError:
@@ -105,12 +110,17 @@ async def on_ready():
 
 @tasks.loop(seconds=20)
 async def status_loop():
-    messages = await get_owner().history(limit=1).flatten()
+    if (owner := get_owner()) is None:
+        return
+    messages = await owner.history(limit=1).flatten()
     content = "heartbeat: " + time.ctime()
     if messages and messages[0].content.startswith("heartbeat: "):
         await messages[0].edit(content=content)
     else:
-        await get_owner().send(content)
+        try:
+            await owner.send(content)
+        except Forbidden:
+            pass
 
 
 @tasks.loop(hours=5)
@@ -226,7 +236,11 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+        try:
+            message = await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
+        return message, event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
@@ -237,7 +251,11 @@ async def on_raw_reaction_remove(event: RawReactionActionEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+        try:
+            message = await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
+        return message, event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
@@ -248,13 +266,18 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return [await channel.fetch_message(event.message_id)]
+        try:
+            return [await channel.fetch_message(event.message_id)]
+        except NotFound:
+            return
 
     await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
+    if before.guild is None:
+        return
     await call_event_handlers("message_edit", before, after, identifier=after.id)
 
 
@@ -267,19 +290,24 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return channel, await channel.fetch_message(event.message_id)
+        try:
+            return channel, await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
 
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_message_delete(message: Message):
+    if message.guild is None:
+        return
     await call_event_handlers("message_delete", message, identifier=message.id)
 
 
 @bot.event
 async def on_raw_message_delete(event: RawMessageDeleteEvent):
-    if event.cached_message is not None:
+    if event.cached_message is not None or event.guild_id is None:
         return
 
     await call_event_handlers("raw_message_delete", event, identifier=event.message_id)

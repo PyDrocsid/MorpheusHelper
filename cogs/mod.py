@@ -253,9 +253,7 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.not_muted)
 
         await ctx.send(translations.unmuted_response)
-        await send_to_changelog(
-            ctx.guild, translations.f_log_unmuted(ctx.author.mention, user.mention, user, reason)
-        )
+        await send_to_changelog(ctx.guild, translations.f_log_unmuted(ctx.author.mention, user.mention, user, reason))
 
     @commands.command(name="kick")
     @permission_level(MODERATOR)
