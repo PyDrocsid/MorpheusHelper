@@ -1,9 +1,9 @@
 import io
 import socket
 import time
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union
 
-from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed
+from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User
 from discord.ext.commands import check, Context, CheckFailure, Bot, Cog, PartialEmojiConverter, BadArgument
 
 from database import run_in_thread
@@ -30,9 +30,12 @@ def make_error(message) -> str:
 PUBLIC, SUPPORTER, MODERATOR, ADMINISTRATOR, OWNER = range(5)
 
 
-async def get_permission_level(member: Member) -> int:
+async def get_permission_level(member: Union[Member, User]) -> int:
     if member.id == 370876111992913922:
         return OWNER
+
+    if not isinstance(member, Member):
+        return PUBLIC
 
     roles = set(role.id for role in member.roles)
 
@@ -49,14 +52,17 @@ async def get_permission_level(member: Member) -> int:
     return PUBLIC
 
 
-async def check_permissions(member: Member, minimum_permission_level: int) -> bool:
+async def check_permissions(member: Union[Member, User], minimum_permission_level: int) -> bool:
     return await get_permission_level(member) >= minimum_permission_level
 
 
 def permission_level(level: int):
     @check
     async def inner(ctx: Context):
-        if not await check_permissions(ctx.author, level):
+        member: Union[Member, User] = ctx.author
+        if not isinstance(member, Member):
+            member = ctx.bot.guilds[0].get_member(ctx.author.id) or member
+        if not await check_permissions(member, level):
             raise CheckFailure(translations.not_allowed)
 
         return True
