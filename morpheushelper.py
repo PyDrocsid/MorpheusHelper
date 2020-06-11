@@ -318,6 +318,16 @@ async def on_member_remove(member: Member):
 
 
 @bot.event
+async def on_member_update(before: Member, after: Member):
+    await call_event_handlers("member_update", before, after, identifier=before.id)
+
+
+@bot.event
+async def on_user_update(before: User, after: User):
+    await call_event_handlers("user_update", before, after, identifier=before.id)
+
+
+@bot.event
 async def on_message(message: Message):
     if message.author == bot.user:
         await call_event_handlers("self_message", message, identifier=message.id)
