@@ -4,7 +4,16 @@ import time
 from typing import Optional, Tuple, List, Union
 
 from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User
-from discord.ext.commands import check, Context, CheckFailure, Bot, Cog, PartialEmojiConverter, BadArgument
+from discord.ext.commands import (
+    check,
+    Context,
+    CheckFailure,
+    Bot,
+    Cog,
+    PartialEmojiConverter,
+    BadArgument,
+    CommandError,
+)
 
 from database import run_in_thread
 from models.settings import Settings
@@ -161,6 +170,8 @@ async def read_normal_message(bot: Bot, channel: TextChannel, author: Member) ->
 async def read_embed(bot: Bot, channel: TextChannel, author: Member) -> Embed:
     await channel.send(translations.send_embed_title)
     title: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
+    if len(title) > 256:
+        raise CommandError(translations.title_too_long)
     await channel.send(translations.send_embed_content)
     content: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
     return Embed(title=title, description=content)
