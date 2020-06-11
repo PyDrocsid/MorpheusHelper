@@ -264,6 +264,8 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
+    if before.guild is None:
+        return
     await call_event_handlers("message_edit", before, after, identifier=after.id)
 
 
@@ -286,12 +288,14 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
 
 @bot.event
 async def on_message_delete(message: Message):
+    if message.guild is None:
+        return
     await call_event_handlers("message_delete", message, identifier=message.id)
 
 
 @bot.event
 async def on_raw_message_delete(event: RawMessageDeleteEvent):
-    if event.cached_message is not None:
+    if event.cached_message is not None or event.guild_id is None:
         return
 
     await call_event_handlers("raw_message_delete", event, identifier=event.message_id)
