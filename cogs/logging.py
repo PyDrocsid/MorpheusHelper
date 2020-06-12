@@ -34,9 +34,10 @@ class LoggingCog(Cog, name="Logging"):
         return self.bot.get_channel(channel_id) if channel_id != -1 else None
 
     async def on_message_edit(self, before: Message, after: Message) -> bool:
-        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
-        if edit_channel is None or calculate_edit_distance(before.content, after.content) < mindiff:
+        if calculate_edit_distance(before.content, after.content) < mindiff:
+            return True
+        if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
@@ -50,8 +51,7 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]) -> bool:
-        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
-        if edit_channel is None:
+        if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
@@ -65,8 +65,7 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_message_delete(self, message: Message) -> bool:
-        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
-        if delete_channel is None:
+        if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=(datetime.utcnow()))
@@ -88,8 +87,7 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent) -> bool:
-        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
-        if delete_channel is None:
+        if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=datetime.utcnow())
