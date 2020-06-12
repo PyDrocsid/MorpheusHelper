@@ -132,13 +132,15 @@ async def ping(ctx: Context):
 
 @bot.command(aliases=["yn"])
 @guild_only()
-async def yesno(ctx: Context):
+async def yesno(ctx: Context, message: Optional[Message] = None):
     """
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    await ctx.message.add_reaction(chr(0x1F44D))
-    await ctx.message.add_reaction(chr(0x1F44E))
+    if message is None:
+        message = ctx.message
+    await message.add_reaction(chr(0x1F44D))
+    await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
