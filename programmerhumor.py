@@ -87,8 +87,6 @@ class ProgrammerHumor:
                 already_posted.append(post["id"])
 
         if len(already_posted) > 3 * ProgrammerHumor.LIMIT:
-            already_posted = already_posted[
-                len(already_posted) - 3 * ProgrammerHumor.LIMIT :
-            ]
+            already_posted = already_posted[len(already_posted) - 3 * ProgrammerHumor.LIMIT:]
 
         ProgrammerHumor.save_already_posted(already_posted)
