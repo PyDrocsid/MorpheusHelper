@@ -1,11 +1,10 @@
-import asyncio
 import datetime
 import json
 
 import pytz
 import requests
 
-from discord import Client, Embed
+from discord import Embed
 from info import VERSION
 
 
