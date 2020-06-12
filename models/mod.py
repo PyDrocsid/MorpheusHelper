@@ -101,6 +101,7 @@ class Mute(db.Base):
     reason: Union[Column, str] = Column(Text(collation="utf8_bin"))
     active: Union[Column, bool] = Column(Boolean)
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
+    unmute_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
     unmute_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8_bin"), nullable=True)
 
     @staticmethod
@@ -114,16 +115,18 @@ class Mute(db.Base):
             reason=reason,
             active=True,
             deactivation_timestamp=None,
+            unmute_mod=None,
             unmute_reason=None,
         )
         db.add(row)
         return row
 
     @staticmethod
-    def deactivate(mute_id: int, reason: str = None):
+    def deactivate(mute_id: int, unmute_mod: int = None, reason: str = None):
         row: Mute = db.get(Mute, mute_id)
         row.active = False
         row.deactivation_timestamp = datetime.utcnow()
+        row.unmute_mod = unmute_mod
         row.unmute_reason = reason
 
 
@@ -157,6 +160,7 @@ class Ban(db.Base):
     active: Union[Column, bool] = Column(Boolean)
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
     unban_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8_bin"), nullable=True)
+    unban_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Ban":
@@ -170,13 +174,15 @@ class Ban(db.Base):
             active=True,
             deactivation_timestamp=None,
             unban_reason=None,
+            unban_mod=None,
         )
         db.add(row)
         return row
 
     @staticmethod
-    def deactivate(ban_id: int, unban_reason: str = None):
+    def deactivate(ban_id: int, unban_mod: int = None, unban_reason: str = None):
         row: Ban = db.get(Ban, ban_id)
         row.active = False
         row.deactivation_timestamp = datetime.utcnow()
+        row.unban_mod = unban_mod
         row.unban_reason = unban_reason

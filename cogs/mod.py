@@ -9,7 +9,7 @@ from database import run_in_thread, db
 from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate
 from models.settings import Settings
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, MODERATOR
+from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, MODERATOR, check_permissions
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
@@ -255,15 +255,14 @@ class ModCog(Cog, name="Mod Tools"):
             if user is None:
                 raise CommandError(translations.user_not_found)
 
-        if isinstance(user, Member):
-            if mute_role not in user.roles:
-                raise CommandError(translations.not_muted)
+        was_muted = False
+        if isinstance(user, Member) and mute_role in user.roles:
+            was_muted = True
             await user.remove_roles(mute_role)
 
-        was_muted = False
         for mute in await run_in_thread(db.query, Mute, active=True, member=user.id):
-            was_muted = was_muted or mute.active
-            await run_in_thread(Mute.deactivate, mute.id, reason)
+            await run_in_thread(Mute.deactivate, mute.id, ctx.author.id, reason)
+            was_muted = True
         if not was_muted:
             raise CommandError(translations.not_muted)
 
@@ -364,26 +363,25 @@ class ModCog(Cog, name="Mod Tools"):
             if user is None:
                 raise CommandError(translations.user_not_found)
 
-        if ctx.guild.get_member(user.id) is not None:
-            raise CommandError(translations.not_banned)
-
+        was_banned = True
         try:
             await ctx.guild.unban(user)
         except HTTPException:
-            raise CommandError(translations.not_banned)
+            was_banned = False
+            pass
 
         for ban in await run_in_thread(db.query, Ban, active=True, member=user.id):
-            await run_in_thread(Ban.deactivate, ban.id, reason)
+            was_banned = True
+            await run_in_thread(Ban.deactivate, ban.id, ctx.author.id, reason)
+        if not was_banned:
+            raise CommandError(translations.not_banned)
+
         await ctx.send(translations.unbanned_response)
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
 
-    @commands.command(name="stats")
-    @permission_level(SUPPORTER)
-    @guild_only()
-    async def stats(self, ctx: Context, user: Union[User, int]):
-        """
-        show statistics about a user
-        """
+    async def get_user(self, author: User, user: Optional[Union[User, int]]) -> Tuple[Union[User, int], int]:
+        if user is None:
+            user = author
 
         if isinstance(user, int):
             try:
@@ -392,6 +390,19 @@ class ModCog(Cog, name="Mod Tools"):
                 pass
 
         user_id = user if isinstance(user, int) else user.id
+
+        if user_id != author.id and not await check_permissions(author, SUPPORTER):
+            raise CommandError(translations.stats_not_allowed)
+
+        return user, user_id
+
+    @commands.command(name="stats")
+    async def stats(self, ctx: Context, user: Optional[Union[User, int]] = None):
+        """
+        show statistics about a user
+        """
+
+        user, user_id = await self.get_user(ctx.author, user)
         embed = Embed(title=translations.stats, color=0x35992C)
         if isinstance(user, int):
             embed.set_author(name=str(user))
@@ -426,7 +437,7 @@ class ModCog(Cog, name="Mod Tools"):
                 status = translations.f_status_muted_days(mute.days, days_left)
             else:
                 status = translations.status_muted
-        elif (member := ctx.guild.get_member(user_id)) is not None:
+        elif (member := self.bot.guilds[0].get_member(user_id)) is not None:
             status = translations.f_member_since(member.joined_at.strftime("%d.%m.%Y %H:%M:%S"))
         else:
             status = translations.not_a_member
@@ -435,20 +446,12 @@ class ModCog(Cog, name="Mod Tools"):
         await ctx.send(embed=embed)
 
     @commands.command(name="userlogs", aliases=["userlog", "ulog"])
-    @permission_level(SUPPORTER)
-    @guild_only()
-    async def userlogs(self, ctx: Context, user: Union[User, int]):
+    async def userlogs(self, ctx: Context, user: Optional[Union[User, int]] = None):
         """
         show moderation log of a user
         """
 
-        if isinstance(user, int):
-            try:
-                user = await self.bot.fetch_user(user)
-            except NotFound:
-                pass
-
-        user_id = user if isinstance(user, int) else user.id
+        user, user_id = await self.get_user(ctx.author, user)
 
         out: List[Tuple[datetime, str]] = []
         for join in await run_in_thread(db.query, Join, member=user_id):
@@ -472,11 +475,14 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 out.append((mute.timestamp, translations.f_ulog_muted(f"<@{mute.mod}>", mute.days, mute.reason)))
             if not mute.active:
-                if mute.unmute_reason is None:
+                if mute.unmute_mod is None:
                     out.append((mute.deactivation_timestamp, translations.ulog_unmuted_expired))
                 else:
                     out.append(
-                        (mute.deactivation_timestamp, translations.f_ulog_unmuted(f"<@{mute.mod}>", mute.unmute_reason))
+                        (
+                            mute.deactivation_timestamp,
+                            translations.f_ulog_unmuted(f"<@{mute.unmute_mod}>", mute.unmute_reason),
+                        )
                     )
         for kick in await run_in_thread(db.query, Kick, member=user_id):
             out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
@@ -486,11 +492,14 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 out.append((ban.timestamp, translations.f_ulog_banned(f"<@{ban.mod}>", ban.days, ban.reason)))
             if not ban.active:
-                if ban.unban_reason is None:
+                if ban.unban_mod is None:
                     out.append((ban.deactivation_timestamp, translations.ulog_unbanned_expired))
                 else:
                     out.append(
-                        (ban.deactivation_timestamp, translations.f_ulog_unbanned(f"<@{ban.mod}>", ban.unban_reason))
+                        (
+                            ban.deactivation_timestamp,
+                            translations.f_ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
+                        )
                     )
 
         out.sort()

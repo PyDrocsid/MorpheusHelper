@@ -370,6 +370,7 @@ log_unbanned: "{} unbanned {} (`{}`) because of `{}`."
 cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
 user_not_found: User not found.
 
+stats_not_allowed: You are not allowed to access this information.
 stats: User Statistics
 reported_cnt: ":speech_balloon:  Reported"
 warned_cnt: ":warning:  Warned"
