@@ -15,7 +15,7 @@ class ProgrammerHumor:
     def fetch_reddit_posts():
         resp = requests.get(
             "https://www.reddit.com/r/ProgrammerHumor/hot.json",
-            headers={f"User-agent": "MorpheusHelper/{VERSION}"},
+            headers={"User-agent": f"MorpheusHelper/{VERSION}"},
             params={"limit": str(ProgrammerHumor.LIMIT)},
         )
 
