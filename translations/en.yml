@@ -43,6 +43,8 @@ admin_features:
   - Send/Edit/Delete text and embed messages as the bot
   - Media only channels
   - News command
+  - Mod commands
+  - Member logging
 features_title: Features
 author_title: Author
 contributors_title: Contributors
