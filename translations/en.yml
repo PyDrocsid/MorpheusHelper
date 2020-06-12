@@ -250,6 +250,7 @@ cannot_delete_dm: Private messages cannot be deleted.
 could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
 msg_deleted: Message has been deleted successfully.
 title_too_long: Title is too long.
+cannot_edit_files: Files cannot be edited.
 
 # voice channel
 updating_voice_roles: Updating voice channel roles

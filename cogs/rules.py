@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from translations import translations
-from util import permission_level, read_normal_message, read_embed, MODERATOR
+from util import permission_level, read_normal_message, read_embed, MODERATOR, read_complete_message
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -71,6 +71,20 @@ class RulesCog(Cog, name="Rule Commands"):
         else:
             await ctx.send(translations.msg_sent)
 
+    @send.command(name="copy", aliases=["c"])
+    async def send_copy(self, ctx: Context, channel: TextChannel, message: Message):
+        """
+        copy a message (specify message link)
+        """
+
+        content, files, embed = await read_complete_message(message)
+        try:
+            await channel.send(content=content, embed=embed, files=files)
+        except (HTTPException, Forbidden):
+            raise CommandError(translations.msg_could_not_be_sent)
+        else:
+            await ctx.send(translations.msg_sent)
+
     @commands.group(name="edit")
     @permission_level(MODERATOR)
     @guild_only()
@@ -93,7 +107,9 @@ class RulesCog(Cog, name="Rule Commands"):
 
         await ctx.send(translations.send_new_message)
         content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
-        await message.edit(content=content, files=files, embed=None)
+        if files:
+            raise CommandError(translations.cannot_edit_files)
+        await message.edit(content=content, embed=None)
         await ctx.send(translations.msg_edited)
 
     @edit.command(name="embed", aliases=["e"])
@@ -115,6 +131,21 @@ class RulesCog(Cog, name="Rule Commands"):
         if color is not None:
             embed.colour = color
         await message.edit(content=None, files=[], embed=embed)
+        await ctx.send(translations.msg_edited)
+
+    @edit.command(name="copy", aliases=["c"])
+    async def edit_copy(self, ctx: Context, message: Message, source: Message):
+        """
+        copy a message into another message (specify message links)
+        """
+
+        if message.author != self.bot.user:
+            raise CommandError(translations.could_not_edit)
+
+        content, files, embed = await read_complete_message(source)
+        if files:
+            raise CommandError(translations.cannot_edit_files)
+        await message.edit(content=content, embed=embed)
         await ctx.send(translations.msg_edited)
 
     @commands.command(name="delete")
