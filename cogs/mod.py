@@ -6,7 +6,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
-from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave
+from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate
 from models.settings import Settings
 from translations import translations
 from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, MODERATOR
@@ -89,6 +89,21 @@ class ModCog(Cog, name="Mod Tools"):
 
     async def on_member_remove(self, member: Member):
         await run_in_thread(Leave.create, member.id, str(member))
+        return True
+
+    async def on_member_update(self, before: Member, after: Member):
+        if before.nick == after.nick:
+            return True
+
+        await run_in_thread(UsernameUpdate.create, before.id, str(before), after.nick, True)
+        return True
+
+    async def on_user_update(self, before: User, after: User):
+        if str(before) == str(after):
+            return True
+
+        await run_in_thread(UsernameUpdate.create, before.id, str(before), str(after), False)
+        return True
 
     @commands.group(name="roles")
     @permission_level(ADMINISTRATOR)
@@ -440,6 +455,13 @@ class ModCog(Cog, name="Mod Tools"):
             out.append((join.timestamp, translations.ulog_joined))
         for leave in await run_in_thread(db.query, Leave, member=user_id):
             out.append((leave.timestamp, translations.ulog_left))
+        for username_update in await run_in_thread(db.query, UsernameUpdate, member=user_id):
+            if not username_update.nick:
+                out.append((username_update.timestamp, translations.f_ulog_username_updated(username_update.new_name)))
+            elif username_update.new_name is None:
+                out.append((username_update.timestamp, translations.ulog_nick_cleared))
+            else:
+                out.append((username_update.timestamp, translations.f_ulog_nick_updated(username_update.new_name)))
         for report in await run_in_thread(db.query, Report, member=user_id):
             out.append((report.timestamp, translations.f_ulog_reported(f"<@{report.reporter}>", report.reason)))
         for warn in await run_in_thread(db.query, Warn, member=user_id):

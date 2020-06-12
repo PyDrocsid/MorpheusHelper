@@ -34,6 +34,25 @@ class Leave(db.Base):
         return row
 
 
+class UsernameUpdate(db.Base):
+    __tablename__ = "username_update"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    member_name: Union[Column, str] = Column(Text(collation="utf8_bin"))
+    new_name: Union[Column, str] = Column(Text(collation="utf8_bin"))
+    nick: Union[Column, bool] = Column(Boolean)
+    timestamp: Union[Column, datetime] = Column(DateTime)
+
+    @staticmethod
+    def create(member: int, member_name: str, new_name: str, nick: bool) -> "UsernameUpdate":
+        row = UsernameUpdate(
+            member=member, member_name=member_name, new_name=new_name, nick=nick, timestamp=datetime.now()
+        )
+        db.add(row)
+        return row
+
+
 class Report(db.Base):
     __tablename__ = "report"
 
