@@ -14,8 +14,8 @@ class Join(db.Base):
     timestamp: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
-    def create(member: int, member_name: str) -> "Join":
-        row = Join(member=member, member_name=member_name, timestamp=datetime.utcnow())
+    def create(member: int, member_name: str, timestamp: Optional[datetime] = None) -> "Join":
+        row = Join(member=member, member_name=member_name, timestamp=timestamp or datetime.utcnow())
         db.add(row)
         return row
 

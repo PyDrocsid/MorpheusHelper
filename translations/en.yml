@@ -369,6 +369,8 @@ unbanned_response: User unbanned.
 log_unbanned: "{} unbanned {} (`{}`) because of `{}`."
 cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
 user_not_found: User not found.
+filling_join_log: Creating join log entries for {} members. This may take a while.
+join_log_filled: Join log has been initialized successfully.
 
 stats_not_allowed: You are not allowed to access this information.
 stats: User Statistics

@@ -527,3 +527,25 @@ class ModCog(Cog, name="Mod Tools"):
                 await ctx.send(embed=embed)
         else:
             await ctx.send(translations.ulog_empty)
+
+    @commands.command(name="init_join_log")
+    @permission_level(ADMINISTRATOR)
+    @guild_only()
+    async def init_join_log(self, ctx: Context):
+        """
+        create a join log entry for each server member
+        """
+
+        guild: Guild = ctx.guild
+
+        def init():
+            for member in guild.members:  # type: Member
+                for join in db.query(Join, member=member.id):
+                    if join.timestamp >= member.joined_at - timedelta(minutes=1):
+                        break
+                else:
+                    Join.create(member.id, str(member), member.joined_at)
+
+        await ctx.send(translations.f_filling_join_log(len(guild.members)))
+        await run_in_thread(init)
+        await ctx.send(translations.join_log_filled)
