@@ -140,6 +140,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await member.move_to(chan)
         except HTTPException:
             await chan.delete()
+            await text_chat.delete()
+            return
         else:
             await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id, text_chat.id, member.id)
         await self.update_dynamic_voice_group(group)
