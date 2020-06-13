@@ -10,13 +10,20 @@ from util import permission_level, ADMINISTRATOR, get_permission_level, MODERATO
 
 async def list_permissions(ctx: Context, min_level: int):
     min_level: int
-    out = []
+    out = {}
     for permission in Permission:  # type: Permission
         level = await permission.resolve()
         if min_level >= level:
-            out.append(permission.name + ": " + translations.permission_levels[level])
+            out.setdefault(level, []).append(f"  {permission.name} ({permission.description})")
     if out:
-        await ctx.send("```\n" + "\n".join(out) + "\n```")
+        await ctx.send(
+            "```\n"
+            + "\n\n".join(
+                "\n".join([translations.permission_levels[level] + ":"] + lines)
+                for level, lines in sorted(out.items(), reverse=True)
+            )
+            + "\n```"
+        )
     else:
         await ctx.send(translations.no_permissions)
 

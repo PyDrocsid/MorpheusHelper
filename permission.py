@@ -2,6 +2,7 @@ from enum import Enum, auto
 
 from database import run_in_thread
 from models.permissions import PermissionModel
+from translations import translations
 
 
 class Permission(Enum):
@@ -47,6 +48,10 @@ class Permission(Enum):
     admininfo = auto()
     view_own_permissions = auto()
     view_all_permissions = auto()
+
+    @property
+    def description(self) -> str:
+        return translations.permissions[self.name]
 
     async def resolve(self) -> int:
         return await run_in_thread(PermissionModel.get, self.name)

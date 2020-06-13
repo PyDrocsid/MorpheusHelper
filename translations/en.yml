@@ -418,3 +418,47 @@ no_permissions: No priviliges granted.
 invalid_permission_level: Invalid permission level.
 invalid_permission: Invalid permission.
 permission_set: Permission `{}` has been granted to `>= {}`
+
+permissions:
+  vc_private_owner: pretend to be the owner of a private voice channel
+  vc_manage_dyn: manage dynamic voice channels
+  vc_manage_link: manage voice channel links
+
+  send: send a message as the bot
+  edit: edit messages sent by the bot
+  delete: delete a message
+
+  rr_manage: manage reactionrole
+
+  rp_pin: pin other user's messages
+  rp_manage: manage reactionpin
+
+  news_manage: manage news
+
+  warn: warn a user
+  mute: mute a user
+  kick: kick a user
+  ban: ban a user
+  view_stats: view other user's statistics
+  init_join_log: initialize join log
+
+  mq_reduce: reduce metaquestion embeds
+
+  mo_bypass: bypass mediaonly checks
+  mo_manage: manage mediaonly
+
+  btp_manage: manage betheprofessional roles
+
+  cb_list: list cleverbot channels
+  cb_manage: manage cleverbot
+  cb_reset: reset cleverbot sessions
+
+  invite_bypass: bypass invite checks
+  invite_manage: manage allowed invites
+
+  log_manage: manage logging
+
+  change_prefix: change bot prefix
+  admininfo: view admininfo
+  view_own_permissions: view own permissions
+  view_all_permissions: view all permissions
