@@ -12,8 +12,9 @@ from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from models.settings import Settings
 from multilock import MultiLock
+from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, check_permissions, get_prefix, MODERATOR, SUPPORTER
+from util import permission_level, send_to_changelog, check_permissions, get_prefix
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -91,8 +92,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if group is None or group.public:
             raise CommandError(translations.not_in_private_voice)
 
-        if owner_required and dyn_channel.owner != member.id and not await check_permissions(member, SUPPORTER):
-            raise CommandError(translations.private_voice_owner_required)
+        if owner_required and dyn_channel.owner != member.id:
+            if not await check_permissions(member, Permission.vc_private_owner):
+                raise CommandError(translations.private_voice_owner_required)
 
         voice_channel: VoiceChannel = self.bot.get_channel(dyn_channel.channel_id)
         text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
@@ -239,7 +241,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send_help(VoiceChannelCog.voice)
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
-    @permission_level(MODERATOR)
+    @permission_level(Permission.vc_manage_dyn)
     async def dynamic(self, ctx: Context):
         """
         manage dynamic voice channels
@@ -388,7 +390,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send(translations.private_voice_owner_changed_response)
 
     @voice.group(name="link", aliases=["l"])
-    @permission_level(MODERATOR)
+    @permission_level(Permission.vc_manage_link)
     async def link(self, ctx: Context):
         """
         manage links between voice channels and roles

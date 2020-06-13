@@ -15,6 +15,7 @@ ADD cleverbot.py /app/
 ADD translations.py /app/
 ADD multilock.py /app/
 ADD database.py /app/
+ADD permission.py /app/
 ADD util.py /app/
 ADD info.py /app/
 ADD models /app/models/

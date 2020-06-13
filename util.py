@@ -18,6 +18,7 @@ from discord.ext.commands import (
 from database import run_in_thread
 from models.settings import Settings
 from multilock import MultiLock
+from permission import Permission
 from translations import translations
 
 
@@ -61,17 +62,19 @@ async def get_permission_level(member: Union[Member, User]) -> int:
     return PUBLIC
 
 
-async def check_permissions(member: Union[Member, User], minimum_permission_level: int) -> bool:
-    return await get_permission_level(member) >= minimum_permission_level
+async def check_permissions(member: Union[Member, User], permission: Union[Permission, int]) -> bool:
+    if isinstance(permission, Permission):
+        permission = await permission.resolve()
+    return await get_permission_level(member) >= permission
 
 
-def permission_level(level: int):
+def permission_level(permission: Union[Permission, int]):
     @check
     async def inner(ctx: Context):
         member: Union[Member, User] = ctx.author
         if not isinstance(member, Member):
             member = ctx.bot.guilds[0].get_member(ctx.author.id) or member
-        if not await check_permissions(member, level):
+        if not await check_permissions(member, permission):
             raise CheckFailure(translations.not_allowed)
 
         return True

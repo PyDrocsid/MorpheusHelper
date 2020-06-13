@@ -8,8 +8,9 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 from database import run_in_thread, db
 from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate
 from models.settings import Settings
+from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, SUPPORTER, MODERATOR, check_permissions
+from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
@@ -173,7 +174,7 @@ class ModCog(Cog, name="Mod Tools"):
         )
 
     @commands.command(name="warn")
-    @permission_level(SUPPORTER)
+    @permission_level(Permission.warn)
     @guild_only()
     async def warn(self, ctx: Context, member: Member, *, reason: str):
         """
@@ -194,7 +195,7 @@ class ModCog(Cog, name="Mod Tools"):
         )
 
     @commands.command(name="mute")
-    @permission_level(SUPPORTER)
+    @permission_level(Permission.mute)
     @guild_only()
     async def mute(self, ctx: Context, member: Member, days: Optional[int], *, reason: str):
         """
@@ -236,7 +237,7 @@ class ModCog(Cog, name="Mod Tools"):
             )
 
     @commands.command(name="unmute")
-    @permission_level(SUPPORTER)
+    @permission_level(Permission.mute)
     @guild_only()
     async def unmute(self, ctx: Context, user: Union[Member, User, int], *, reason: str):
         """
@@ -270,7 +271,7 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog(ctx.guild, translations.f_log_unmuted(ctx.author.mention, user.mention, user, reason))
 
     @commands.command(name="kick")
-    @permission_level(MODERATOR)
+    @permission_level(Permission.kick)
     @guild_only()
     async def kick(self, ctx: Context, member: Member, *, reason: str):
         """
@@ -298,7 +299,7 @@ class ModCog(Cog, name="Mod Tools"):
         )
 
     @commands.command(name="ban")
-    @permission_level(MODERATOR)
+    @permission_level(Permission.ban)
     @guild_only()
     async def ban(self, ctx: Context, user: Union[Member, User, int], days: Optional[int], *, reason: str):
         """
@@ -345,7 +346,7 @@ class ModCog(Cog, name="Mod Tools"):
             )
 
     @commands.command(name="unban")
-    @permission_level(MODERATOR)
+    @permission_level(Permission.ban)
     @guild_only()
     async def unban(self, ctx: Context, user: Union[User, int], *, reason: str):
         """
@@ -391,7 +392,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         user_id = user if isinstance(user, int) else user.id
 
-        if user_id != author.id and not await check_permissions(author, SUPPORTER):
+        if user_id != author.id and not await check_permissions(author, Permission.view_stats):
             raise CommandError(translations.stats_not_allowed)
 
         return user, user_id
@@ -529,7 +530,7 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.send(translations.ulog_empty)
 
     @commands.command(name="init_join_log")
-    @permission_level(ADMINISTRATOR)
+    @permission_level(Permission.init_join_log)
     @guild_only()
     async def init_join_log(self, ctx: Context):
         """

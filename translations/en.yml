@@ -406,3 +406,14 @@ ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
 ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
 utc_note: Timestamps in UTC
+
+# permissions
+permission_levels:
+  - public
+  - supporter
+  - moderator
+  - administrator
+no_permissions: No priviliges granted.
+invalid_permission_level: Invalid permission level.
+invalid_permission: Invalid permission.
+permission_set: Permission `{}` has been granted to `>= {}`
