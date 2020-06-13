@@ -45,6 +45,7 @@ admin_features:
   - News command
   - Mod commands
   - Member logging
+  - Permission system
 features_title: Features
 author_title: Author
 contributors_title: Contributors
