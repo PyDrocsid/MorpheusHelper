@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
 
 from database import run_in_thread, db
-from models.allowed_invite import AllowedInvite
+from models.allowed_invite import AllowedInvite, InviteLog
 from permission import Permission
 from translations import translations
 from util import permission_level, check_permissions, send_to_changelog, get_prefix
@@ -189,6 +189,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             raise CommandError(translations.server_already_whitelisted)
 
         await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
+        await run_in_thread(InviteLog.create, guild.id, guild.name, applicant.id, ctx.author.id, True)
         await ctx.send(translations.server_whitelisted)
         await send_to_changelog(ctx.guild, translations.f_log_server_whitelisted(guild.name))
 
@@ -222,5 +223,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         server: AllowedInvite
         await run_in_thread(db.delete, server)
+        await run_in_thread(
+            InviteLog.create, server.guild_id, server.guild_name, server.applicant, ctx.author.id, False
+        )
         await ctx.send(translations.server_removed)
         await send_to_changelog(ctx.guild, translations.f_log_server_removed(server.guild_name))

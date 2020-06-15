@@ -47,7 +47,7 @@ class UsernameUpdate(db.Base):
     @staticmethod
     def create(member: int, member_name: str, new_name: str, nick: bool) -> "UsernameUpdate":
         row = UsernameUpdate(
-            member=member, member_name=member_name, new_name=new_name, nick=nick, timestamp=datetime.now()
+            member=member, member_name=member_name, new_name=new_name, nick=nick, timestamp=datetime.utcnow()
         )
         db.add(row)
         return row

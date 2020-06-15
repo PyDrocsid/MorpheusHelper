@@ -406,6 +406,8 @@ ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
 ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
 ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
+ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"
+ulog_invite_removed: ":-1:  **Invite removed** by {}: {}"
 utc_note: Timestamps in UTC
 
 # permissions

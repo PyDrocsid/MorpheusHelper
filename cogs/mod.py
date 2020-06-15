@@ -6,6 +6,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
+from models.allowed_invite import InviteLog
 from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate
 from models.settings import Settings
 from permission import Permission
@@ -56,7 +57,7 @@ class ModCog(Cog, name="Mod Tools"):
         guild: Guild = self.bot.guilds[0]
 
         for ban in await run_in_thread(db.query, Ban, active=True):
-            if ban.days != -1 and datetime.now() >= ban.timestamp + timedelta(days=ban.days):
+            if ban.days != -1 and datetime.utcnow() >= ban.timestamp + timedelta(days=ban.days):
                 user: Optional[User] = await self.bot.fetch_user(ban.member)
                 if user is not None:
                     await guild.unban(user)
@@ -68,7 +69,7 @@ class ModCog(Cog, name="Mod Tools"):
             return
 
         for mute in await run_in_thread(db.query, Mute, active=True):
-            if mute.days != -1 and datetime.now() >= mute.timestamp + timedelta(days=mute.days):
+            if mute.days != -1 and datetime.utcnow() >= mute.timestamp + timedelta(days=mute.days):
                 member: Optional[Member] = guild.get_member(mute.member)
                 if member is not None:
                     await member.remove_roles(mute_role)
@@ -408,7 +409,7 @@ class ModCog(Cog, name="Mod Tools"):
         if isinstance(user, int):
             embed.set_author(name=str(user))
         else:
-            embed.set_author(name=str(user), icon_url=user.avatar_url)
+            embed.set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
 
         async def count(cls):
             if cls is Report:
@@ -427,14 +428,14 @@ class ModCog(Cog, name="Mod Tools"):
         if (ban := await run_in_thread(db.first, Ban, member=user_id, active=True)) is not None:
             if ban.days != -1:
                 expiry_date: datetime = ban.timestamp + timedelta(days=ban.days)
-                days_left = (expiry_date - datetime.now()).days + 1
+                days_left = (expiry_date - datetime.utcnow()).days + 1
                 status = translations.f_status_banned_days(ban.days, days_left)
             else:
                 status = translations.status_banned
         elif (mute := await run_in_thread(db.first, Mute, member=user_id, active=True)) is not None:
             if mute.days != -1:
                 expiry_date: datetime = mute.timestamp + timedelta(days=mute.days)
-                days_left = (expiry_date - datetime.now()).days + 1
+                days_left = (expiry_date - datetime.utcnow()).days + 1
                 status = translations.f_status_muted_days(mute.days, days_left)
             else:
                 status = translations.status_muted
@@ -502,6 +503,11 @@ class ModCog(Cog, name="Mod Tools"):
                             translations.f_ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
                         )
                     )
+        for log in await run_in_thread(db.query, InviteLog, applicant=user_id):  # type: InviteLog
+            if log.approved:
+                out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
+            else:
+                out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
 
         out.sort()
         embeds = [Embed(color=0x34B77E)]
@@ -509,7 +515,7 @@ class ModCog(Cog, name="Mod Tools"):
         if isinstance(user, int):
             embeds[0].set_author(name=str(user))
         else:
-            embeds[0].set_author(name=str(user), icon_url=user.avatar_url)
+            embeds[0].set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
         i = 0
         total = 0
         for row in out:

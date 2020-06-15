@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Union
 
-from sqlalchemy import Column, String, BigInteger, DateTime
+from sqlalchemy import Column, String, BigInteger, DateTime, Boolean, Integer
 
 from database import db
 
@@ -33,3 +33,28 @@ class AllowedInvite(db.Base):
     def update(guild_id: int, code: str):
         row = db.get(AllowedInvite, guild_id)
         row.code = code
+
+
+class InviteLog(db.Base):
+    __tablename__ = "invite_log"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    guild_id: Union[Column, int] = Column(BigInteger)
+    guild_name: Union[Column, str] = Column(String(128))
+    applicant: Union[Column, int] = Column(BigInteger)
+    mod: Union[Column, int] = Column(BigInteger)
+    timestamp: Union[Column, datetime] = Column(DateTime)
+    approved: Union[Column, bool] = Column(Boolean)
+
+    @staticmethod
+    def create(guild_id: int, guild_name: str, applicant: int, mod: int, approved: bool) -> "InviteLog":
+        row = InviteLog(
+            guild_id=guild_id,
+            guild_name=guild_name,
+            applicant=applicant,
+            mod=mod,
+            timestamp=datetime.utcnow(),
+            approved=approved,
+        )
+        db.add(row)
+        return row
