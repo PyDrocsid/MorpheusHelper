@@ -359,7 +359,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if member.guild_permissions.administrator or any(role.id == team_role for role in member.roles):
             raise CommandError(translations.member_could_not_be_kicked)
 
-        await member.move_to(None)
+        if member.voice is not None and member.voice.channel == voice_channel:
+            await member.move_to(None)
         if text_channel is not None:
             await text_channel.send(translations.f_user_removed_from_private_voice(member.mention))
         if text_channel != ctx.channel:
