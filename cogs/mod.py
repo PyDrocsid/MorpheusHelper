@@ -528,18 +528,18 @@ class ModCog(Cog, name="Mod Tools"):
             embeds[0].set_author(name=str(user))
         else:
             embeds[0].set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
-        i = 0
+        fields = 0
         total = 0
         for row in out:
             name = row[0].strftime("%d.%m.%Y %H:%M:%S")
             value = row[1]
-            if i == 25 or total + len(name) + len(value) >= 5800:
+            if fields == 25 or total + len(name) + len(value) >= 580:
                 embed = Embed(color=0x34B77E)
                 embeds.append(embed)
-                total = 0
+                fields = total = 0
             total += len(name) + len(value)
             embeds[-1].add_field(name=name, value=value, inline=False)
-            i += 1
+            fields += 1
         if out:
             embeds[-1].set_footer(text=translations.utc_note)
             for embed in embeds:
