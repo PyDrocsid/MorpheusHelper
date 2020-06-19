@@ -198,7 +198,7 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command(name="mute")
     @permission_level(Permission.mute)
     @guild_only()
-    async def mute(self, ctx: Context, member: Member, days: Optional[int], *, reason: str):
+    async def mute(self, ctx: Context, days: Optional[int], member: Member, *, reason: str):
         """
         mute a member
         """
@@ -302,7 +302,7 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command(name="ban")
     @permission_level(Permission.ban)
     @guild_only()
-    async def ban(self, ctx: Context, user: Union[Member, User, int], days: Optional[int], *, reason: str):
+    async def ban(self, ctx: Context, days: Optional[int], user: Union[Member, User, int], *, reason: str):
         """
         ban a user
         """
