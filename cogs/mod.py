@@ -21,8 +21,10 @@ class DurationConverter(Converter):
             return None
         if (match := re.match(r"^(\d+)d$", argument)) is None:
             raise BadArgument(translations.invalid_duration)
-        if not 0 < (days := int(match.group(1))) < (1 << 31):
+        if (days := int(match.group(1))) <= 0:
             raise BadArgument(translations.invalid_duration)
+        if days >= (1 << 31):
+            raise BadArgument(translations.invalid_duration_inf)
         return days
 
 

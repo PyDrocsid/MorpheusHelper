@@ -339,6 +339,7 @@ warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: User warned.
 log_warned: "{} warned {} (`{}`) because of `{}`."
 invalid_duration: Invalid duration.
+invalid_duration_inf: Invalid duration. Try `inf` instead.
 mute_role_not_set: User could not be muted because no mute role is configured.
 cannot_mute: This member cannot be muted.
 already_muted: User is already muted.
