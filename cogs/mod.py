@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union, List, Tuple
+import re
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
 
 from database import run_in_thread, db
 from models.allowed_invite import InviteLog
@@ -12,6 +13,17 @@ from models.settings import Settings
 from permission import Permission
 from translations import translations
 from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions
+
+
+class DurationConverter(Converter):
+    async def convert(self, ctx, argument: str) -> Optional[int]:
+        if argument.lower() in ("inf", "perm", "permanent", "-1", "∞"):
+            return None
+        if (match := re.match(r"^(\d+)d$", argument)) is None:
+            raise BadArgument(translations.invalid_duration)
+        if not 0 < (days := int(match.group(1))) < (1 << 31):
+            raise BadArgument(translations.invalid_duration)
+        return days
 
 
 async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
@@ -198,16 +210,16 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command(name="mute")
     @permission_level(Permission.mute)
     @guild_only()
-    async def mute(self, ctx: Context, days: Optional[int], member: Member, *, reason: str):
+    async def mute(self, ctx: Context, member: Member, days: DurationConverter, *, reason: str):
         """
         mute a member
+        set days to inf for a permanent mute
         """
+
+        days: Optional[int]
 
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
-
-        if days is not None and not 0 < days < (1 << 31):
-            raise CommandError(translations.invalid_mute_time)
 
         mute_role: Optional[Role] = ctx.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is None:
@@ -285,7 +297,7 @@ class ModCog(Cog, name="Mod Tools"):
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
 
-        if member.top_role >= ctx.guild.me.top_role:
+        if member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id:
             raise CommandError(translations.cannot_kick)
 
         try:
@@ -302,26 +314,26 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command(name="ban")
     @permission_level(Permission.ban)
     @guild_only()
-    async def ban(self, ctx: Context, days: Optional[int], user: Union[Member, User, int], *, reason: str):
+    async def ban(self, ctx: Context, user: Union[Member, User, int], days: DurationConverter, *, reason: str):
         """
         ban a user
+        set days to inf for a permanent ban
         """
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        days: Optional[int]
 
         if not ctx.guild.me.guild_permissions.ban_members:
             raise CommandError(translations.cannot_ban_permissions)
 
-        if days is not None and not 0 < days < (1 << 31):
-            raise CommandError(translations.invalid_ban_time)
+        if len(reason) > 900:
+            raise CommandError(translations.reason_too_long)
 
         if isinstance(user, int):
             user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
             if user is None:
                 raise CommandError(translations.user_not_found)
 
-        if isinstance(user, Member) and user.top_role >= ctx.guild.me.top_role:
+        if isinstance(user, Member) and (user.top_role >= ctx.guild.me.top_role or user.id == ctx.guild.owner_id):
             raise CommandError(translations.cannot_ban)
 
         try:
