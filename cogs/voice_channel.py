@@ -157,29 +157,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         except NotFound:  # member left the server
             pass
 
-        dyn_channel: DynamicVoiceChannel = await run_in_thread(db.first, DynamicVoiceChannel, channel_id=channel.id)
-        if dyn_channel is not None:
-            group: Optional[DynamicVoiceGroup] = await run_in_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
-            if group is not None:
-                try:
-                    await member.remove_roles(*await gather_roles(member.guild, group.channel_id))
-                except NotFound:  # member left the server
-                    pass
-
-            text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
-            if text_chat is not None:
-                await text_chat.set_permissions(member, overwrite=None)
-                await text_chat.send(translations.f_dyn_voice_left(member.mention))
-
-            if member.id == dyn_channel.owner and len(channel.members) > 0:
-                new_owner: Member = random.choice(channel.members)
-                await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, new_owner.id)
-                if text_chat is not None:
-                    await text_chat.send(translations.f_private_voice_owner_changed(new_owner.mention))
-
-        if len(channel.members) > 0:
-            return
-
         dyn_channel: Optional[DynamicVoiceChannel] = await run_in_thread(db.get, DynamicVoiceChannel, channel.id)
         if dyn_channel is None:
             return
@@ -187,9 +164,28 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if group is None:
             return
 
+        try:
+            await member.remove_roles(*await gather_roles(member.guild, group.channel_id))
+        except NotFound:  # member left the server
+            pass
+
+        text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
+        if text_chat is not None:
+            await text_chat.set_permissions(member, overwrite=None)
+            await text_chat.send(translations.f_dyn_voice_left(member.mention))
+
+        if member.id == dyn_channel.owner and len(channel.members) > 0:
+            new_owner: Member = random.choice(channel.members)
+            await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, new_owner.id)
+            if text_chat is not None:
+                await text_chat.send(translations.f_private_voice_owner_changed(new_owner.mention))
+
+        if len(channel.members) > 0:
+            return
+
         await channel.delete()
-        if (text_channel := self.bot.get_channel(dyn_channel.text_chat_id)) is not None:
-            await text_channel.delete()
+        if text_chat is not None:
+            await text_chat.delete()
         await run_in_thread(db.delete, dyn_channel)
         await self.update_dynamic_voice_group(group)
 
