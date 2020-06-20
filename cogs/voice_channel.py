@@ -130,7 +130,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         category: Union[CategoryChannel, Guild] = channel.category or guild
         overwrites = {
             guild.default_role: PermissionOverwrite(read_messages=False, connect=False),
-            guild.me: PermissionOverwrite(read_messages=True),
+            guild.me: PermissionOverwrite(read_messages=True, connect=True),
         }
         if (team_role := guild.get_role(await run_in_thread(Settings.get, int, "team_role"))) is not None:
             overwrites[team_role] = PermissionOverwrite(read_messages=True, connect=True)
