@@ -6,7 +6,6 @@ from discord import (
     Guild,
     Member,
     MessageType,
-    Role,
     HTTPException,
     PartialEmoji,
 )
@@ -16,8 +15,9 @@ from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
+from permission import Permission
 from translations import translations
-from util import permission_level, make_error, check_access, send_to_changelog
+from util import permission_level, make_error, check_permissions, send_to_changelog
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -30,11 +30,11 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot:
             return True
 
-        access: bool = await check_access(member) > 0
+        access: bool = await check_permissions(member, Permission.rp_pin)
         if not (await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return True
 
-        blocked_role = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
+        blocked_role = await run_in_thread(Settings.get, int, "mute_role", None)
         if access or (member == message.author and all(r.id != blocked_role for r in member.roles)):
             if message.type != MessageType.default:
                 await message.remove_reaction(emoji, member)
@@ -54,7 +54,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot:
             return True
 
-        access: bool = await check_access(member) > 0
+        access: bool = await check_permissions(member, Permission.rp_pin)
         is_reactionpin_channel = await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None
         if message.pinned and (access or (is_reactionpin_channel and member == message.author)):
             await message.unpin()
@@ -79,7 +79,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         return True
 
     @commands.group(aliases=["rp"])
-    @permission_level(1)
+    @permission_level(Permission.rp_manage)
     @guild_only()
     async def reactionpin(self, ctx: Context):
         """
@@ -152,19 +152,3 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             else:
                 await ctx.send(translations.pin_messages_now_disabled)
                 await send_to_changelog(ctx.guild, translations.pin_messages_now_disabled)
-
-    @reactionpin.command(name="blocked_role", aliases=["br"])
-    async def change_blocked_role(self, ctx: Context, role: Role = None):
-        """
-        change the blocked role
-        """
-
-        if role is None:
-            role_id: Optional[int] = await run_in_thread(Settings.get, int, "reactionpin_blocked_role", None)
-            if role_id is None or (role := ctx.guild.get_role(role_id)) is None:
-                await ctx.send(translations.no_blocked_role)
-            else:
-                await ctx.send(translations.f_blocked_role(role))
-        else:
-            await run_in_thread(Settings.set, int, "reactionpin_blocked_role", role.id)
-            await ctx.send(translations.blocked_role_updated)

@@ -7,6 +7,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.news_authorization import NewsAuthorization
+from permission import Permission
 from translations import translations
 from util import permission_level, send_to_changelog, read_normal_message
 
@@ -26,7 +27,7 @@ class NewsCog(Cog, name="News"):
             await ctx.send_help(NewsCog.news)
 
     @news.group(name="auth", aliases=["a"])
-    @permission_level(1)
+    @permission_level(Permission.news_manage)
     async def auth(self, ctx: Context):
         """
         manage authorized users and channels

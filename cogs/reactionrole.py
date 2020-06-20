@@ -6,6 +6,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread, db
 from models.reactionrole import ReactionRole
+from permission import Permission
 from translations import translations
 from util import permission_level, send_to_changelog, FixedEmojiConverter
 
@@ -46,7 +47,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         return False
 
     @commands.group(name="reactionrole", aliases=["rr"])
-    @permission_level(1)
+    @permission_level(Permission.rr_manage)
     @guild_only()
     async def reactionrole(self, ctx: Context):
         """
