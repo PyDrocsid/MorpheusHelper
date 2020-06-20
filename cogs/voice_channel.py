@@ -320,6 +320,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await run_in_thread(db.delete, dyn_channel)
+
+        roles = await gather_roles(voice_channel.guild, group.channel_id)
+        for member in voice_channel.members:
+            await member.remove_roles(*roles)
+
         if text_channel is not None:
             await text_channel.delete()
         await voice_channel.delete()
