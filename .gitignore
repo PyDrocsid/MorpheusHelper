@@ -1,0 +1,6 @@
+__pycache__
+.env*
+.idea
+random_stuff.py
+encrypt_random_stuff.py
+import_data.py
