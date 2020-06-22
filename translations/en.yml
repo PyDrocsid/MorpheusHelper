@@ -282,6 +282,7 @@ private_dyn_voice_help: |
   `{prefix}vc remove <member>` - kick and remove a member from this voice channel
   `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
   `{prefix}vc close` - manually close this voice channel
+  Note that these commands can be used in any text channel.
 error_visibility: "`visibility` must either be `public` or `private`."
 not_in_private_voice: You have to be in a private voice channel to use this command.
 private_voice_owner_required: You are not the owner of this voice channel.
