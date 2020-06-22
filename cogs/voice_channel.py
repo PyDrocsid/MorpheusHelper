@@ -192,7 +192,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await text_chat.set_permissions(member, overwrite=None)
             await text_chat.send(translations.f_dyn_voice_left(member.mention))
 
-        if member.id == dyn_channel.owner and len(channel.members) > 0:
+        if not group.public and member.id == dyn_channel.owner and len(channel.members) > 0:
             new_owner: Member = random.choice(channel.members)
             await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, new_owner.id)
             if text_chat is not None:
