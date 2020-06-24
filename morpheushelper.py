@@ -34,6 +34,7 @@ from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
 from cogs.mod import ModCog
 from cogs.news import NewsCog
+from cogs.permissions import PermissionsCog
 from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
@@ -42,6 +43,7 @@ from cogs.voice_channel import VoiceChannelCog
 from programmerhumor import ProgrammerHumor
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
+from permission import Permission
 from translations import translations
 from util import (
     permission_level,
@@ -52,8 +54,6 @@ from util import (
     register_cogs,
     get_prefix,
     set_prefix,
-    MODERATOR,
-    SUPPORTER,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -143,17 +143,19 @@ async def ping(ctx: Context):
 
 @bot.command(aliases=["yn"])
 @guild_only()
-async def yesno(ctx: Context):
+async def yesno(ctx: Context, message: Optional[Message] = None):
     """
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    await ctx.message.add_reaction(chr(0x1F44D))
-    await ctx.message.add_reaction(chr(0x1F44E))
+    if message is None:
+        message = ctx.message
+    await message.add_reaction(chr(0x1F44D))
+    await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
-@permission_level(MODERATOR)
+@permission_level(Permission.change_prefix)
 @guild_only()
 async def change_prefix(ctx: Context, new_prefix: str):
     """
@@ -206,7 +208,7 @@ async def info(ctx: Context):
 
 
 @bot.command(name="admininfo", aliases=["admininfos"])
-@permission_level(SUPPORTER)
+@permission_level(Permission.admininfo)
 async def admininfo(ctx: Context):
     """
     show information about the bot (admin view)
@@ -377,5 +379,6 @@ register_cogs(
     NewsCog,
     RandomStuffCog,
     ModCog,
+    PermissionsCog,
 )
 bot.run(os.environ["TOKEN"])

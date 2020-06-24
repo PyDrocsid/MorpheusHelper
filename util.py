@@ -3,7 +3,7 @@ import socket
 import time
 from typing import Optional, Tuple, List, Union
 
-from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User
+from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User, Attachment
 from discord.ext.commands import (
     check,
     Context,
@@ -18,6 +18,7 @@ from discord.ext.commands import (
 from database import run_in_thread
 from models.settings import Settings
 from multilock import MultiLock
+from permission import Permission
 from translations import translations
 
 
@@ -61,17 +62,19 @@ async def get_permission_level(member: Union[Member, User]) -> int:
     return PUBLIC
 
 
-async def check_permissions(member: Union[Member, User], minimum_permission_level: int) -> bool:
-    return await get_permission_level(member) >= minimum_permission_level
+async def check_permissions(member: Union[Member, User], permission: Union[Permission, int]) -> bool:
+    if isinstance(permission, Permission):
+        permission = await permission.resolve()
+    return await get_permission_level(member) >= permission
 
 
-def permission_level(level: int):
+def permission_level(permission: Union[Permission, int]):
     @check
     async def inner(ctx: Context):
         member: Union[Member, User] = ctx.author
         if not isinstance(member, Member):
             member = ctx.bot.guilds[0].get_member(ctx.author.id) or member
-        if not await check_permissions(member, level):
+        if not await check_permissions(member, permission):
             raise CheckFailure(translations.not_allowed)
 
         return True
@@ -115,26 +118,17 @@ handler_lock = MultiLock()
 
 
 async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
-    if identifier is not None:
-        await handler_lock.acquire((event, identifier))
+    async with handler_lock[(event, identifier) if identifier is not None else None]:
+        if prepare is not None:
+            args = await prepare()
+            if args is None:
+                return False
 
-    if prepare is not None:
-        args = await prepare()
-        if args is None:
-            if identifier is not None:
-                handler_lock.release((event, identifier))
-            return False
+        for handler in event_handlers.get(event, []):
+            if not await handler(*args):
+                return False
 
-    for handler in event_handlers.get(event, []):
-        if not await handler(*args):
-            if identifier is not None:
-                handler_lock.release((event, identifier))
-            return False
-
-    if identifier is not None:
-        handler_lock.release((event, identifier))
-
-    return True
+        return True
 
 
 def register_cogs(bot: Bot, *cogs):
@@ -157,14 +151,15 @@ async def set_prefix(new_prefix: str):
     await run_in_thread(Settings.set, str, "prefix", new_prefix)
 
 
+async def attachment_to_file(attachment: Attachment) -> File:
+    file = io.BytesIO()
+    await attachment.save(file)
+    return File(file, filename=attachment.filename, spoiler=attachment.is_spoiler())
+
+
 async def read_normal_message(bot: Bot, channel: TextChannel, author: Member) -> Tuple[str, List[File]]:
     msg: Message = await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
-    files = []
-    for attachment in msg.attachments:
-        file = io.BytesIO()
-        await attachment.save(file)
-        files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
-    return msg.content, files
+    return msg.content, [await attachment_to_file(attachment) for attachment in msg.attachments]
 
 
 async def read_embed(bot: Bot, channel: TextChannel, author: Member) -> Embed:
@@ -175,3 +170,13 @@ async def read_embed(bot: Bot, channel: TextChannel, author: Member) -> Embed:
     await channel.send(translations.send_embed_content)
     content: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
     return Embed(title=title, description=content)
+
+
+async def read_complete_message(message: Message) -> Tuple[str, List[File], Optional[Embed]]:
+    for embed in message.embeds:
+        if embed.type == "rich":
+            break
+    else:
+        embed = None
+
+    return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed

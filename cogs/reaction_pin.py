@@ -15,8 +15,9 @@ from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
+from permission import Permission
 from translations import translations
-from util import permission_level, make_error, check_permissions, send_to_changelog, MODERATOR, SUPPORTER
+from util import permission_level, make_error, check_permissions, send_to_changelog
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -29,7 +30,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot:
             return True
 
-        access: bool = await check_permissions(member, SUPPORTER)
+        access: bool = await check_permissions(member, Permission.rp_pin)
         if not (await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return True
 
@@ -53,7 +54,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot:
             return True
 
-        access: bool = await check_permissions(member, SUPPORTER)
+        access: bool = await check_permissions(member, Permission.rp_pin)
         is_reactionpin_channel = await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None
         if message.pinned and (access or (is_reactionpin_channel and member == message.author)):
             await message.unpin()
@@ -78,7 +79,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         return True
 
     @commands.group(aliases=["rp"])
-    @permission_level(MODERATOR)
+    @permission_level(Permission.rp_manage)
     @guild_only()
     async def reactionpin(self, ctx: Context):
         """
