@@ -47,6 +47,13 @@ async def configure_role(ctx: Context, role_name: str, role: Optional[Role], che
         await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
 
 
+async def get_mute_role(guild: Guild) -> Role:
+    mute_role: Optional[Role] = guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
+    if mute_role is None:
+        raise CommandError(translations.mute_role_not_set)
+    return mute_role
+
+
 class ModCog(Cog, name="Mod Tools"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -209,10 +216,18 @@ class ModCog(Cog, name="Mod Tools"):
             ctx.guild, translations.f_log_warned(ctx.author.mention, member.mention, member, reason)
         )
 
+    async def get_user(self, guild: Guild, user: Union[Member, User, int]) -> Union[Member, User]:
+        if isinstance(user, int):
+            if (user := guild.get_member(user) or await self.bot.fetch_user(user)) is None:
+                raise CommandError(translations.user_not_found)
+        elif isinstance(user, User):
+            user = guild.get_member(user.id) or user
+        return user
+
     @commands.command(name="mute")
     @permission_level(Permission.mute)
     @guild_only()
-    async def mute(self, ctx: Context, member: Member, days: DurationConverter, *, reason: str):
+    async def mute(self, ctx: Context, user: Union[Member, User, int], days: DurationConverter, *, reason: str):
         """
         mute a member
         set days to inf for a permanent mute
@@ -223,32 +238,35 @@ class ModCog(Cog, name="Mod Tools"):
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        mute_role: Optional[Role] = ctx.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
-        if mute_role is None:
-            raise CommandError(translations.mute_role_not_set)
+        mute_role: Role = await get_mute_role(ctx.guild)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
-        if mute_role in member.roles:
+        if await run_in_thread(db.first, Mute, active=True, member=user.id) is not None:
             raise CommandError(translations.already_muted)
+        if isinstance(user, Member):
+            if mute_role in user.roles:
+                raise CommandError(translations.already_muted)
+            else:
+                await user.add_roles(mute_role)
 
-        await member.add_roles(mute_role)
         try:
             if days is not None:
-                await member.send(translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason))
+                await user.send(translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason))
             else:
-                await member.send(translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason))
+                await user.send(translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason))
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
         if days is not None:
-            await run_in_thread(Mute.create, member.id, str(member), ctx.author.id, days, reason)
+            await run_in_thread(Mute.create, user.id, str(user), ctx.author.id, days, reason)
             await ctx.send(translations.muted_response)
             await send_to_changelog(
-                ctx.guild, translations.f_log_muted(ctx.author.mention, member.mention, member, days, reason)
+                ctx.guild, translations.f_log_muted(ctx.author.mention, user.mention, user, days, reason)
             )
         else:
-            await run_in_thread(Mute.create, member.id, str(member), ctx.author.id, -1, reason)
+            await run_in_thread(Mute.create, user.id, str(user), ctx.author.id, -1, reason)
             await ctx.send(translations.muted_response)
             await send_to_changelog(
-                ctx.guild, translations.f_log_muted_inf(ctx.author.mention, member.mention, member, reason)
+                ctx.guild, translations.f_log_muted_inf(ctx.author.mention, user.mention, user, reason)
             )
 
     @commands.command(name="unmute")
@@ -262,14 +280,8 @@ class ModCog(Cog, name="Mod Tools"):
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        mute_role: Optional[Role] = ctx.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
-        if mute_role is None:
-            raise CommandError(translations.mute_role_not_set)
-
-        if isinstance(user, int):
-            user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
-            if user is None:
-                raise CommandError(translations.user_not_found)
+        mute_role: Role = await get_mute_role(ctx.guild)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
         was_muted = False
         if isinstance(user, Member) and mute_role in user.roles:
@@ -330,10 +342,7 @@ class ModCog(Cog, name="Mod Tools"):
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        if isinstance(user, int):
-            user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
-            if user is None:
-                raise CommandError(translations.user_not_found)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
         if isinstance(user, Member) and (user.top_role >= ctx.guild.me.top_role or user.id == ctx.guild.owner_id):
             raise CommandError(translations.cannot_ban)
@@ -374,10 +383,7 @@ class ModCog(Cog, name="Mod Tools"):
         if not ctx.guild.me.guild_permissions.ban_members:
             raise CommandError(translations.cannot_unban_permissions)
 
-        if isinstance(user, int):
-            user = ctx.guild.get_member(user) or await self.bot.fetch_user(user)
-            if user is None:
-                raise CommandError(translations.user_not_found)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
         was_banned = True
         try:
@@ -395,7 +401,7 @@ class ModCog(Cog, name="Mod Tools"):
         await ctx.send(translations.unbanned_response)
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
 
-    async def get_user(self, author: User, user: Optional[Union[User, int]]) -> Tuple[Union[User, int], int]:
+    async def get_stats_user(self, author: User, user: Optional[Union[User, int]]) -> Tuple[Union[User, int], int]:
         if user is None:
             user = author
 
@@ -418,7 +424,7 @@ class ModCog(Cog, name="Mod Tools"):
         show statistics about a user
         """
 
-        user, user_id = await self.get_user(ctx.author, user)
+        user, user_id = await self.get_stats_user(ctx.author, user)
         embed = Embed(title=translations.stats, color=0x35992C)
         if isinstance(user, int):
             embed.set_author(name=str(user))
@@ -467,7 +473,7 @@ class ModCog(Cog, name="Mod Tools"):
         show moderation log of a user
         """
 
-        user, user_id = await self.get_user(ctx.author, user)
+        user, user_id = await self.get_stats_user(ctx.author, user)
 
         out: List[Tuple[datetime, str]] = []
         for join in await run_in_thread(db.query, Join, member=user_id):
