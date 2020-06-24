@@ -192,13 +192,14 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await text_chat.set_permissions(member, overwrite=None)
             await text_chat.send(translations.f_dyn_voice_left(member.mention))
 
-        if not group.public and member.id == dyn_channel.owner and len(channel.members) > 0:
-            new_owner: Member = random.choice(channel.members)
+        members: List[Member] = [member for member in channel.members if not member.bot]
+        if not group.public and member.id == dyn_channel.owner and len(members) > 0:
+            new_owner: Member = random.choice(members)
             await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, new_owner.id)
             if text_chat is not None:
                 await text_chat.send(translations.f_private_voice_owner_changed(new_owner.mention))
 
-        if len(channel.members) > 0:
+        if len(members) > 0:
             return
 
         await channel.delete()
