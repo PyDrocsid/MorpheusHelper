@@ -80,9 +80,7 @@ class ProgrammerHumor:
         already_posted = ProgrammerHumor.load_already_posted()
 
         for post in ProgrammerHumor.fetch_reddit_posts():
-            if post["id"] in already_posted:
-                continue
-            else:
+            if post["id"] not in already_posted:
                 await channel.send(embed=ProgrammerHumor.create_embed(post))
                 already_posted.append(post["id"])
 
