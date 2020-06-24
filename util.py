@@ -118,26 +118,17 @@ handler_lock = MultiLock()
 
 
 async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
-    if identifier is not None:
-        await handler_lock.acquire((event, identifier))
+    async with handler_lock[(event, identifier) if identifier is not None else None]:
+        if prepare is not None:
+            args = await prepare()
+            if args is None:
+                return False
 
-    if prepare is not None:
-        args = await prepare()
-        if args is None:
-            if identifier is not None:
-                handler_lock.release((event, identifier))
-            return False
+        for handler in event_handlers.get(event, []):
+            if not await handler(*args):
+                return False
 
-    for handler in event_handlers.get(event, []):
-        if not await handler(*args):
-            if identifier is not None:
-                handler_lock.release((event, identifier))
-            return False
-
-    if identifier is not None:
-        handler_lock.release((event, identifier))
-
-    return True
+        return True
 
 
 def register_cogs(bot: Bot, *cogs):

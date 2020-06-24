@@ -16,6 +16,7 @@ class DB:
         self.engine: Engine = create_engine(
             f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}?charset=utf8mb4",
             pool_pre_ping=True,
+            pool_recycle=300,
             pool_size=10,
             max_overflow=20,
         )
@@ -63,9 +64,11 @@ async def run_in_thread(function, *args, **kwargs):
     async with thread_semaphore:
 
         def inner():
-            out = function(*args, **kwargs)
-            db.session.commit()
-            db.close()
+            try:
+                out = function(*args, **kwargs)
+                db.session.commit()
+            finally:
+                db.close()
             return out
 
         result = await asyncio.get_running_loop().run_in_executor(None, inner)

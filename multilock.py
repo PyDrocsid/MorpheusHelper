@@ -6,6 +6,18 @@ class MultiLock:
         self.locks = {}
         self.requests = {}
 
+    def __getitem__(self, key):
+        class Lock:
+            async def __aenter__(*_):
+                if key is not None:
+                    await self.acquire(key)
+
+            async def __aexit__(*_):
+                if key is not None:
+                    self.release(key)
+
+        return Lock()
+
     async def acquire(self, key):
         lock = self.locks.setdefault(key, asyncio.Lock())
         self.requests[key] = self.requests.get(key, 0) + 1
