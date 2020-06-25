@@ -359,7 +359,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         invite a member into a private voice channel
         """
 
-        group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        _, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
         if text_channel is not None:
             await text_channel.send(translations.f_user_added_to_private_voice(member.mention))
@@ -372,7 +372,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         remove a member from a private voice channel
         """
 
-        group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        _, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         if member == ctx.author or member == self.bot.user:
             raise CommandError(translations.cannot_remove_member)
 
