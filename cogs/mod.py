@@ -246,8 +246,7 @@ class ModCog(Cog, name="Mod Tools"):
         if isinstance(user, Member):
             if mute_role in user.roles:
                 raise CommandError(translations.already_muted)
-            else:
-                await user.add_roles(mute_role)
+            await user.add_roles(mute_role)
 
         try:
             if days is not None:
