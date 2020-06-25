@@ -41,7 +41,11 @@ class LoggingCog(Cog, name="Logging"):
         if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
-        embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
+        embed = Embed(
+            title=translations.message_edited,
+            color=0xFFFF00,
+            timestamp=datetime.utcnow(),
+        )
         embed.add_field(name=translations.channel, value=before.channel.mention)
         embed.add_field(name=translations.author_title, value=before.author.mention)
         embed.add_field(name=translations.url, value=before.jump_url, inline=False)
@@ -51,14 +55,22 @@ class LoggingCog(Cog, name="Logging"):
 
         return True
 
-    async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]) -> bool:
+    async def on_raw_message_edit(
+        self, channel: TextChannel, message: Optional[Message]
+    ) -> bool:
         if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
-        embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
+        embed = Embed(
+            title=translations.message_edited,
+            color=0xFFFF00,
+            timestamp=datetime.utcnow(),
+        )
         embed.add_field(name=translations.channel, value=channel.mention)
         if message is not None:
-            embed.add_field(name=translations.author_title, value=message.author.mention)
+            embed.add_field(
+                name=translations.author_title, value=message.author.mention
+            )
             embed.add_field(name=translations.url, value=message.jump_url, inline=False)
             add_field(embed, translations.new_content, message.content)
         await edit_channel.send(embed=embed)
@@ -69,7 +81,11 @@ class LoggingCog(Cog, name="Logging"):
         if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
 
-        embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=(datetime.utcnow()))
+        embed = Embed(
+            title=translations.message_deleted,
+            color=0xFF0000,
+            timestamp=(datetime.utcnow()),
+        )
         embed.add_field(name=translations.channel, value=message.channel.mention)
         embed.add_field(name=translations.author_title, value=message.author.mention)
         add_field(embed, translations.old_content, message.content)
@@ -82,7 +98,9 @@ class LoggingCog(Cog, name="Logging"):
                         break
                     size /= 1000
                 out.append(f"{attachment.filename} ({size:.1f} {unit})")
-            embed.add_field(name=translations.attachments, value="\n".join(out), inline=False)
+            embed.add_field(
+                name=translations.attachments, value="\n".join(out), inline=False
+            )
         await delete_channel.send(embed=embed)
 
         return True
@@ -91,11 +109,17 @@ class LoggingCog(Cog, name="Logging"):
         if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
 
-        embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=datetime.utcnow())
+        embed = Embed(
+            title=translations.message_deleted,
+            color=0xFF0000,
+            timestamp=datetime.utcnow(),
+        )
         channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
         if channel is not None:
             embed.add_field(name=translations.channel, value=channel.mention)
-            embed.add_field(name=translations.message_id, value=event.message_id, inline=False)
+            embed.add_field(
+                name=translations.message_id, value=event.message_id, inline=False
+            )
         await delete_channel.send(embed=embed)
 
         return True
@@ -117,13 +141,23 @@ class LoggingCog(Cog, name="Logging"):
         edit_id = await run_in_thread(Settings.get, int, "logging_edit", -1)
         delete_id = await run_in_thread(Settings.get, int, "logging_delete", -1)
         changelog_id = await run_in_thread(Settings.get, int, "logging_changelog", -1)
-        edit_channel: Optional[TextChannel] = guild.get_channel(edit_id) if edit_id != -1 else None
-        delete_channel: Optional[TextChannel] = guild.get_channel(delete_id) if delete_id != -1 else None
-        changelog_channel: Optional[TextChannel] = guild.get_channel(changelog_id) if changelog_id != -1 else None
+        edit_channel: Optional[TextChannel] = guild.get_channel(
+            edit_id
+        ) if edit_id != -1 else None
+        delete_channel: Optional[TextChannel] = guild.get_channel(
+            delete_id
+        ) if delete_id != -1 else None
+        changelog_channel: Optional[TextChannel] = guild.get_channel(
+            changelog_id
+        ) if changelog_id != -1 else None
         out = [translations.logging_channels_header]
         if edit_channel is not None:
-            mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
-            out.append(" - " + translations.f_msg_edit_on(edit_channel.mention, mindiff))
+            mindiff: int = await run_in_thread(
+                Settings.get, int, "logging_edit_mindiff", 1
+            )
+            out.append(
+                " - " + translations.f_msg_edit_on(edit_channel.mention, mindiff)
+            )
         else:
             out.append(" - " + translations.msg_edit_off)
         if delete_channel is not None:

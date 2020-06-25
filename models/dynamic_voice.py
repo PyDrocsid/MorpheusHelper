@@ -14,8 +14,15 @@ class DynamicVoiceChannel(db.Base):
     owner: Union[Column, int] = Column(BigInteger)
 
     @staticmethod
-    def create(channel_id: int, group_id: int, text_chat_id: int, owner: int) -> "DynamicVoiceChannel":
-        row = DynamicVoiceChannel(channel_id=channel_id, group_id=group_id, text_chat_id=text_chat_id, owner=owner)
+    def create(
+        channel_id: int, group_id: int, text_chat_id: int, owner: int
+    ) -> "DynamicVoiceChannel":
+        row = DynamicVoiceChannel(
+            channel_id=channel_id,
+            group_id=group_id,
+            text_chat_id=text_chat_id,
+            owner=owner,
+        )
         db.add(row)
         return row
 

@@ -45,14 +45,18 @@ class NewsCog(Cog, name="News"):
         out = []
         guild: Guild = ctx.guild
         for authorization in await run_in_thread(db.all, NewsAuthorization):
-            text_channel: Optional[TextChannel] = guild.get_channel(authorization.channel_id)
+            text_channel: Optional[TextChannel] = guild.get_channel(
+                authorization.channel_id
+            )
             member: Optional[Member] = guild.get_member(authorization.user_id)
             if text_channel is None or member is None:
                 await run_in_thread(db.delete, authorization)
                 continue
             line = f"- `@{member}` -> {text_channel.mention}"
             if authorization.notification_role_id is not None:
-                role: Optional[Role] = guild.get_role(authorization.notification_role_id)
+                role: Optional[Role] = guild.get_role(
+                    authorization.notification_role_id
+                )
                 if role is None:
                     await run_in_thread(db.delete, authorization)
                     continue
@@ -64,12 +68,23 @@ class NewsCog(Cog, name="News"):
             await ctx.send(translations.no_news_authorizations)
 
     @auth.command(name="add", aliases=["a", "+"])
-    async def auth_add(self, ctx: Context, user: Member, channel: TextChannel, notification_role: Optional[Role]):
+    async def auth_add(
+        self,
+        ctx: Context,
+        user: Member,
+        channel: TextChannel,
+        notification_role: Optional[Role],
+    ):
         """
         authorize a new user to send news to a specific channel
         """
 
-        if await run_in_thread(db.first, NewsAuthorization, user_id=user.id, channel_id=channel.id) is not None:
+        if (
+            await run_in_thread(
+                db.first, NewsAuthorization, user_id=user.id, channel_id=channel.id
+            )
+            is not None
+        ):
             raise CommandError(translations.news_already_authorized)
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.news_not_added_no_permissions)
@@ -78,7 +93,9 @@ class NewsCog(Cog, name="News"):
 
         await run_in_thread(NewsAuthorization.create, user.id, channel.id, role_id)
         await ctx.send(translations.news_authorized)
-        await send_to_changelog(ctx.guild, translations.f_log_news_authorized(user.mention, channel.mention))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_news_authorized(user.mention, channel.mention)
+        )
 
     @auth.command(name="remove", aliases=["del", "r", "d", "-"])
     async def auth_del(self, ctx: Context, user: Member, channel: TextChannel):
@@ -94,7 +111,10 @@ class NewsCog(Cog, name="News"):
 
         await run_in_thread(db.delete, authorization)
         await ctx.send(translations.news_unauthorized)
-        await send_to_changelog(ctx.guild, translations.f_log_news_unauthorized(user.mention, channel.mention))
+        await send_to_changelog(
+            ctx.guild,
+            translations.f_log_news_unauthorized(user.mention, channel.mention),
+        )
 
     @news.command(name="send", aliases=["s"])
     async def send(self, ctx: Context, channel: TextChannel, *, message: Optional[str]):
@@ -113,16 +133,26 @@ class NewsCog(Cog, name="News"):
 
         if not message and not ctx.message.attachments:
             await ctx.send(translations.send_message)
-            message, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+            message, files = await read_normal_message(
+                self.bot, ctx.channel, ctx.author
+            )
         else:
             files = []
             for attachment in ctx.message.attachments:
                 file = io.BytesIO()
                 await attachment.save(file)
-                files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
+                files.append(
+                    File(
+                        file,
+                        filename=attachment.filename,
+                        spoiler=attachment.is_spoiler(),
+                    )
+                )
 
         if authorization.notification_role_id is not None:
-            role: Optional[Role] = ctx.guild.get_role(authorization.notification_role_id)
+            role: Optional[Role] = ctx.guild.get_role(
+                authorization.notification_role_id
+            )
             if role is not None:
                 message = role.mention + " " + message
 

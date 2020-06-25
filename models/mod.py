@@ -8,21 +8,31 @@ from database import db
 
 class Join(db.Base):
     __tablename__ = "join"
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     timestamp: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
-    def create(member: int, member_name: str, timestamp: Optional[datetime] = None) -> "Join":
-        row = Join(member=member, member_name=member_name, timestamp=timestamp or datetime.utcnow())
+    def create(
+        member: int, member_name: str, timestamp: Optional[datetime] = None
+    ) -> "Join":
+        row = Join(
+            member=member,
+            member_name=member_name,
+            timestamp=timestamp or datetime.utcnow(),
+        )
         db.add(row)
         return row
 
 
 class Leave(db.Base):
     __tablename__ = "leave"
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     timestamp: Union[Column, datetime] = Column(DateTime)
@@ -37,7 +47,9 @@ class Leave(db.Base):
 class UsernameUpdate(db.Base):
     __tablename__ = "username_update"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     new_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
@@ -45,9 +57,15 @@ class UsernameUpdate(db.Base):
     timestamp: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
-    def create(member: int, member_name: str, new_name: str, nick: bool) -> "UsernameUpdate":
+    def create(
+        member: int, member_name: str, new_name: str, nick: bool
+    ) -> "UsernameUpdate":
         row = UsernameUpdate(
-            member=member, member_name=member_name, new_name=new_name, nick=nick, timestamp=datetime.utcnow()
+            member=member,
+            member_name=member_name,
+            new_name=new_name,
+            nick=nick,
+            timestamp=datetime.utcnow(),
         )
         db.add(row)
         return row
@@ -56,7 +74,9 @@ class UsernameUpdate(db.Base):
 class Report(db.Base):
     __tablename__ = "report"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     reporter: Union[Column, int] = Column(BigInteger)
@@ -66,7 +86,11 @@ class Report(db.Base):
     @staticmethod
     def create(member: int, member_name: str, reporter: int, reason: str) -> "Report":
         row = Report(
-            member=member, member_name=member_name, reporter=reporter, timestamp=datetime.utcnow(), reason=reason
+            member=member,
+            member_name=member_name,
+            reporter=reporter,
+            timestamp=datetime.utcnow(),
+            reason=reason,
         )
         db.add(row)
         return row
@@ -75,7 +99,9 @@ class Report(db.Base):
 class Warn(db.Base):
     __tablename__ = "warn"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     mod: Union[Column, int] = Column(BigInteger)
@@ -84,7 +110,13 @@ class Warn(db.Base):
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, reason: str) -> "Warn":
-        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
+        row = Warn(
+            member=member,
+            member_name=member_name,
+            mod=mod,
+            timestamp=datetime.utcnow(),
+            reason=reason,
+        )
         db.add(row)
         return row
 
@@ -92,7 +124,9 @@ class Warn(db.Base):
 class Mute(db.Base):
     __tablename__ = "mute"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     mod: Union[Column, int] = Column(BigInteger)
@@ -100,12 +134,18 @@ class Mute(db.Base):
     days: Union[Column, int] = Column(Integer)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     active: Union[Column, bool] = Column(Boolean)
-    deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
+    deactivation_timestamp: Union[Column, Optional[datetime]] = Column(
+        DateTime, nullable=True
+    )
     unmute_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
-    unmute_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"), nullable=True)
+    unmute_reason: Union[Column, Optional[str]] = Column(
+        Text(collation="utf8mb4_bin"), nullable=True
+    )
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Mute":
+    def create(
+        member: int, member_name: str, mod: int, days: int, reason: str
+    ) -> "Mute":
         row = Mute(
             member=member,
             member_name=member_name,
@@ -133,7 +173,9 @@ class Mute(db.Base):
 class Kick(db.Base):
     __tablename__ = "kick"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     mod: Union[Column, int] = Column(BigInteger)
@@ -142,7 +184,13 @@ class Kick(db.Base):
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, reason: str) -> "Kick":
-        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
+        row = Kick(
+            member=member,
+            member_name=member_name,
+            mod=mod,
+            timestamp=datetime.utcnow(),
+            reason=reason,
+        )
         db.add(row)
         return row
 
@@ -150,7 +198,9 @@ class Kick(db.Base):
 class Ban(db.Base):
     __tablename__ = "ban"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     mod: Union[Column, int] = Column(BigInteger)
@@ -158,12 +208,18 @@ class Ban(db.Base):
     days: Union[Column, int] = Column(Integer)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     active: Union[Column, bool] = Column(Boolean)
-    deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
-    unban_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"), nullable=True)
+    deactivation_timestamp: Union[Column, Optional[datetime]] = Column(
+        DateTime, nullable=True
+    )
+    unban_reason: Union[Column, Optional[str]] = Column(
+        Text(collation="utf8mb4_bin"), nullable=True
+    )
     unban_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Ban":
+    def create(
+        member: int, member_name: str, mod: int, days: int, reason: str
+    ) -> "Ban":
         row = Ban(
             member=member,
             member_name=member_name,

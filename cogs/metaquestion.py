@@ -16,7 +16,10 @@ WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
 def make_embed(requested_by: Member) -> Embed:
     embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/")
     embed.description = translations.metaquestion_description
-    embed.set_footer(text=translations.f_requested_by(requested_by, requested_by.id), icon_url=requested_by.avatar_url)
+    embed.set_footer(
+        text=translations.f_requested_by(requested_by, requested_by.id),
+        icon_url=requested_by.avatar_url,
+    )
     embed.add_field(
         name=translations.mq_advantages_title,
         value="\n".join("- " + e for e in translations.mq_advantages),
@@ -34,16 +37,23 @@ class MetaQuestionCog(Cog, name="Metafragen"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+    async def on_raw_reaction_add(
+        self, message: Message, emoji: PartialEmoji, member: Member
+    ) -> bool:
         if member == self.bot.user:
             return True
 
         if emoji.name == "metaquestion":
             media_only = (
                 not await check_permissions(member, Permission.mo_bypass)
-                and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
+                and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id)
+                is not None
             )
-            if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
+            if (
+                message.author.bot
+                or not message.channel.permissions_for(member).send_messages
+                or media_only
+            ):
                 try:
                     await message.remove_reaction(emoji, member)
                 except Forbidden:
@@ -56,15 +66,26 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                         return False
                     break
             await message.add_reaction(emoji)
-            msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
+            msg: Message = await message.channel.send(
+                message.author.mention, embed=make_embed(member)
+            )
             await msg.add_reaction(WASTEBASKET)
             return False
         elif emoji.name == WASTEBASKET:
             for embed in message.embeds:
-                pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
-                if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
+                pattern = (
+                    re.escape(translations.requested_by)
+                    .replace("\\{\\}", "{}")
+                    .format(r".*?#\d{4}", r"(\d+)")
+                )
+                if (
+                    match := re.match("^" + pattern + "$", embed.footer.text)
+                ) is not None:
                     author_id = int(match.group(1))
-                    if not (author_id == member.id or await check_permissions(member, Permission.mq_reduce)):
+                    if not (
+                        author_id == member.id
+                        or await check_permissions(member, Permission.mq_reduce)
+                    ):
                         try:
                             await message.remove_reaction(emoji, member)
                         except Forbidden:
@@ -75,7 +96,9 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                 return True
 
             await message.clear_reactions()
-            await message.edit(content=message.content + " http://metafrage.de/", embed=None)
+            await message.edit(
+                content=message.content + " http://metafrage.de/", embed=None
+            )
             return False
 
         return True

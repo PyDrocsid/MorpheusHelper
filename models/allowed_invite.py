@@ -17,7 +17,9 @@ class AllowedInvite(db.Base):
     created_at: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
-    def create(guild_id: int, code: str, guild_name: str, applicant: int, approver: int) -> "AllowedInvite":
+    def create(
+        guild_id: int, code: str, guild_name: str, applicant: int, approver: int
+    ) -> "AllowedInvite":
         row = AllowedInvite(
             guild_id=guild_id,
             code=code,
@@ -38,7 +40,9 @@ class AllowedInvite(db.Base):
 class InviteLog(db.Base):
     __tablename__ = "invite_log"
 
-    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    id: Union[Column, int] = Column(
+        Integer, primary_key=True, unique=True, autoincrement=True
+    )
     guild_id: Union[Column, int] = Column(BigInteger)
     guild_name: Union[Column, str] = Column(String(128))
     applicant: Union[Column, int] = Column(BigInteger)
@@ -47,7 +51,9 @@ class InviteLog(db.Base):
     approved: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(guild_id: int, guild_name: str, applicant: int, mod: int, approved: bool) -> "InviteLog":
+    def create(
+        guild_id: int, guild_name: str, applicant: int, mod: int, approved: bool
+    ) -> "InviteLog":
         row = InviteLog(
             guild_id=guild_id,
             guild_name=guild_name,

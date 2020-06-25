@@ -26,37 +26,56 @@ class ReactionPinCog(Cog, name="ReactionPin"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+    async def on_raw_reaction_add(
+        self, message: Message, emoji: PartialEmoji, member: Member
+    ) -> bool:
         if str(emoji) != EMOJI or member.bot:
             return True
 
         access: bool = await check_permissions(member, Permission.rp_pin)
-        if not (await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
+        if not (
+            await run_in_thread(db.get, ReactionPinChannel, message.channel.id)
+            is not None
+            or access
+        ):
             return True
 
         blocked_role = await run_in_thread(Settings.get, int, "mute_role", None)
-        if access or (member == message.author and all(r.id != blocked_role for r in member.roles)):
+        if access or (
+            member == message.author and all(r.id != blocked_role for r in member.roles)
+        ):
             if message.type != MessageType.default:
                 await message.remove_reaction(emoji, member)
-                await message.channel.send(make_error(translations.msg_not_pinned_system))
+                await message.channel.send(
+                    make_error(translations.msg_not_pinned_system)
+                )
                 return False
             try:
                 await message.pin()
             except HTTPException:
                 await message.remove_reaction(emoji, member)
-                await message.channel.send(make_error(translations.msg_not_pinned_limit))
+                await message.channel.send(
+                    make_error(translations.msg_not_pinned_limit)
+                )
         else:
             await message.remove_reaction(emoji, member)
 
         return False
 
-    async def on_raw_reaction_remove(self, message: Message, emoji: PartialEmoji, member: Member) -> bool:
+    async def on_raw_reaction_remove(
+        self, message: Message, emoji: PartialEmoji, member: Member
+    ) -> bool:
         if str(emoji) != EMOJI or member.bot:
             return True
 
         access: bool = await check_permissions(member, Permission.rp_pin)
-        is_reactionpin_channel = await run_in_thread(db.get, ReactionPinChannel, message.channel.id) is not None
-        if message.pinned and (access or (is_reactionpin_channel and member == message.author)):
+        is_reactionpin_channel = (
+            await run_in_thread(db.get, ReactionPinChannel, message.channel.id)
+            is not None
+        )
+        if message.pinned and (
+            access or (is_reactionpin_channel and member == message.author)
+        ):
             await message.unpin()
             return False
 
@@ -71,8 +90,14 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if message.guild is None:
             return True
 
-        pin_messages_enabled = await run_in_thread(Settings.get, bool, "reactionpin_pin_message", True)
-        if not pin_messages_enabled and message.author == self.bot.user and message.type == MessageType.pins_add:
+        pin_messages_enabled = await run_in_thread(
+            Settings.get, bool, "reactionpin_pin_message", True
+        )
+        if (
+            not pin_messages_enabled
+            and message.author == self.bot.user
+            and message.type == MessageType.pins_add
+        ):
             await message.delete()
             return False
 
@@ -103,7 +128,9 @@ class ReactionPinCog(Cog, name="ReactionPin"):
                 continue
             out.append(f"- {text_channel.mention}")
         if out:
-            await ctx.send(translations.whitelisted_channels_header + "\n" + "\n".join(out))
+            await ctx.send(
+                translations.whitelisted_channels_header + "\n" + "\n".join(out)
+            )
         else:
             await ctx.send(translations.no_whitelisted_channels)
 
@@ -118,7 +145,9 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         await run_in_thread(ReactionPinChannel.create, channel.id)
         await ctx.send(translations.channel_whitelisted)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_rp(channel.mention))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_channel_whitelisted_rp(channel.mention)
+        )
 
     @reactionpin.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
@@ -131,7 +160,9 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         await run_in_thread(db.delete, row)
         await ctx.send(translations.channel_removed)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_removed_rp(channel.mention))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_channel_removed_rp(channel.mention)
+        )
 
     @reactionpin.command(name="pin_message", aliases=["pm"])
     async def change_pin_message(self, ctx: Context, enabled: bool = None):
@@ -148,7 +179,11 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             await run_in_thread(Settings.set, bool, "reactionpin_pin_message", enabled)
             if enabled:
                 await ctx.send(translations.pin_messages_now_enabled)
-                await send_to_changelog(ctx.guild, translations.pin_messages_now_enabled)
+                await send_to_changelog(
+                    ctx.guild, translations.pin_messages_now_enabled
+                )
             else:
                 await ctx.send(translations.pin_messages_now_disabled)
-                await send_to_changelog(ctx.guild, translations.pin_messages_now_disabled)
+                await send_to_changelog(
+                    ctx.guild, translations.pin_messages_now_disabled
+                )

@@ -3,7 +3,17 @@ import socket
 import time
 from typing import Optional, Tuple, List, Union
 
-from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User, Attachment
+from discord import (
+    Member,
+    TextChannel,
+    Guild,
+    PartialEmoji,
+    Message,
+    File,
+    Embed,
+    User,
+    Attachment,
+)
 from discord.ext.commands import (
     check,
     Context,
@@ -30,7 +40,9 @@ class FixedEmojiConverter(PartialEmojiConverter):
             pass
 
         # noinspection PyProtectedMember
-        return PartialEmoji.with_state(ctx.bot._connection, animated=False, name=argument, id=None)
+        return PartialEmoji.with_state(
+            ctx.bot._connection, animated=False, name=argument, id=None
+        )
 
 
 def make_error(message) -> str:
@@ -62,7 +74,9 @@ async def get_permission_level(member: Union[Member, User]) -> int:
     return PUBLIC
 
 
-async def check_permissions(member: Union[Member, User], permission: Union[Permission, int]) -> bool:
+async def check_permissions(
+    member: Union[Member, User], permission: Union[Permission, int]
+) -> bool:
     if isinstance(permission, Permission):
         permission = await permission.resolve()
     return await get_permission_level(member) >= permission
@@ -86,7 +100,11 @@ def calculate_edit_distance(a: str, b: str) -> int:
     dp = [[max(i, j) for j in range(len(b) + 1)] for i in range(len(a) + 1)]
     for i in range(1, len(a) + 1):
         for j in range(1, len(b) + 1):
-            dp[i][j] = min(dp[i - 1][j - 1] + (a[i - 1] != b[j - 1]), dp[i - 1][j] + 1, dp[i][j - 1] + 1)
+            dp[i][j] = min(
+                dp[i - 1][j - 1] + (a[i - 1] != b[j - 1]),
+                dp[i - 1][j] + 1,
+                dp[i][j - 1] + 1,
+            )
     return dp[len(a)][len(b)]
 
 
@@ -107,7 +125,9 @@ def measure_latency() -> Optional[float]:
 
 
 async def send_to_changelog(guild: Guild, message: str):
-    channel: Optional[TextChannel] = guild.get_channel(await run_in_thread(Settings.get, int, "logging_changelog", -1))
+    channel: Optional[TextChannel] = guild.get_channel(
+        await run_in_thread(Settings.get, int, "logging_changelog", -1)
+    )
     if channel is not None:
         await channel.send(message)
 
@@ -157,26 +177,47 @@ async def attachment_to_file(attachment: Attachment) -> File:
     return File(file, filename=attachment.filename, spoiler=attachment.is_spoiler())
 
 
-async def read_normal_message(bot: Bot, channel: TextChannel, author: Member) -> Tuple[str, List[File]]:
-    msg: Message = await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
-    return msg.content, [await attachment_to_file(attachment) for attachment in msg.attachments]
+async def read_normal_message(
+    bot: Bot, channel: TextChannel, author: Member
+) -> Tuple[str, List[File]]:
+    msg: Message = await bot.wait_for(
+        "message", check=lambda m: m.channel == channel and m.author == author
+    )
+    return (
+        msg.content,
+        [await attachment_to_file(attachment) for attachment in msg.attachments],
+    )
 
 
 async def read_embed(bot: Bot, channel: TextChannel, author: Member) -> Embed:
     await channel.send(translations.send_embed_title)
-    title: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
+    title: str = (
+        await bot.wait_for(
+            "message", check=lambda m: m.channel == channel and m.author == author
+        )
+    ).content
     if len(title) > 256:
         raise CommandError(translations.title_too_long)
     await channel.send(translations.send_embed_content)
-    content: str = (await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)).content
+    content: str = (
+        await bot.wait_for(
+            "message", check=lambda m: m.channel == channel and m.author == author
+        )
+    ).content
     return Embed(title=title, description=content)
 
 
-async def read_complete_message(message: Message) -> Tuple[str, List[File], Optional[Embed]]:
+async def read_complete_message(
+    message: Message,
+) -> Tuple[str, List[File], Optional[Embed]]:
     for embed in message.embeds:
         if embed.type == "rich":
             break
     else:
         embed = None
 
-    return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed
+    return (
+        message.content,
+        [await attachment_to_file(attachment) for attachment in message.attachments],
+        embed,
+    )

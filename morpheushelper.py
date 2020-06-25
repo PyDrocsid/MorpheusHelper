@@ -74,7 +74,11 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
+bot = Bot(
+    command_prefix=fetch_prefix,
+    case_insensitive=True,
+    description=translations.description,
+)
 
 
 def get_owner() -> Optional[User]:
@@ -164,7 +168,9 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
+    embed = Embed(
+        title="MorpheusHelper", color=0x007700, description=translations.description
+    )
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -175,14 +181,28 @@ async def build_info_embed(authorized: bool) -> Embed:
         value="\n".join(f":small_orange_diamond: {feature}" for feature in features),
         inline=False,
     )
-    embed.add_field(name=translations.author_title, value="<@370876111992913922>", inline=True)
-    embed.add_field(name=translations.contributors_title, value=", ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
+    embed.add_field(
+        name=translations.author_title, value="<@370876111992913922>", inline=True
+    )
+    embed.add_field(
+        name=translations.contributors_title,
+        value=", ".join(f"<@{c}>" for c in CONTRIBUTORS),
+        inline=True,
+    )
     embed.add_field(name=translations.version_title, value=VERSION, inline=True)
     embed.add_field(name=translations.github_title, value=GITHUB_LINK, inline=False)
-    embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
-    embed.add_field(name=translations.help_command_title, value=f"`{prefix}help`", inline=True)
     embed.add_field(
-        name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
+        name=translations.prefix_title,
+        value=f"`{prefix}` or {bot.user.mention}",
+        inline=True,
+    )
+    embed.add_field(
+        name=translations.help_command_title, value=f"`{prefix}help`", inline=True
+    )
+    embed.add_field(
+        name=translations.bugs_features_title,
+        value=translations.bugs_features,
+        inline=False,
     )
     return embed
 
@@ -216,7 +236,11 @@ async def on_error(*_, **__):
 
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
-    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
+    if (
+        isinstance(error, CommandNotFound)
+        and ctx.guild is not None
+        and ctx.prefix == await get_prefix()
+    ):
         return
     await ctx.send(make_error(error))
 
@@ -233,7 +257,9 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
             return
         return message, event.emoji, channel.guild.get_member(event.user_id)
 
-    await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
+    await call_event_handlers(
+        "raw_reaction_add", identifier=event.message_id, prepare=prepare
+    )
 
 
 @bot.event
@@ -248,7 +274,9 @@ async def on_raw_reaction_remove(event: RawReactionActionEvent):
             return
         return message, event.emoji, channel.guild.get_member(event.user_id)
 
-    await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
+    await call_event_handlers(
+        "raw_reaction_remove", identifier=event.message_id, prepare=prepare
+    )
 
 
 @bot.event
@@ -262,7 +290,9 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
         except NotFound:
             return
 
-    await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
+    await call_event_handlers(
+        "raw_reaction_clear", identifier=event.message_id, prepare=prepare
+    )
 
 
 @bot.event
@@ -286,7 +316,9 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
         except NotFound:
             return
 
-    await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
+    await call_event_handlers(
+        "raw_message_edit", identifier=event.message_id, prepare=prepare
+    )
 
 
 @bot.event
@@ -306,7 +338,9 @@ async def on_raw_message_delete(event: RawMessageDeleteEvent):
 
 @bot.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
-    await call_event_handlers("voice_state_update", member, before, after, identifier=member.id)
+    await call_event_handlers(
+        "voice_state_update", member, before, after, identifier=member.id
+    )
 
 
 @bot.event

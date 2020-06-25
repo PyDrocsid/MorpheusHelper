@@ -25,7 +25,10 @@ class CleverBotCog(Cog, name="CleverBot"):
     async def on_message(self, message: Message) -> bool:
         if message.guild is None or message.author.bot:
             return True
-        if message.content[:1].lower() not in string.ascii_letters + "äöüß" + string.digits:
+        if (
+            message.content[:1].lower()
+            not in string.ascii_letters + "äöüß" + string.digits
+        ):
             return True
         if await run_in_thread(db.get, CleverBotChannel, message.channel.id) is None:
             return True
@@ -71,7 +74,9 @@ class CleverBotCog(Cog, name="CleverBot"):
                 if text_channel in self.states:
                     out[-1] += f" ({self.states[text_channel].cnt})"
         if out:
-            await ctx.send(translations.whitelisted_channels_header + "\n" + "\n".join(out))
+            await ctx.send(
+                translations.whitelisted_channels_header + "\n" + "\n".join(out)
+            )
         else:
             await ctx.send(translations.no_whitelisted_channels)
 
@@ -87,7 +92,9 @@ class CleverBotCog(Cog, name="CleverBot"):
 
         await run_in_thread(CleverBotChannel.create, channel.id)
         await ctx.send(translations.channel_whitelisted)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention)
+        )
 
     @cleverbot.command(name="remove", aliases=["del", "d", "-"])
     @permission_level(Permission.cb_manage)
@@ -104,7 +111,9 @@ class CleverBotCog(Cog, name="CleverBot"):
 
         await run_in_thread(db.delete, row)
         await ctx.send(translations.channel_removed)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_channel_removed_cb(channel.mention)
+        )
 
     @cleverbot.command(name="reset")
     @permission_level(Permission.cb_reset)

@@ -27,14 +27,26 @@ class ReactionRole(db.Base):
     role_id: Union[Column, int] = Column(BigInteger)
 
     @staticmethod
-    def create(channel_id: int, message_id: int, emoji: str, role_id: int) -> "ReactionRole":
-        row = ReactionRole(channel_id=channel_id, message_id=message_id, emoji_hex=encode(emoji), role_id=role_id)
+    def create(
+        channel_id: int, message_id: int, emoji: str, role_id: int
+    ) -> "ReactionRole":
+        row = ReactionRole(
+            channel_id=channel_id,
+            message_id=message_id,
+            emoji_hex=encode(emoji),
+            role_id=role_id,
+        )
         db.add(row)
         return row
 
     @staticmethod
     def get(channel_id: int, message_id: int, emoji: str) -> Optional["ReactionRole"]:
-        return db.first(ReactionRole, channel_id=channel_id, message_id=message_id, emoji_hex=encode(emoji))
+        return db.first(
+            ReactionRole,
+            channel_id=channel_id,
+            message_id=message_id,
+            emoji_hex=encode(emoji),
+        )
 
     @property
     def emoji(self):

@@ -24,7 +24,9 @@ class CleverBot:
 
     def say(self, msg):
         self.cnt += 1
-        msg = "".join([[c, " "][c in string.whitespace] for c in msg if 32 <= ord(c) < 256])
+        msg = "".join(
+            [[c, " "][c in string.whitespace] for c in msg if 32 <= ord(c) < 256]
+        )
         if self.ns == 1:
             d = urlencode(
                 {
@@ -38,7 +40,9 @@ class CleverBot:
             d += b"&icognocheck="
             d += md5(d)
             result = self.session.post(self.URL, data=d)
-            out = "".join([c for c in result.content.split(b"\r")[0].decode() if ord(c) < 256])
+            out = "".join(
+                [c for c in result.content.split(b"\r")[0].decode() if ord(c) < 256]
+            )
             result = result.text.split("\r")
 
             self.set_cookie("CBALT", "1~" + out)
@@ -105,7 +109,9 @@ class CleverBot:
                 },
                 data=d,
             )
-            out = "".join([c for c in result.content.split(b"\r")[0].decode() if ord(c) < 256])
+            out = "".join(
+                [c for c in result.content.split(b"\r")[0].decode() if ord(c) < 256]
+            )
             result = result.text.split("\r")
 
             self.history = [out, msg] + self.history
@@ -117,14 +123,18 @@ class CleverBot:
                 "&&0&&0&"
                 + str(self.ns)
                 + "&"
-                + "&".join([self.history[i] for i in range(len(self.history) - 1, -1, -1)]),
+                + "&".join(
+                    [self.history[i] for i in range(len(self.history) - 1, -1, -1)]
+                ),
             )
         self.ns += 1
         return out
 
     def set_cookie(self, name, value):
         # noinspection PyProtectedMember,PyUnresolvedReferences
-        self.session.cookies._cookies["www.cleverbot.com"]["/"][name] = http.cookiejar.Cookie(
+        self.session.cookies._cookies["www.cleverbot.com"]["/"][
+            name
+        ] = http.cookiejar.Cookie(
             version=0,
             name=name,
             value=value,

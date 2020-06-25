@@ -1,11 +1,26 @@
 from typing import Optional
 
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadArgument, CommandError
+from discord.ext.commands import (
+    Cog,
+    Bot,
+    guild_only,
+    Context,
+    Converter,
+    BadArgument,
+    CommandError,
+)
 
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, get_permission_level, MODERATOR, SUPPORTER, PUBLIC
+from util import (
+    permission_level,
+    ADMINISTRATOR,
+    get_permission_level,
+    MODERATOR,
+    SUPPORTER,
+    PUBLIC,
+)
 
 
 async def list_permissions(ctx: Context, min_level: int):
@@ -14,7 +29,9 @@ async def list_permissions(ctx: Context, min_level: int):
     for permission in Permission:  # type: Permission
         level = await permission.resolve()
         if min_level >= level:
-            out.setdefault(level, []).append(f"  {permission.name} ({permission.description})")
+            out.setdefault(level, []).append(
+                f"  {permission.name} ({permission.description})"
+            )
     if out:
         await ctx.send(
             "```\n"
@@ -57,7 +74,11 @@ class PermissionsCog(Cog, name="Permissions"):
 
     @permissions.command(name="list", aliases=["show", "l", "?"])
     @permission_level(Permission.view_all_permissions)
-    async def list_permissions(self, ctx: Context, min_level: Optional[PermissionLevelConverter] = ADMINISTRATOR):
+    async def list_permissions(
+        self,
+        ctx: Context,
+        min_level: Optional[PermissionLevelConverter] = ADMINISTRATOR,
+    ):
         """
         list all permissions
         """
@@ -76,7 +97,9 @@ class PermissionsCog(Cog, name="Permissions"):
 
     @permissions.command(name="set", aliases=["s", "="])
     @permission_level(ADMINISTRATOR)
-    async def set_permission(self, ctx: Context, permission: str, level: PermissionLevelConverter):
+    async def set_permission(
+        self, ctx: Context, permission: str, level: PermissionLevelConverter
+    ):
         """
         configure bot permissions
         """
@@ -88,4 +111,8 @@ class PermissionsCog(Cog, name="Permissions"):
             raise CommandError(translations.invalid_permission)
 
         await permission.set(level)
-        await ctx.send(translations.f_permission_set(permission.name, translations.permission_levels[level]))
+        await ctx.send(
+            translations.f_permission_set(
+                permission.name, translations.permission_levels[level]
+            )
+        )

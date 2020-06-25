@@ -8,7 +8,12 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from permission import Permission
 from translations import translations
-from util import permission_level, read_normal_message, read_embed, read_complete_message
+from util import (
+    permission_level,
+    read_normal_message,
+    read_embed,
+    read_complete_message,
+)
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -45,7 +50,12 @@ class RulesCog(Cog, name="Rule Commands"):
             await ctx.send(translations.msg_sent)
 
     @send.command(name="embed", aliases=["e"])
-    async def send_embed(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None):
+    async def send_embed(
+        self,
+        ctx: Context,
+        channel: TextChannel,
+        color: Optional[Union[Color, str]] = None,
+    ):
         """
         send an embed
         """
@@ -114,7 +124,9 @@ class RulesCog(Cog, name="Rule Commands"):
         await ctx.send(translations.msg_edited)
 
     @edit.command(name="embed", aliases=["e"])
-    async def edit_embed(self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None):
+    async def edit_embed(
+        self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None
+    ):
         """
         edit an embed (specify message link)
         """

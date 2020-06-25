@@ -13,7 +13,9 @@ from util import permission_level, calculate_edit_distance, send_to_changelog
 
 
 def split_topics(topics: str) -> List[str]:
-    return [topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic]
+    return [
+        topic for topic in map(str.strip, topics.replace(";", ",").split(",")) if topic
+    ]
 
 
 async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
@@ -25,13 +27,18 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
                 if role in all_topics:
                     break
                 elif not role.managed and role > guild.me.top_role:
-                    raise CommandError(translations.f_youre_not_the_first_one(topic, author.mention))
+                    raise CommandError(
+                        translations.f_youre_not_the_first_one(topic, author.mention)
+                    )
         else:
             if all_topics:
                 best_match = min(
-                    (r.name for r in all_topics), key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
+                    (r.name for r in all_topics),
+                    key=lambda a: calculate_edit_distance(a.lower(), topic.lower()),
                 )
-                raise CommandError(translations.f_topic_not_found_did_you_mean(topic, best_match))
+                raise CommandError(
+                    translations.f_topic_not_found_did_you_mean(topic, best_match)
+                )
             else:
                 raise CommandError(translations.f_topic_not_found(topic))
         roles.append(role)
@@ -62,7 +69,12 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         out = [role.name for role in await list_topics(ctx.guild)]
         out.sort(key=str.lower)
         if out:
-            await ctx.send(translations.available_topics_header + "\n```\n" + ", ".join(out) + "```")
+            await ctx.send(
+                translations.available_topics_header
+                + "\n```\n"
+                + ", ".join(out)
+                + "```"
+            )
         else:
             await ctx.send(translations.no_topics_registered)
 
@@ -74,7 +86,11 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         """
 
         member: Member = ctx.author
-        roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
+        roles: List[Role] = [
+            r
+            for r in await parse_topics(ctx.guild, topics, ctx.author)
+            if r not in member.roles
+        ]
 
         await member.add_roles(*roles)
         if len(roles) > 1:
@@ -120,7 +136,9 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await ctx.send_help(self.register_role)
             return
 
-        valid_chars = set(string.ascii_letters + string.digits + " !#$%&'()*+-./:<=>?[\\]^_`{|}~")
+        valid_chars = set(
+            string.ascii_letters + string.digits + " !#$%&'()*+-./:<=>?[\\]^_`{|}~"
+        )
         to_be_created: List[str] = []
         roles: List[Role] = []
         for topic in names:
@@ -137,9 +155,13 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             if await run_in_thread(db.get, BTPRole, role.id) is not None:
                 raise CommandError(translations.f_topic_already_registered(topic))
             if role > ctx.me.top_role:
-                raise CommandError(translations.f_topic_not_registered_too_high(role, ctx.me.top_role))
+                raise CommandError(
+                    translations.f_topic_not_registered_too_high(role, ctx.me.top_role)
+                )
             if role.managed:
-                raise CommandError(translations.f_topic_not_registered_managed_role(role))
+                raise CommandError(
+                    translations.f_topic_not_registered_managed_role(role)
+                )
             roles.append(role)
 
         for name in to_be_created:
@@ -151,11 +173,16 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         if len(roles) > 1:
             await ctx.send(translations.f_cnt_topics_registered(len(roles)))
             await send_to_changelog(
-                ctx.guild, translations.log_these_topics_registered + " " + ", ".join(f"`{r}`" for r in roles)
+                ctx.guild,
+                translations.log_these_topics_registered
+                + " "
+                + ", ".join(f"`{r}`" for r in roles),
             )
         elif len(roles) == 1:
             await ctx.send(translations.topic_registered)
-            await send_to_changelog(ctx.guild, translations.f_log_topic_registered(roles[0]))
+            await send_to_changelog(
+                ctx.guild, translations.f_log_topic_registered(roles[0])
+            )
 
     @commands.command(name="/")
     @permission_level(Permission.btp_manage)
@@ -190,8 +217,13 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         if len(roles) > 1:
             await ctx.send(translations.f_cnt_topics_unregistered(len(roles)))
             await send_to_changelog(
-                ctx.guild, translations.log_these_topics_unregistered + " " + ", ".join(f"`{r}`" for r in roles)
+                ctx.guild,
+                translations.log_these_topics_unregistered
+                + " "
+                + ", ".join(f"`{r}`" for r in roles),
             )
         elif len(roles) == 1:
             await ctx.send(translations.topic_unregistered)
-            await send_to_changelog(ctx.guild, translations.f_log_topic_unregistered(roles[0]))
+            await send_to_changelog(
+                ctx.guild, translations.f_log_topic_unregistered(roles[0])
+            )

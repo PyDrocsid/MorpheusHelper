@@ -21,7 +21,9 @@ class DB:
             max_overflow=20,
         )
 
-        self._SessionFactory: sessionmaker = sessionmaker(bind=self.engine, expire_on_commit=False)
+        self._SessionFactory: sessionmaker = sessionmaker(
+            bind=self.engine, expire_on_commit=False
+        )
         self._Session = scoped_session(self._SessionFactory)
         self.Base: DeclarativeMeta = declarative_base()
 

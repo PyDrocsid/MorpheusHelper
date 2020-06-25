@@ -2,9 +2,26 @@ import re
 from typing import Optional
 
 import requests
-from discord import Invite, Member, Guild, Embed, Message, NotFound, Forbidden, HTTPException
+from discord import (
+    Invite,
+    Member,
+    Guild,
+    Embed,
+    Message,
+    NotFound,
+    Forbidden,
+    HTTPException,
+)
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.ext.commands import (
+    Cog,
+    Bot,
+    guild_only,
+    Context,
+    CommandError,
+    Converter,
+    BadArgument,
+)
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite, InviteLog
@@ -31,7 +48,10 @@ class AllowedServerConverter(Converter):
                 return row
 
         for row in await run_in_thread(db.all, AllowedInvite):  # type: AllowedInvite
-            if row.guild_name.lower().strip() == argument.lower().strip() or row.code == argument:
+            if (
+                row.guild_name.lower().strip() == argument.lower().strip()
+                or row.code == argument
+            ):
                 return row
 
         raise BadArgument(translations.allowed_server_not_found)
@@ -39,7 +59,9 @@ class AllowedServerConverter(Converter):
 
 def get_discord_invite(url) -> Optional[str]:
     while True:
-        if re.match(r"^(https?://)?(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)$", url):
+        if re.match(
+            r"^(https?://)?(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)$", url
+        ):
             return url
 
         if not re.match(r"^(https?://).*$", url):
@@ -47,7 +69,13 @@ def get_discord_invite(url) -> Optional[str]:
 
         try:
             response = requests.head(url)
-        except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+        except (
+            KeyError,
+            AttributeError,
+            requests.RequestException,
+            UnicodeError,
+            ConnectionError,
+        ):
             return None
 
         if response.is_redirect and "Location" in response.headers:
@@ -68,7 +96,10 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         forbidden = []
         legal_invite = False
-        for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content):
+        for url, *_ in re.findall(
+            r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)",
+            message.content,
+        ):
             if (url := get_discord_invite(url)) is None:
                 continue
             try:
@@ -88,25 +119,34 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             else:
                 legal_invite = True
         if forbidden:
-            can_delete = message.channel.permissions_for(message.guild.me).manage_messages
+            can_delete = message.channel.permissions_for(
+                message.guild.me
+            ).manage_messages
             if can_delete:
                 await message.delete()
             prefix = await get_prefix()
             await message.channel.send(
-                translations.f_illegal_invite_link(message.author.mention, prefix + "invites list"), delete_after=30
+                translations.f_illegal_invite_link(
+                    message.author.mention, prefix + "invites list"
+                ),
+                delete_after=30,
             )
             if can_delete:
                 await send_to_changelog(
                     message.guild,
                     translations.f_log_illegal_invite(
-                        message.author.mention, message.channel.mention, ", ".join(forbidden)
+                        message.author.mention,
+                        message.channel.mention,
+                        ", ".join(forbidden),
                     ),
                 )
             else:
                 await send_to_changelog(
                     message.guild,
                     translations.f_log_illegal_invite_not_deleted(
-                        message.author.mention, message.channel.mention, ", ".join(forbidden)
+                        message.author.mention,
+                        message.channel.mention,
+                        ", ".join(forbidden),
                     ),
                 )
             return False
@@ -145,10 +185,14 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         """
 
         out = []
-        for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
+        for row in sorted(
+            await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name
+        ):
             out.append(f"- {row.guild_name} ({row.guild_id})")
         if out:
-            await ctx.send(translations.allowed_servers_header + "\n```\n" + "\n".join(out) + "```")
+            await ctx.send(
+                translations.allowed_servers_header + "\n```\n" + "\n".join(out) + "```"
+            )
         else:
             await ctx.send(translations.no_server_allowed)
 
@@ -171,7 +215,10 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         embed.add_field(name=invite_title, value=f"https://discord.gg/{invite.code}")
         embed.add_field(name=translations.applicant, value=f"<@{invite.applicant}>")
         embed.add_field(name=translations.approver, value=f"<@{invite.approver}>")
-        embed.add_field(name=translations.date, value=f"{date.day:02}.{date.month:02}.{date.year:02}")
+        embed.add_field(
+            name=translations.date,
+            value=f"{date.day:02}.{date.month:02}.{date.year:02}",
+        )
         await ctx.send(embed=embed)
 
     @invites.command(name="add", aliases=["+", "a"])
@@ -188,10 +235,21 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if await run_in_thread(db.get, AllowedInvite, guild.id) is not None:
             raise CommandError(translations.server_already_whitelisted)
 
-        await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
-        await run_in_thread(InviteLog.create, guild.id, guild.name, applicant.id, ctx.author.id, True)
+        await run_in_thread(
+            AllowedInvite.create,
+            guild.id,
+            invite.code,
+            guild.name,
+            applicant.id,
+            ctx.author.id,
+        )
+        await run_in_thread(
+            InviteLog.create, guild.id, guild.name, applicant.id, ctx.author.id, True
+        )
         await ctx.send(translations.server_whitelisted)
-        await send_to_changelog(ctx.guild, translations.f_log_server_whitelisted(guild.name))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_server_whitelisted(guild.name)
+        )
 
     @invites.command(name="update", aliases=["u"])
     async def update_invite(self, ctx: Context, invite: Invite):
@@ -203,16 +261,24 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             raise CommandError(translations.invalid_invite)
 
         guild: Guild = invite.guild
-        row: Optional[AllowedInvite] = await run_in_thread(db.get, AllowedInvite, guild.id)
+        row: Optional[AllowedInvite] = await run_in_thread(
+            db.get, AllowedInvite, guild.id
+        )
         if row is None:
             raise CommandError(translations.server_not_whitelisted)
 
-        if not await check_permissions(ctx.author, Permission.invite_manage) and ctx.author.id != row.applicant:
+        if (
+            not await check_permissions(ctx.author, Permission.invite_manage)
+            and ctx.author.id != row.applicant
+        ):
             raise CommandError(translations.not_allowed)
 
         await run_in_thread(AllowedInvite.update, guild.id, invite.code)
         await ctx.send(translations.f_invite_updated(row.guild_name))
-        await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, row.guild_name))
+        await send_to_changelog(
+            ctx.guild,
+            translations.f_log_invite_updated(ctx.author.mention, row.guild_name),
+        )
 
     @invites.command(name="remove", aliases=["r", "del", "d", "-"])
     @permission_level(Permission.invite_manage)
@@ -224,7 +290,14 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         server: AllowedInvite
         await run_in_thread(db.delete, server)
         await run_in_thread(
-            InviteLog.create, server.guild_id, server.guild_name, server.applicant, ctx.author.id, False
+            InviteLog.create,
+            server.guild_id,
+            server.guild_name,
+            server.applicant,
+            ctx.author.id,
+            False,
         )
         await ctx.send(translations.server_removed)
-        await send_to_changelog(ctx.guild, translations.f_log_server_removed(server.guild_name))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_server_removed(server.guild_name)
+        )

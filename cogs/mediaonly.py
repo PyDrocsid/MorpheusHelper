@@ -19,17 +19,29 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         self.bot = bot
 
     async def on_message(self, message: Message) -> bool:
-        if message.guild is None or message.author.bot or await check_permissions(message.author, Permission.mo_bypass):
+        if (
+            message.guild is None
+            or message.author.bot
+            or await check_permissions(message.author, Permission.mo_bypass)
+        ):
             return True
         if await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return True
 
         urls = [(att.url,) for att in message.attachments]
-        urls += re.findall(r"(https?://([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content)
+        urls += re.findall(
+            r"(https?://([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content
+        )
         for url, *_ in urls:
             try:
                 mime = requests.head(url).headers["Content-type"]
-            except (KeyError, AttributeError, RequestException, UnicodeError, ConnectionError):
+            except (
+                KeyError,
+                AttributeError,
+                RequestException,
+                UnicodeError,
+                ConnectionError,
+            ):
                 break
             if not mime.startswith("image/"):
                 break
@@ -39,9 +51,14 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         channel: TextChannel = message.channel
         await message.delete()
-        await channel.send(translations.f_deleted_nomedia(message.author.mention), delete_after=30)
+        await channel.send(
+            translations.f_deleted_nomedia(message.author.mention), delete_after=30
+        )
         await send_to_changelog(
-            message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
+            message.guild,
+            translations.f_log_deleted_nomedia(
+                message.author.mention, message.channel.mention
+            ),
         )
 
         return False
@@ -72,7 +89,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             else:
                 await run_in_thread(db.delete, channel)
         if out:
-            await ctx.send(translations.media_only_channels_header + "\n" + "\n".join(out))
+            await ctx.send(
+                translations.media_only_channels_header + "\n" + "\n".join(out)
+            )
         else:
             await ctx.send(translations.no_media_only_channels)
 
@@ -89,7 +108,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(MediaOnlyChannel.create, channel.id)
         await ctx.send(translations.channel_now_media_only)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_now_media_only(channel.mention))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_channel_now_media_only(channel.mention)
+        )
 
     @mediaonly.command(name="remove", aliases=["del", "r", "d", "-"])
     async def remove_channel(self, ctx: Context, channel: TextChannel):
@@ -102,4 +123,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(db.delete, row)
         await ctx.send(translations.channel_not_media_only_anymore)
-        await send_to_changelog(ctx.guild, translations.f_log_channel_not_media_only_anymore(channel.mention))
+        await send_to_changelog(
+            ctx.guild,
+            translations.f_log_channel_not_media_only_anymore(channel.mention),
+        )
