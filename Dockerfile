@@ -6,11 +6,11 @@ WORKDIR /app
 
 RUN pip install pipenv
 
-ADD Pipfile /app/
-ADD Pipfile.lock /app/
+COPY Pipfile /app/
+COPY Pipfile.lock /app/
 
 RUN pipenv sync
 
-ADD . /app/
+COPY . /app/
 
 CMD pipenv run bot
