@@ -7,6 +7,7 @@ import http
 
 
 def md5(data):
+    # skipcq: PTC-W1003
     return hashlib.md5(data[7:33]).hexdigest().encode()
 
 
