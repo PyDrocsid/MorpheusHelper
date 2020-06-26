@@ -30,6 +30,7 @@ class FixedEmojiConverter(PartialEmojiConverter):
             pass
 
         # noinspection PyProtectedMember
+        # skipcq: PYL-W0212
         return PartialEmoji.with_state(ctx.bot._connection, animated=False, name=argument, id=None)
 
 
