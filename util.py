@@ -30,6 +30,7 @@ class FixedEmojiConverter(PartialEmojiConverter):
             pass
 
         # noinspection PyProtectedMember
+        # skipcq: PYL-W0212
         return PartialEmoji.with_state(ctx.bot._connection, animated=False, name=argument, id=None)
 
 
@@ -47,7 +48,7 @@ async def get_permission_level(member: Union[Member, User]) -> int:
     if not isinstance(member, Member):
         return PUBLIC
 
-    roles = set(role.id for role in member.roles)
+    roles = {role.id for role in member.roles}
 
     async def has_role(role_name):
         return await run_in_thread(Settings.get, int, role_name + "_role") in roles

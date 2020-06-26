@@ -53,13 +53,12 @@ class RulesCog(Cog, name="Rule Commands"):
         if isinstance(color, str):
             if not re.match(r"^[0-9a-fA-F]{6}$", color):
                 raise CommandError(translations.invalid_color)
-            else:
-                color = int(color, 16)
+            color = int(color, 16)
 
         permissions: Permissions = channel.permissions_for(channel.guild.me)
         if not permissions.send_messages:
             raise CommandError(translations.could_not_send_message)
-        elif not permissions.embed_links:
+        if not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
         embed = await read_embed(self.bot, ctx.channel, ctx.author)
@@ -125,8 +124,7 @@ class RulesCog(Cog, name="Rule Commands"):
         if isinstance(color, str):
             if not re.match(r"^[0-9a-fA-F]{6}$", color):
                 raise CommandError(translations.invalid_color)
-            else:
-                color = int(color, 16)
+            color = int(color, 16)
 
         embed = await read_embed(self.bot, ctx.channel, ctx.author)
         if color is not None:

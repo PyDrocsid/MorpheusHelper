@@ -246,8 +246,7 @@ class ModCog(Cog, name="Mod Tools"):
         if isinstance(user, Member):
             if mute_role in user.roles:
                 raise CommandError(translations.already_muted)
-            else:
-                await user.add_roles(mute_role)
+            await user.add_roles(mute_role)
 
         try:
             if days is not None:
@@ -390,7 +389,6 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.guild.unban(user)
         except HTTPException:
             was_banned = False
-            pass
 
         for ban in await run_in_thread(db.query, Ban, active=True, member=user.id):
             was_banned = True

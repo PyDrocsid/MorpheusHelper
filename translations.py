@@ -9,8 +9,7 @@ class Translations:
     def __getattr__(self, item: str):
         if item.startswith("f_"):
             return self._translations[item[2:]].format
-        else:
-            return copy.deepcopy(self._translations[item])
+        return copy.deepcopy(self._translations[item])
 
 
 translations = Translations("en")
