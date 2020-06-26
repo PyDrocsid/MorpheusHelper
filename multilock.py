@@ -26,7 +26,6 @@ class MultiLock:
         await lock.acquire()
 
     def release(self, key):
-        assert key in self.locks
         lock = self.locks[key]
         lock.release()
         self.requests[key] -= 1
