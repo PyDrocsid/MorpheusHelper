@@ -389,7 +389,6 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.guild.unban(user)
         except HTTPException:
             was_banned = False
-            pass
 
         for ban in await run_in_thread(db.query, Ban, active=True, member=user.id):
             was_banned = True
