@@ -81,6 +81,7 @@ def get_owner() -> Optional[User]:
     owner_id = os.getenv("OWNER_ID")
     if owner_id and owner_id.isnumeric():
         return bot.get_user(int(owner_id))
+    return None
 
 
 @bot.event
