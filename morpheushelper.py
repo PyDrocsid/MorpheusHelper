@@ -82,6 +82,7 @@ def get_owner() -> Optional[User]:
     owner_id = os.getenv("OWNER_ID")
     if owner_id and owner_id.isnumeric():
         return bot.get_user(int(owner_id))
+    return None
 
 
 @bot.event
@@ -222,7 +223,7 @@ async def on_error(*_, **__):
     if sentry_dsn:
         sentry_sdk.capture_exception()
     else:
-        raise
+        raise  # skipcq: PYL-E0704
 
 
 @bot.event

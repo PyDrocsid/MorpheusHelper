@@ -7,14 +7,16 @@ class MultiLock:
         self.requests = {}
 
     def __getitem__(self, key):
-        class Lock:
-            async def __aenter__(*_):
-                if key is not None:
-                    await self.acquire(key)
+        multilock = self
 
-            async def __aexit__(*_):
+        class Lock:
+            async def __aenter__(self, *_):
                 if key is not None:
-                    self.release(key)
+                    await multilock.acquire(key)
+
+            async def __aexit__(self, *_):
+                if key is not None:
+                    multilock.release(key)
 
         return Lock()
 
@@ -24,7 +26,6 @@ class MultiLock:
         await lock.acquire()
 
     def release(self, key):
-        assert key in self.locks
         lock = self.locks[key]
         lock.release()
         self.requests[key] -= 1

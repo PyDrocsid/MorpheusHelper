@@ -7,6 +7,7 @@ import http
 
 
 def md5(data):
+    # skipcq: PTC-W1003
     return hashlib.md5(data[7:33]).hexdigest().encode()
 
 
@@ -124,6 +125,7 @@ class CleverBot:
 
     def set_cookie(self, name, value):
         # noinspection PyProtectedMember,PyUnresolvedReferences
+        # skipcq: PYL-W0212
         self.session.cookies._cookies["www.cleverbot.com"]["/"][name] = http.cookiejar.Cookie(
             version=0,
             name=name,

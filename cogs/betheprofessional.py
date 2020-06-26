@@ -24,7 +24,7 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
             if role.name.lower() == topic.lower():
                 if role in all_topics:
                     break
-                elif not role.managed and role > guild.me.top_role:
+                if not role.managed and role > guild.me.top_role:
                     raise CommandError(translations.f_youre_not_the_first_one(topic, author.mention))
         else:
             if all_topics:
@@ -32,8 +32,7 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
                     (r.name for r in all_topics), key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
                 )
                 raise CommandError(translations.f_topic_not_found_did_you_mean(topic, best_match))
-            else:
-                raise CommandError(translations.f_topic_not_found(topic))
+            raise CommandError(translations.f_topic_not_found(topic))
         roles.append(role)
     return roles
 

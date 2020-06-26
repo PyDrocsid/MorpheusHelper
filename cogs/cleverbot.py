@@ -7,7 +7,7 @@ from discord import TextChannel, Message, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
-from cleverbot import CleverBot
+from cleverbot_api import CleverBot
 from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from permission import Permission

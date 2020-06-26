@@ -1,27 +1,16 @@
 FROM python:3.8-alpine
 
-RUN apk add gcc musl-dev
+RUN apk add --no-cache gcc=9.3.0-r2 musl-dev=1.1.24-r9
 
 WORKDIR /app
 
-RUN pip install pipenv
+RUN pip install pipenv==2020.6.2
 
-ADD Pipfile /app/
-ADD Pipfile.lock /app/
+COPY Pipfile /app/
+COPY Pipfile.lock /app/
 
 RUN pipenv sync
 
-ADD cleverbot.py /app/
-ADD translations.py /app/
-ADD multilock.py /app/
-ADD database.py /app/
-ADD permission.py /app/
-ADD util.py /app/
-ADD info.py /app/
-ADD programmerhumor.py /app/
-ADD models /app/models/
-ADD cogs /app/cogs/
-ADD morpheushelper.py /app/
-ADD translations /app/translations/
+COPY . /app/
 
 CMD pipenv run bot
