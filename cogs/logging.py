@@ -18,7 +18,6 @@ from translations import translations
 from util import permission_level, calculate_edit_distance
 
 
-
 def add_field(embed: Embed, name: str, text: str):
     first = True
     while text:
