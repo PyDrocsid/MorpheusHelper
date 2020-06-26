@@ -211,7 +211,7 @@ async def on_error(*_, **__):
     if sentry_dsn:
         sentry_sdk.capture_exception()
     else:
-        raise
+        raise  # skipcq: PYL-E0704
 
 
 @bot.event
