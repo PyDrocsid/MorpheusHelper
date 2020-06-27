@@ -49,6 +49,8 @@ class Permission(Enum):
     view_own_permissions = auto()
     view_all_permissions = auto()
 
+    manage_reddit = auto()
+
     @property
     def description(self) -> str:
         return translations.permissions[self.name]

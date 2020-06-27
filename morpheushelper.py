@@ -40,7 +40,7 @@ from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
-from programmerhumor import ProgrammerHumor
+from cogs.reddit import RedditCog
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permission import Permission
@@ -101,11 +101,6 @@ async def on_ready():
         except RuntimeError:
             status_loop.restart()
 
-    try:
-        programmerhumor_loop.start()
-    except RuntimeError:
-        programmerhumor_loop.restart()
-
     await call_event_handlers("ready")
 
 
@@ -122,11 +117,6 @@ async def status_loop():
             await owner.send(content)
         except Forbidden:
             pass
-
-
-@tasks.loop(hours=5)
-async def programmerhumor_loop():
-    await ProgrammerHumor.run(bot.get_channel(341284235581194241))  # videos-und-memes
 
 
 @bot.command()
@@ -381,5 +371,6 @@ register_cogs(
     RandomStuffCog,
     ModCog,
     PermissionsCog,
+    RedditCog,
 )
 bot.run(os.environ["TOKEN"])
