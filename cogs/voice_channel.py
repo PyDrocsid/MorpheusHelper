@@ -373,7 +373,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         _, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
-        if member == ctx.author or member == self.bot.user:
+        if member in (ctx.author, self.bot.user):
             raise CommandError(translations.cannot_remove_member)
 
         await voice_channel.set_permissions(member, overwrite=None)

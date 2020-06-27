@@ -110,7 +110,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     ),
                 )
             return False
-        elif legal_invite:
+        if legal_invite:
             await message.add_reaction(chr(9989))
         return True
 

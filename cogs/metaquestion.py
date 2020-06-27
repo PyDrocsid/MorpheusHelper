@@ -59,7 +59,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
             await msg.add_reaction(WASTEBASKET)
             return False
-        elif emoji.name == WASTEBASKET:
+        if emoji.name == WASTEBASKET:
             for embed in message.embeds:
                 pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
                 if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
