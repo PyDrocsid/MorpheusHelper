@@ -98,7 +98,7 @@ class RedditCog(Cog, name="Reddit"):
                 if await run_in_thread(RedditPost.post, post["id"]):
                     await text_channel.send(embed=create_embed(post))
 
-        await run_in_thread(RedditPost.clean, limit * 3)
+        await run_in_thread(RedditPost.clean)
 
     async def start_loop(self, interval):
         self.reddit_loop.cancel()

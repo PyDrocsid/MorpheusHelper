@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Union
 
-from sqlalchemy import Column, String, BigInteger, DateTime, desc
+from sqlalchemy import Column, String, BigInteger, DateTime
 
 from database import db
 
@@ -32,10 +32,9 @@ class RedditPost(db.Base):
         return row
 
     @staticmethod
-    def clean(limit: int):
-        for i, row in enumerate(db.query(RedditPost).order_by(desc(RedditPost.timestamp))):
-            if i >= limit:
-                db.delete(row)
+    def clean():
+        drop_before_timestamp = datetime.utcnow() - timedelta(weeks=1)
+        db.query(RedditPost).filter(RedditPost.timestamp < drop_before_timestamp).delete()
 
     @staticmethod
     def post(post_id: str) -> bool:
