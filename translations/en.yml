@@ -38,6 +38,7 @@ features:
   - Server information command
   - ReactionRoles
   - Dynamic voice channels
+  - Reddit integration
 admin_features:
   - Logging of message edit and delete events
   - Send/Edit/Delete text and embed messages as the bot
