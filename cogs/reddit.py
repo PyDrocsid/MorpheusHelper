@@ -41,7 +41,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
     posts: List[dict] = []
     for post in response.json()["data"]["children"]:
         # t3 = link
-        if post["kind"] == "t3" and post["data"]["post_hint"] == "image":
+        if post["kind"] == "t3" and post["data"].get("post_hint") == "image":
             posts.append(
                 {
                     "id": post["data"]["id"],
