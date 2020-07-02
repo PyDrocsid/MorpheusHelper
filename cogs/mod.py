@@ -73,7 +73,7 @@ class ModCog(Cog, name="Mod Tools"):
             self.mod_loop.restart()
         return True
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=30)
     async def mod_loop(self):
         guild: Guild = self.bot.guilds[0]
 
