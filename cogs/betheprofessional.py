@@ -119,7 +119,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await ctx.send_help(self.register_role)
             return
 
-        valid_chars = set(string.ascii_letters + string.digits + " !#$%&'()*+-./:<=>?[\\]^_`{|}~")
+        valid_chars = set(string.ascii_letters + string.digits + " !#$%&'()+-./:<=>?[\\]^_`{|}~")
         to_be_created: List[str] = []
         roles: List[Role] = []
         for topic in names:
