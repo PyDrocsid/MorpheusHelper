@@ -465,7 +465,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name="userlogs", aliases=["userlog", "ulog"])
+    @commands.command(name="userlogs", aliases=["userlog", "ulog", "uinfo", "userinfo"])
     async def userlogs(self, ctx: Context, user: Optional[Union[User, int]] = None):
         """
         show moderation log of a user
