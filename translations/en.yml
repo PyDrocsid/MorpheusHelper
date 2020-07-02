@@ -187,6 +187,7 @@ metaquestion_description: >
   ignoriert oder der Fragende wird rüde darauf hingewiesen, dass ihm niemand bei seinem Problem
   helfen könne, ohne dies zu kennen. Grundsätzlich folgt auf eine Meta-Frage eine weitere Frage.
 requested_by: Requested by @{} ({})
+metaquestion_description_reduced: "http://metafrage.de/ (Requested by {})"
 mq_advantages_title: Vorteile von Metafragen
 mq_advantages:
   - als höfliche Floskel um Aufmerksamkeit zu gewinnen
