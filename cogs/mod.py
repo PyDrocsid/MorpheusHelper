@@ -73,7 +73,7 @@ class ModCog(Cog, name="Mod Tools"):
             self.mod_loop.restart()
         return True
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=30)
     async def mod_loop(self):
         guild: Guild = self.bot.guilds[0]
 
@@ -118,7 +118,7 @@ class ModCog(Cog, name="Mod Tools"):
         if before.nick == after.nick:
             return True
 
-        await run_in_thread(UsernameUpdate.create, before.id, str(before), after.nick, True)
+        await run_in_thread(UsernameUpdate.create, before.id, before.nick, after.nick, True)
         return True
 
     async def on_user_update(self, before: User, after: User):
@@ -480,11 +480,14 @@ class ModCog(Cog, name="Mod Tools"):
             out.append((leave.timestamp, translations.ulog_left))
         for username_update in await run_in_thread(db.query, UsernameUpdate, member=user_id):
             if not username_update.nick:
-                out.append((username_update.timestamp, translations.f_ulog_username_updated(username_update.new_name)))
+                msg = translations.f_ulog_username_updated(username_update.member_name, username_update.new_name)
+            elif username_update.member_name is None:
+                msg = translations.f_ulog_nick_set(username_update.new_name)
             elif username_update.new_name is None:
-                out.append((username_update.timestamp, translations.ulog_nick_cleared))
+                msg = translations.f_ulog_nick_cleared(username_update.member_name)
             else:
-                out.append((username_update.timestamp, translations.f_ulog_nick_updated(username_update.new_name)))
+                msg = translations.f_ulog_nick_updated(username_update.member_name, username_update.new_name)
+            out.append((username_update.timestamp, msg))
         for report in await run_in_thread(db.query, Report, member=user_id):
             out.append((report.timestamp, translations.f_ulog_reported(f"<@{report.reporter}>", report.reason)))
         for warn in await run_in_thread(db.query, Warn, member=user_id):
