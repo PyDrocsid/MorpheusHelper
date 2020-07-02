@@ -317,7 +317,7 @@ class ModCog(Cog, name="Mod Tools"):
             await member.send(translations.f_kicked(ctx.author.mention, ctx.guild.name, reason))
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
-        await member.kick()
+        await member.kick(reason=reason)
         await run_in_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(translations.kicked_response)
         await send_to_changelog(
@@ -354,7 +354,7 @@ class ModCog(Cog, name="Mod Tools"):
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
 
-        await ctx.guild.ban(user, delete_message_days=1)
+        await ctx.guild.ban(user, delete_message_days=1, reason=reason)
         if days is not None:
             await run_in_thread(Ban.create, user.id, str(user), ctx.author.id, days, reason)
             await ctx.send(translations.banned_response)
@@ -386,7 +386,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         was_banned = True
         try:
-            await ctx.guild.unban(user)
+            await ctx.guild.unban(user, reason=reason)
         except HTTPException:
             was_banned = False
 
