@@ -189,6 +189,15 @@ async def build_info_embed(authorized: bool) -> Embed:
     return embed
 
 
+@bot.command(name="github", aliases=["gh"])
+async def github(ctx: Context):
+    """
+    return the github link
+    """
+
+    await ctx.send(GITHUB_LINK)
+
+
 @bot.command(name="info", aliases=["infos", "about"])
 async def info(ctx: Context):
     """

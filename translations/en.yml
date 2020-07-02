@@ -188,6 +188,7 @@ metaquestion_description: >
   ignoriert oder der Fragende wird rüde darauf hingewiesen, dass ihm niemand bei seinem Problem
   helfen könne, ohne dies zu kennen. Grundsätzlich folgt auf eine Meta-Frage eine weitere Frage.
 requested_by: Requested by @{} ({})
+metaquestion_description_reduced: "http://metafrage.de/ (Requested by {})"
 mq_advantages_title: Vorteile von Metafragen
 mq_advantages:
   - als höfliche Floskel um Aufmerksamkeit zu gewinnen
@@ -392,6 +393,7 @@ status_muted: ":mute:  User is muted on this server."
 status_muted_days: ":mute:  User is muted for {} days on this server ({} days left)."
 userlogs: User Logs
 ulog_empty: No entries for this user.
+ulog_created: ":sparkles:  **Created** this account."
 ulog_joined: ":tada:  **Joined** this server."
 ulog_left: ":door:  **Left** this server."
 ulog_nick_updated: ":label:  **Nickname changed** to `{}`"

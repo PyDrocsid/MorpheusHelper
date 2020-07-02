@@ -75,7 +75,10 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                 return True
 
             await message.clear_reactions()
-            await message.edit(content=message.content + " http://metafrage.de/", embed=None)
+            await message.edit(
+                content=message.content + " " + translations.f_metaquestion_description_reduced(f"<@{author_id}>"),
+                embed=None,
+            )
             return False
 
         return True
