@@ -473,7 +473,9 @@ class ModCog(Cog, name="Mod Tools"):
 
         user, user_id = await self.get_stats_user(ctx.author, user)
 
-        out: List[Tuple[datetime, str]] = [(user.created_at, translations.ulog_created)]
+        out: List[Tuple[datetime, str]] = []
+        if isinstance(user, User):
+            out.append((user.created_at, translations.ulog_created))
         for join in await run_in_thread(db.query, Join, member=user_id):
             out.append((join.timestamp, translations.ulog_joined))
         for leave in await run_in_thread(db.query, Leave, member=user_id):
