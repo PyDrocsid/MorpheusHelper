@@ -1,4 +1,3 @@
-import asyncio
 from asyncio import BoundedSemaphore
 from os import environ as env
 from typing import TypeVar, Optional, Union, Iterable, Type, List
@@ -7,6 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session, Query, Session
+
+import async_thread
 
 T = TypeVar("T")
 
@@ -71,8 +72,7 @@ async def run_in_thread(function, *args, **kwargs):
                 db.close()
             return out
 
-        result = await asyncio.get_running_loop().run_in_executor(None, inner)
-        return result
+        return await async_thread.run_in_thread(inner)
 
 
 db: DB = DB(
