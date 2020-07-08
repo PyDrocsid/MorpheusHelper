@@ -157,6 +157,10 @@ log_delete_updated: Logs for message delete events will now be sent to {}.
 log_delete_disabled: Logging for message delete events has been disabled.
 log_changelog_updated: Changelog channel is now {}.
 log_changelog_disabled: Changelog channel has been disabled.
+maxage_disabled: Automatic deletion of old log entries is disabled.
+maxage_enabled: Log entries older than {} days will be deleted automatically.
+maxage_set: Maximum age of log entries has been set to {} days.
+maxage_set_disabled: Automatic deletion of old log entries has been disabled.
 
 # mediaonly
 deleted_nomedia: >
