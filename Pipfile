@@ -10,7 +10,7 @@ pymysql = "*"
 requests = "*"
 sentry-sdk = "*"
 pyyaml = "*"
-pycryptodome = "*"
+pycryptodome = "==3.9.7"
 
 [dev-packages]
 flake8 = "*"
