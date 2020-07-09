@@ -40,6 +40,7 @@ from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
+from cogs.reddit import RedditCog
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permission import Permission
@@ -379,5 +380,6 @@ register_cogs(
     RandomStuffCog,
     ModCog,
     PermissionsCog,
+    RedditCog,
 )
 bot.run(os.environ["TOKEN"])
