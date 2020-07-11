@@ -240,6 +240,8 @@ log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: Link has been removed successfully.
 log_rr_link_removed: ReactionRole link for {} has been deleted on {}
+rr_link: "{} -> `@{}`"
+rr_link_auto_remove: "{} -> `@{}` (auto remove)"
 
 # rule commands
 send_embed_title: Send me the title of the embed!

@@ -1,7 +1,7 @@
 import re
 from typing import Union, Optional
 
-from sqlalchemy import Column, BigInteger, String
+from sqlalchemy import Column, BigInteger, String, Boolean
 
 from database import db
 
@@ -25,10 +25,17 @@ class ReactionRole(db.Base):
     message_id: Union[Column, int] = Column(BigInteger, primary_key=True)
     emoji_hex: Union[Column, str] = Column(String(64), primary_key=True)
     role_id: Union[Column, int] = Column(BigInteger)
+    auto_remove: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(channel_id: int, message_id: int, emoji: str, role_id: int) -> "ReactionRole":
-        row = ReactionRole(channel_id=channel_id, message_id=message_id, emoji_hex=encode(emoji), role_id=role_id)
+    def create(channel_id: int, message_id: int, emoji: str, role_id: int, auto_remove: bool) -> "ReactionRole":
+        row = ReactionRole(
+            channel_id=channel_id,
+            message_id=message_id,
+            emoji_hex=encode(emoji),
+            role_id=role_id,
+            auto_remove=auto_remove,
+        )
         db.add(row)
         return row
 
