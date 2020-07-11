@@ -527,3 +527,24 @@ instantkick_set_disabled: InstantKick has been disabled.
 instantkick_role_configured: InstantKick role has been configured.
 log_instantkick_role_configured: "InstantKick role has been set to `@{}` ({})"
 instantkick_cannot_kick: Members with this role cannot be kicked.
+
+# verification
+verification_mode_configured:
+  - Verification command has been disabled.
+  - Verification mode has been set to normal.
+  - Verification mode has been set to reverse.
+verification_role_configured: Verification role has been configured.
+log_verification_role_configured: "Verification role has been set to `@{}` ({})"
+password_too_long: Password is too long, sorry.
+verification_password_configured: Verification password has been configured.
+log_verification_password_configured: Verification password has been set to `{}`
+verification_disabled: Verification command is disabled.
+verification_mode:
+  - Verification mode is set to normal.
+  - Verification mode is set to reverse.
+verification_password: "Password: `{}`"
+verification_role: "Role: `@{}` ({})"
+private_only: This command can only be used in direct messages.
+already_verified: You are already verified.
+password_incorrect: Password is incorrect!
+verified: "Verfied successfully :white_check_mark:"

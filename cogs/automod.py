@@ -157,7 +157,7 @@ class AutoModCog(Cog, name="AutoMod"):
         await send_to_changelog(ctx.guild, translations.f_log_autokick_delay_configured(seconds))
 
     @autokick.command(name="role", aliases=["r"])
-    async def autokick_role(self, ctx: Context, role: Role):
+    async def autokick_role(self, ctx: Context, *, role: Role):
         """
         configure autokick role
         """
@@ -197,7 +197,7 @@ class AutoModCog(Cog, name="AutoMod"):
         await send_to_changelog(ctx.guild, translations.instantkick_set_disabled)
 
     @instantkick.command(name="role", aliases=["r"])
-    async def instantkick_role(self, ctx: Context, role: Role):
+    async def instantkick_role(self, ctx: Context, *, role: Role):
         """
         configure instantkick role
         """
