@@ -38,9 +38,9 @@ from cogs.permissions import PermissionsCog
 from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
+from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
-from cogs.reddit import RedditCog
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permission import Permission
@@ -196,6 +196,15 @@ async def github(ctx: Context):
     """
 
     await ctx.send(GITHUB_LINK)
+
+
+@bot.command(name="version")
+async def version(ctx: Context):
+    """
+    show version
+    """
+
+    await ctx.send(f"MorpheusHelper v{VERSION}")
 
 
 @bot.command(name="info", aliases=["infos", "about"])
