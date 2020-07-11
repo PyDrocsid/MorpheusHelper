@@ -25,6 +25,7 @@ from discord.ext.commands import Bot, Context, CommandError, guild_only, Command
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
@@ -390,5 +391,6 @@ register_cogs(
     ModCog,
     PermissionsCog,
     RedditCog,
+    AutoModCog,
 )
 bot.run(os.environ["TOKEN"])

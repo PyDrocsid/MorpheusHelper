@@ -411,6 +411,7 @@ ulog_muted_inf: ":mute:  **Muted** by {} because of `{}`"
 ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
 ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
 ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
+ulog_autokicked: ":hourglass:  **Kicked** automatically."
 ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
 ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
@@ -452,6 +453,7 @@ permissions:
   ban: ban a user
   view_stats: view other user's statistics
   init_join_log: initialize join log
+  manage_autokick: manage autokick
 
   mq_reduce: reduce metaquestion embeds
 
@@ -496,3 +498,21 @@ invalid_limit: Invalid limit.
 reddit_limit: "Reddit limit: {}"
 reddit_limit_set: Reddit limit has been updated.
 log_reddit_limit_set: Reddit limit has been set to {}.
+
+# autokick
+autokick_mode_configured:
+  - AutoKick has been disabled.
+  - AutoKick mode has been set to normal.
+  - AutoKick mode has been set to reverse.
+autokick_delay_configured: AutoKick delay has been configured.
+log_autokick_delay_configured: AutoKick delay has been set to {} seconds.
+autokick_role_configured: AutoKick role has been configured.
+log_autokick_role_configured: "AutoKick role has been set to `@{}` ({})"
+autokick_disabled: AutoKick is disabled.
+autokick_mode:
+ - Mode is set to normal.
+ - Mode is set to reverse.
+autokick_delay: "Delay: {} seconds"
+autokick_role: "Role: `@{}` ({})"
+autokicked: "You have been automatically kicked from {}."
+log_autokicked: "Kicked automatically."

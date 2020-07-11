@@ -27,6 +27,7 @@ class Permission(Enum):
     ban = auto()
     view_stats = auto()
     init_join_log = auto()
+    manage_autokick = auto()
 
     mq_reduce = auto()
 

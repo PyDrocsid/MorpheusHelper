@@ -1,6 +1,6 @@
+import re
 from datetime import datetime, timedelta
 from typing import Optional, Union, List, Tuple
-import re
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
@@ -510,7 +510,10 @@ class ModCog(Cog, name="Mod Tools"):
                         )
                     )
         for kick in await run_in_thread(db.query, Kick, member=user_id):
-            out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
+            if kick.mod is not None:
+                out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
+            else:
+                out.append((kick.timestamp, translations.ulog_autokicked))
         for ban in await run_in_thread(db.query, Ban, member=user_id):
             if ban.days == -1:
                 out.append((ban.timestamp, translations.f_ulog_banned_inf(f"<@{ban.mod}>", ban.reason)))
