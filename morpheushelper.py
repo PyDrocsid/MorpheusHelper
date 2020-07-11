@@ -76,6 +76,7 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
 
 
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
+bot.remove_command('help')
 
 
 def get_owner() -> Optional[User]:
@@ -117,6 +118,46 @@ async def status_loop():
             await owner.send(content)
         except Forbidden:
             pass
+
+
+@bot.command()
+async def help(ctx: Context, *args):
+    """
+    Shows this message
+    """
+
+    if len(args) == 0:
+        embed = Embed(title="Command Help", color=0x008080)
+        for cog in bot.cogs:
+            cog = bot.get_cog(cog)
+            title = cog.qualified_name
+            description = ""
+            for command in cog.get_commands():
+                description += command.name + " | " + command.short_doc + "\n"
+            embed.add_field(name=title, value=description, inline=False)
+
+        title = "No Category"
+        description = ""
+
+        for command in bot.commands:
+            if command.cog is None:
+                description += command.name + " | " + command.short_doc + "\n"
+
+        embed.add_field(name=title, value=description, inline=False)
+
+        embed.add_field(name="** **",
+                        value="Type {}help command for more info on a command.".format(bot.command_prefix),
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+    elif len(args) == 1:
+        command = bot.get_command(args[0])
+        executing = bot.command_prefix + "[" + command.name + ("|" if len(command.aliases) != 0 else "") + "|".join(
+            command.aliases) + "]"
+        embed = Embed(title="Command Help for " + args[0], description=executing, color=0x008080)
+        embed.add_field(name="Description", value=command.short_doc)
+        await ctx.send(embed=embed)
 
 
 @bot.command()
