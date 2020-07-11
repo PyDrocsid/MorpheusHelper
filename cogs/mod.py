@@ -114,10 +114,7 @@ class ModCog(Cog, name="Mod Tools"):
         await run_in_thread(Leave.create, member.id, str(member))
         return True
 
-    async def on_member_update(self, before: Member, after: Member):
-        if before.nick == after.nick:
-            return True
-
+    async def on_member_nick_update(self, before: Member, after: Member):
         await run_in_thread(UsernameUpdate.create, before.id, before.nick, after.nick, True)
         return True
 

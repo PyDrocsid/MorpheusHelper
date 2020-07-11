@@ -242,17 +242,24 @@ async def on_command_error(ctx: Context, error: CommandError):
     await ctx.send(make_error(error))
 
 
+async def extract_from_raw_reaction_event(event: RawReactionActionEvent):
+    channel: TextChannel = bot.get_channel(event.channel_id)
+    member: Member = channel.guild.get_member(event.user_id)
+    if not isinstance(channel, TextChannel) or member is None:
+        return None
+
+    try:
+        message = await channel.fetch_message(event.message_id)
+    except NotFound:
+        return None
+
+    return message, event.emoji, member
+
+
 @bot.event
 async def on_raw_reaction_add(event: RawReactionActionEvent):
     async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-        return message, event.emoji, channel.guild.get_member(event.user_id)
+        return await extract_from_raw_reaction_event(event)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
@@ -260,14 +267,7 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
 @bot.event
 async def on_raw_reaction_remove(event: RawReactionActionEvent):
     async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-        return message, event.emoji, channel.guild.get_member(event.user_id)
+        return await extract_from_raw_reaction_event(event)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
@@ -342,7 +342,17 @@ async def on_member_remove(member: Member):
 
 @bot.event
 async def on_member_update(before: Member, after: Member):
-    await call_event_handlers("member_update", before, after, identifier=before.id)
+    if before.nick != after.nick:
+        await call_event_handlers("member_nick_update", before, after, identifier=before.id)
+
+    roles_before = set(before.roles)
+    roles_after = set(after.roles)
+    for role in roles_before:
+        if role not in roles_after:
+            await call_event_handlers("member_role_remove", after, role, identifier=before.id)
+    for role in roles_after:
+        if role not in roles_before:
+            await call_event_handlers("member_role_add", after, role, identifier=before.id)
 
 
 @bot.event

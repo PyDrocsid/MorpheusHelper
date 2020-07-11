@@ -45,7 +45,7 @@ admin_features:
   - Media only channels
   - News command
   - Mod commands
-  - AutoKick
+  - AutoKick & InstantKick
   - Member logging
   - Permission system
 features_title: Features
@@ -519,3 +519,11 @@ autokick_delay: "Delay: {} seconds"
 autokick_role: "Role: `@{}` ({})"
 autokicked: "You have been automatically kicked from {}."
 log_autokicked: "Kicked automatically."
+
+# instantkick
+instantkick_disabled: InstantKick is disabled.
+instantkick_enabled: Members with the {} role will be kicked automatically.
+instantkick_set_disabled: InstantKick has been disabled.
+instantkick_role_configured: InstantKick role has been configured.
+log_instantkick_role_configured: "InstantKick role has been set to `@{}` ({})"
+instantkick_cannot_kick: Members with this role cannot be kicked.

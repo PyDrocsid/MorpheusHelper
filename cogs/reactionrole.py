@@ -36,7 +36,10 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         result = await get_role(message, emoji, True)
         if result is not None:
-            await member.add_roles(result[0])
+            try:
+                await member.add_roles(result[0])
+            except NotFound:
+                pass
             if result[1]:
                 await message.remove_reaction(emoji, member)
             return True
@@ -48,7 +51,10 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         result = await get_role(message, emoji, False)
         if result is not None:
-            await member.remove_roles(result[0])
+            try:
+                await member.remove_roles(result[0])
+            except NotFound:
+                pass
             return True
         return False
 
