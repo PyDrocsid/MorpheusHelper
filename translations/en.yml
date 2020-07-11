@@ -45,6 +45,7 @@ admin_features:
   - Media only channels
   - News command
   - Mod commands
+  - AutoKick
   - Member logging
   - Permission system
 features_title: Features
