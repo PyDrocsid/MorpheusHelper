@@ -456,7 +456,11 @@ permissions:
   ban: ban a user
   view_stats: view other user's statistics
   init_join_log: initialize join log
+
   manage_autokick: manage autokick
+  manage_instantkick: manage instantkick
+
+  manage_verification: manage verification command
 
   mq_reduce: reduce metaquestion embeds
 

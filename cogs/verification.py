@@ -2,12 +2,13 @@ from typing import Optional
 
 from discord import Role, Guild, Member
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check
+from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only
 
 from database import run_in_thread
 from models.settings import Settings
+from permission import Permission
 from translations import translations
-from util import send_to_changelog
+from util import send_to_changelog, permission_level
 
 
 @check
@@ -49,6 +50,8 @@ class VerificationCog(Cog, name="Verification"):
         await ctx.send(translations.verified)
 
     @commands.group(name="verification", aliases=["vf"])
+    @permission_level(Permission.manage_verification)
+    @guild_only()
     async def verification(self, ctx: Context):
         """
         configure verify command

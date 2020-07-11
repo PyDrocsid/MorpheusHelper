@@ -167,7 +167,7 @@ class AutoModCog(Cog, name="AutoMod"):
         await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.name, role.id))
 
     @commands.group(name="instantkick", aliases=["ik"])
-    @permission_level(Permission.manage_autokick)
+    @permission_level(Permission.manage_instantkick)
     @guild_only()
     async def instantkick(self, ctx: Context):
         """
