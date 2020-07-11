@@ -13,16 +13,17 @@ from util import permission_level, send_to_changelog, FixedEmojiConverter
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
     link: Optional[ReactionRole] = await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji))
+    if link is None:
+        return None
     if link.auto_remove and not add:
         return None
 
-    if link is not None:
-        role: Optional[Role] = message.guild.get_role(link.role_id)
-        if role is None:
-            await run_in_thread(db.delete, link)
-            return None
+    role: Optional[Role] = message.guild.get_role(link.role_id)
+    if role is None:
+        await run_in_thread(db.delete, link)
+        return None
 
-        return role, link.auto_remove
+    return role, link.auto_remove
 
 
 class ReactionRoleCog(Cog, name="ReactionRole"):
