@@ -1,11 +1,12 @@
-from typing import Optional
+from typing import Optional, List
 
-from discord import Role, Guild, Member
+from discord import Role, Member, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only
 
-from database import run_in_thread
+from database import run_in_thread, db
 from models.settings import Settings
+from models.verification_role import VerificationRole
 from permission import Permission
 from translations import translations
 from util import send_to_changelog, permission_level
@@ -23,30 +24,35 @@ class VerificationCog(Cog, name="Verification"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def get_verification_role(self) -> Optional[Role]:
-        guild: Guild = self.bot.guilds[0]
-        return guild.get_role(await run_in_thread(Settings.get, int, "verification_role", -1))
-
     @commands.command(name="verify")
     @private_only
     async def verify(self, ctx: Context, *, password: str):
         mode: int = await run_in_thread(Settings.get, int, "verification_mode", 0)
-        role: Optional[Role] = await self.get_verification_role()
         correct_password: str = await run_in_thread(Settings.get, str, "verification_password")
-        if mode == 0 or role is None or correct_password is None:
+        if mode == 0 or correct_password is None:
             raise CommandError(translations.verification_disabled)
-
-        member: Member = self.bot.guilds[0].get_member(ctx.author.id)
-        if (mode == 1) == (role in member.roles):
-            raise CommandError(translations.already_verified)
 
         if password != correct_password:
             raise CommandError(translations.password_incorrect)
 
-        if mode == 1:
-            await member.add_roles(role)
-        elif mode == 2:
-            await member.remove_roles(role)
+        guild: Guild = self.bot.guilds[0]
+        member: Member = guild.get_member(ctx.author.id)
+        add: List[Role] = []
+        remove: List[Role] = []
+        for vrole in await run_in_thread(db.all, VerificationRole):  # type: VerificationRole
+            role: Optional[Role] = guild.get_role(vrole.role_id)
+            if role is None:
+                continue
+
+            if vrole.reverse and role in member.roles:
+                remove.append(role)
+            elif not vrole.reverse and role not in member.roles:
+                add.append(role)
+        if not add and not remove:
+            raise CommandError(translations.already_verified)
+
+        await member.add_roles(*add)
+        await member.remove_roles(*remove)
         await ctx.send(translations.verified)
 
     @commands.group(name="verification", aliases=["vf"])
@@ -63,41 +69,35 @@ class VerificationCog(Cog, name="Verification"):
             return
 
         mode: int = await run_in_thread(Settings.get, int, "verification_mode", 0)
-        role: Optional[Role] = await self.get_verification_role()
         password: str = await run_in_thread(Settings.get, str, "verification_password")
-        if mode == 0 or role is None or password is None:
+        if mode == 0 or password is None:
             await ctx.send(translations.verification_disabled)
             return
 
-        out = [
-            translations.verification_mode[mode - 1],
-            translations.f_verification_password(password),
-            translations.f_verification_role(role.name, role.id),
-        ]
-        await ctx.send("\n".join(out))
+        normal = []
+        reverse = []
+        for vrole in await run_in_thread(db.all, VerificationRole):  # type: VerificationRole
+            role: Optional[Role] = ctx.guild.get_role(vrole.role_id)
+            if role is None:
+                await run_in_thread(db.delete, vrole)
+                continue
 
-    @verification.command(name="mode", aliases=["m"])
-    async def verification_mode(self, ctx: Context, mode: str):
-        """
-        configure verification mode:
-        off:     disable verification command
-        normal:  assign a specific role
-        reverse: remove a specific role
-        """
-
-        mode: Optional[int] = {"off": 0, "normal": 1, "reverse": 2}.get(mode.lower())
-        if mode is None:
-            await ctx.send_help(self.verification_mode)
+            if vrole.reverse:
+                reverse.append(translations.f_verification_role_reverse(role.name, role.id))
+            else:
+                normal.append(translations.f_verification_role(role.name, role.id))
+        out = normal + reverse
+        if not out:
+            await ctx.send(translations.verification_disabled)
             return
 
-        await run_in_thread(Settings.set, int, "verification_mode", mode)
-        await ctx.send(translations.verification_mode_configured[mode])
-        await send_to_changelog(ctx.guild, translations.verification_mode_configured[mode])
+        out = [translations.f_verification_password(password), "\n" + translations.verification_roles] + out
+        await ctx.send("\n".join(out))
 
-    @verification.command(name="role", aliases=["r"])
-    async def verification_role(self, ctx: Context, *, role: Role):
+    @verification.command(name="add", aliases=["a", "+"])
+    async def verification_role_add(self, ctx: Context, role: Role, reverse: bool = False):
         """
-        configure verification role
+        add verification role
         """
 
         if role > ctx.me.top_role:
@@ -105,9 +105,28 @@ class VerificationCog(Cog, name="Verification"):
         if role.managed:
             raise CommandError(translations.f_role_not_set_managed_role(role))
 
-        await run_in_thread(Settings.set, int, "verification_role", role.id)
-        await ctx.send(translations.verification_role_configured)
-        await send_to_changelog(ctx.guild, translations.f_log_verification_role_configured(role.name, role.id))
+        if await run_in_thread(db.get, VerificationRole, role.id) is not None:
+            raise CommandError(translations.verification_role_already_set)
+
+        await run_in_thread(VerificationRole.create, role.id, reverse)
+        await ctx.send(translations.verification_role_added)
+        if reverse:
+            await send_to_changelog(ctx.guild, translations.f_log_verification_role_added_reverse(role.name, role.id))
+        else:
+            await send_to_changelog(ctx.guild, translations.f_log_verification_role_added(role.name, role.id))
+
+    @verification.command(name="remove", aliases=["r", "del", "d", "-"])
+    async def verification_role_remove(self, ctx: Context, *, role: Role):
+        """
+        remove verification role
+        """
+
+        if (row := await run_in_thread(db.get, VerificationRole, role.id)) is None:
+            raise CommandError(translations.verification_role_not_set)
+
+        await run_in_thread(db.delete, row)
+        await ctx.send(translations.verification_role_removed)
+        await send_to_changelog(ctx.guild, translations.f_log_verification_role_removed(role.name, role.id))
 
     @verification.command(name="password", aliases=["p"])
     async def verification_password(self, ctx: Context, *, password: str):
