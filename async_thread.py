@@ -23,7 +23,3 @@ async def run_in_thread(func):
     thread = Thread(func, asyncio.get_running_loop())
     thread.start()
     return await thread.wait()
-
-
-def run_in_background(coro):
-    asyncio.run_coroutine_threadsafe(coro, asyncio.get_running_loop())
