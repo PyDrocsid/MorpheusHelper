@@ -224,11 +224,11 @@ async def send_help(ctx: Context, *args):
         await ctx.send(embed=embed)
 
     elif len(args) == 1:
-        try:
+        command = ctx.bot.get_command(args[0])
+        if command is not None:
             try:
                 # Command Help for grouped commands
                 group: Group = ctx.bot.get_command(args[0])
-                command = ctx.bot.get_command(args[0])
                 executing = ctx.bot.command_prefix + "[" + command.name + (
                     "|" if len(command.aliases) != 0 else "") + "|".join(
                     command.aliases) + "]"
@@ -245,9 +245,8 @@ async def send_help(ctx: Context, *args):
                 embed.add_field(name="Subcommands", value=subcommand_description, inline=False)
                 embed.add_field(name="Description", value=command.short_doc, inline=False)
                 await ctx.send(embed=embed)
-            except:
+            except AttributeError:
                 # Command Help for none group commands
-                command = ctx.bot.get_command(args[0])
                 executing = ctx.bot.command_prefix + "[" + command.name + (
                     "|" if len(command.aliases) != 0 else "") + "|".join(
                     command.aliases) + "]"
@@ -258,7 +257,7 @@ async def send_help(ctx: Context, *args):
                 embed = Embed(title="Command Help for " + args[0], description=executing, color=0x008080)
                 embed.add_field(name="Description", value=command.short_doc)
                 await ctx.send(embed=embed)
-        except:
+        else:
             # Cog help
             found = False
             for x in ctx.bot.cogs:
