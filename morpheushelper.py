@@ -199,23 +199,22 @@ async def send_help(ctx: Context, *args):
     Shows this message
     """
 
-    if len(args) == 0:
+    def format_command(cmd: Command) -> str:
+        return f"{cmd.name} | {cmd.short_doc}" if cmd.short_doc else cmd.name
+
+    async def add_commands(cog_name: str, commands: List[Command]):
+        description: List[str] = []
+        for cmd in commands:
+            if not cmd.hidden and await can_run_command(cmd, ctx):
+                description.append(format_command(cmd))
+        if description:
+            embed.add_field(name=cog_name, value="\n".join(description), inline=False)
+
+    if not args:
         embed = Embed(title="Command Help", color=0x008080)
         for cog in ctx.bot.cogs.values():
-            description: List[str] = []
-            for command in cog.get_commands():  # type: Command
-                if not command.hidden and await can_run_command(command, ctx):
-                    description.append(command.name + " | " + command.short_doc)
-
-            if description:
-                embed.add_field(name=cog.qualified_name, value="\n".join(description), inline=False)
-
-        description: List[str] = []
-        for command in ctx.bot.commands:  # type: Command
-            if command.cog is None and not command.hidden and await can_run_command(command, ctx):
-                description.append(command.name + (" | " + command.short_doc if len(command.short_doc) != 0 else ""))
-
-        embed.add_field(name="No Category", value="\n".join(description), inline=False)
+            await add_commands(cog.qualified_name, cog.get_commands())
+        await add_commands("No Category", [command for command in ctx.bot.commands if command.cog is None])
 
         prefix: str = await get_prefix()
         embed.add_field(
