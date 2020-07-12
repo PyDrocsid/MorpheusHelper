@@ -261,7 +261,8 @@ async def send_help(ctx: Context, *args):
                     executing = ctx.bot.command_prefix + command.name
 
                 embed = Embed(title="Command Help for " + args[0], description=executing, color=0x008080)
-                embed.add_field(name="Description", value=command.short_doc)
+                embed.add_field(name="Description",
+                                value=(command.short_doc if len(command.short_doc) != 0 else "** **"))
                 await ctx.send(embed=embed)
         else:
             # Cog help
@@ -272,7 +273,9 @@ async def send_help(ctx: Context, *args):
                         embed = Embed(title="Cog Commands for " + args[0], color=0x008080)
                         for command in ctx.bot.get_cog(y).get_commands():
                             if not command.hidden:
-                                embed.add_field(name=command.name, value=command.short_doc, inline=False)
+                                embed.add_field(name=command.name,
+                                                value=(command.short_doc if len(command.short_doc) != 0 else "** **"),
+                                                inline=False)
                         found = True
 
             if not found:
