@@ -230,6 +230,9 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
     else:
         command: Command = command_name
 
+    if not await can_run_command(command, ctx):
+        raise CommandError(translations.cog_or_command_not_found)
+
     description = prefix
     if command.full_parent_name:
         description += command.full_parent_name + " "
