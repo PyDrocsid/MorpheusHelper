@@ -21,7 +21,7 @@ from discord import (
     Forbidden,
 )
 from discord.ext import tasks
-from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
+from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound, Group
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -41,7 +41,6 @@ from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
 from cogs.reddit import RedditCog
-from cogs.help import HelpCog
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permission import Permission
@@ -189,6 +188,99 @@ async def build_info_embed(authorized: bool) -> Embed:
         name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
     )
     return embed
+
+
+async def send_help(ctx: Context, *args):
+    """
+    Shows this message
+    """
+    global embed
+    await ctx.send_help(args)
+    if len(args) == 0:
+        embed = Embed(title="Command Help", color=0x008080)
+        for cog in ctx.bot.cogs:
+            cog = ctx.bot.get_cog(cog)
+            title = cog.qualified_name
+            description = ""
+            for command in cog.get_commands():
+                description += command.name + " | " + command.short_doc + "\n"
+            embed.add_field(name=title, value=description, inline=False)
+
+        title = "No Category"
+        description = ""
+
+        for command in ctx.bot.commands:
+            if command.cog is None:
+                description += command.name + " | " + command.short_doc + "\n"
+
+        embed.add_field(name=title, value=description, inline=False)
+
+        embed.add_field(name="** **",
+                        value="Type {}help <command> for more info on a command.".format(
+                            ctx.bot.command_prefix) + "\n" + "Type {}help <cog> for more info on a cog.".format(
+                            ctx.bot.command_prefix),
+                        inline=False)
+
+        await ctx.send(embed=embed)
+
+    elif len(args) == 1:
+        try:
+            try:
+                # Command Help for grouped commands
+                group: Group = ctx.bot.get_command(args[0])
+                command = ctx.bot.get_command(args[0])
+                executing = ctx.bot.command_prefix + "[" + command.name + (
+                    "|" if len(command.aliases) != 0 else "") + "|".join(
+                    command.aliases) + "]"
+
+                if len(command.aliases) == 0:
+                    executing = ctx.bot.command_prefix + command.name
+
+                embed = Embed(title="Command Help for " + args[0], description=executing, color=0x008080)
+
+                subcommand_description = ""
+                for c in group.commands:
+                    subcommand_description += c.name + (" | " + c.short_doc if len(c.short_doc) != 0 else "") + "\n"
+
+                embed.add_field(name="Subcommands", value=subcommand_description, inline=False)
+                embed.add_field(name="Description", value=command.short_doc, inline=False)
+                await ctx.send(embed=embed)
+            except:
+                # Command Help for none group commands
+                command = ctx.bot.get_command(args[0])
+                executing = ctx.bot.command_prefix + "[" + command.name + (
+                    "|" if len(command.aliases) != 0 else "") + "|".join(
+                    command.aliases) + "]"
+
+                if len(command.aliases) == 0:
+                    executing = ctx.bot.command_prefix + command.name
+
+                embed = Embed(title="Command Help for " + args[0], description=executing, color=0x008080)
+                embed.add_field(name="Description", value=command.short_doc)
+                await ctx.send(embed=embed)
+        except:
+            # Cog help
+            found = False
+            for x in ctx.bot.cogs:
+                for y in args:
+                    if x == y:
+                        embed = Embed(title="Cog Commands for " + args[0], color=0x008080)
+                        for command in ctx.bot.get_cog(y).get_commands():
+                            embed.add_field(name=command.name, value=command.short_doc, inline=False)
+                        found = True
+
+            if not found:
+                embed = Embed(title="This Cog or Command does not exists!", color=0xff0000)
+
+            await ctx.send(embed=embed)
+
+
+@bot.command(name="help")
+async def help(ctx: Context, *args):
+    """
+    Shows this Message
+    """
+    await send_help(ctx, *args)
 
 
 @bot.command(name="github", aliases=["gh"])
@@ -383,6 +475,5 @@ register_cogs(
     ModCog,
     PermissionsCog,
     RedditCog,
-    HelpCog
 )
 bot.run(os.environ["TOKEN"])
