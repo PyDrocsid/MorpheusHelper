@@ -9,7 +9,7 @@ from database import run_in_thread, db
 from models.news_authorization import NewsAuthorization
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, read_normal_message
+from util import permission_level, send_to_changelog, read_normal_message, send_help
 
 
 class NewsCog(Cog, name="News"):
@@ -24,7 +24,7 @@ class NewsCog(Cog, name="News"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(NewsCog.news)
+            await send_help(ctx, NewsCog.news)
 
     @news.group(name="auth", aliases=["a"])
     @permission_level(Permission.news_manage)
@@ -34,7 +34,7 @@ class NewsCog(Cog, name="News"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(NewsCog.auth)
+            await send_help(ctx, NewsCog.auth)
 
     @auth.command(name="list", aliases=["l", "?"])
     async def list_auth(self, ctx: Context):

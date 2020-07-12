@@ -9,7 +9,7 @@ from database import run_in_thread, db
 from models.btp_role import BTPRole
 from permission import Permission
 from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog
+from util import permission_level, calculate_edit_distance, send_to_changelog, send_help
 
 
 def split_topics(topics: str) -> List[str]:
@@ -116,7 +116,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         guild: Guild = ctx.guild
         names = split_topics(topics)
         if not names:
-            await ctx.send_help(self.register_role)
+            await send_help(ctx, self.register_role)
             return
 
         valid_chars = set(string.ascii_letters + string.digits + " !#$%&'()+-./:<=>?[\\]^_`{|}~")
@@ -169,7 +169,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         btp_roles: List[BTPRole] = []
         names = split_topics(topics)
         if not names:
-            await ctx.send_help(self.register_role)
+            await send_help(ctx, self.register_role)
             return
         for topic in names:
             for role in guild.roles:

@@ -17,7 +17,7 @@ from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, make_error, check_permissions, send_to_changelog
+from util import permission_level, make_error, check_permissions, send_to_changelog, send_help
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -87,7 +87,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ReactionPinCog.reactionpin)
+            await send_help(ctx, ReactionPinCog.reactionpin)
 
     @reactionpin.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):

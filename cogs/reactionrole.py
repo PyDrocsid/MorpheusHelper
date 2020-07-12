@@ -8,7 +8,7 @@ from database import run_in_thread, db
 from models.reactionrole import ReactionRole
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, FixedEmojiConverter
+from util import permission_level, send_to_changelog, FixedEmojiConverter, send_help
 
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
@@ -67,7 +67,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ReactionRoleCog.reactionrole)
+            await send_help(ctx, ReactionRoleCog.reactionrole)
 
     @reactionrole.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context, message: Optional[Message] = None):
