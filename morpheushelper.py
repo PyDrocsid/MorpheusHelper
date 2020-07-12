@@ -205,7 +205,8 @@ async def send_help(ctx: Context, *args):
             title = cog.qualified_name
             description = ""
             for command in cog.get_commands():
-                description += command.name + " | " + command.short_doc + "\n"
+                if not command.hidden:
+                    description += command.name + " | " + command.short_doc + "\n"
 
             if not len(cog.get_commands()) == 0:
                 embed.add_field(name=title, value=description, inline=False)
@@ -215,7 +216,8 @@ async def send_help(ctx: Context, *args):
 
         for command in ctx.bot.commands:
             if command.cog is None:
-                description += command.name + " | " + command.short_doc + "\n"
+                if not command.hidden:
+                    description += command.name + " | " + command.short_doc + "\n"
 
         embed.add_field(name=title, value=description, inline=False)
 
@@ -269,7 +271,8 @@ async def send_help(ctx: Context, *args):
                     if x == y:
                         embed = Embed(title="Cog Commands for " + args[0], color=0x008080)
                         for command in ctx.bot.get_cog(y).get_commands():
-                            embed.add_field(name=command.name, value=command.short_doc, inline=False)
+                            if not command.hidden:
+                                embed.add_field(name=command.name, value=command.short_doc, inline=False)
                         found = True
 
             if not found:
