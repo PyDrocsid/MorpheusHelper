@@ -45,6 +45,7 @@ admin_features:
   - Media only channels
   - News command
   - Mod commands
+  - AutoKick & InstantKick
   - Member logging
   - Permission system
 features_title: Features
@@ -240,6 +241,8 @@ log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: Link has been removed successfully.
 log_rr_link_removed: ReactionRole link for {} has been deleted on {}
+rr_link: "{} -> `@{}`"
+rr_link_auto_remove: "{} -> `@{}` (auto remove)"
 
 # rule commands
 send_embed_title: Send me the title of the embed!
@@ -411,6 +414,7 @@ ulog_muted_inf: ":mute:  **Muted** by {} because of `{}`"
 ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
 ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
 ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
+ulog_autokicked: ":hourglass:  **Kicked** automatically."
 ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
 ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
@@ -452,6 +456,11 @@ permissions:
   ban: ban a user
   view_stats: view other user's statistics
   init_join_log: initialize join log
+
+  manage_autokick: manage autokick
+  manage_instantkick: manage instantkick
+
+  manage_verification: manage verification command
 
   mq_reduce: reduce metaquestion embeds
 
@@ -496,3 +505,50 @@ invalid_limit: Invalid limit.
 reddit_limit: "Reddit limit: {}"
 reddit_limit_set: Reddit limit has been updated.
 log_reddit_limit_set: Reddit limit has been set to {}.
+
+# autokick
+autokick_mode_configured:
+  - AutoKick has been disabled.
+  - AutoKick mode has been set to normal.
+  - AutoKick mode has been set to reverse.
+autokick_delay_configured: AutoKick delay has been configured.
+log_autokick_delay_configured: AutoKick delay has been set to {} seconds.
+autokick_role_configured: AutoKick role has been configured.
+log_autokick_role_configured: "AutoKick role has been set to `@{}` ({})"
+autokick_disabled: AutoKick is disabled.
+autokick_mode:
+ - Mode is set to normal.
+ - Mode is set to reverse.
+autokick_delay: "Delay: {} seconds"
+autokick_role: "Role: `@{}` ({})"
+autokicked: "You have been automatically kicked from {}."
+log_autokicked: "Kicked automatically."
+
+# instantkick
+instantkick_disabled: InstantKick is disabled.
+instantkick_enabled: Members with the {} role will be kicked automatically.
+instantkick_set_disabled: InstantKick has been disabled.
+instantkick_role_configured: InstantKick role has been configured.
+log_instantkick_role_configured: "InstantKick role has been set to `@{}` ({})"
+instantkick_cannot_kick: Members with this role cannot be kicked.
+
+# verification
+verification_role_added: Verification role has been added.
+log_verification_role_added: "Verification role has been added: `@{}` ({}) (normal)"
+log_verification_role_added_reverse: "Verification role has been added: `@{}` ({}) (reverse)"
+verification_role_removed: Verification role has been removed.
+log_verification_role_removed: "Verification role has been removed: `@{}` ({})"
+password_too_long: Password is too long, sorry.
+verification_password_configured: Verification password has been configured.
+log_verification_password_configured: Verification password has been set to `{}`
+verification_disabled: Verification command is disabled.
+verification_password: "Password: `{}`"
+verification_roles: "Verification roles:"
+verification_role: " - `@{}` ({}) (normal)"
+verification_role_reverse: " - `@{}` ({}) (reverse)"
+private_only: This command can only be used in direct messages.
+already_verified: You are already verified.
+password_incorrect: Password is incorrect!
+verified: "Verified successfully :white_check_mark:"
+verification_role_already_set: Role already set.
+verification_role_not_set: Role not set.

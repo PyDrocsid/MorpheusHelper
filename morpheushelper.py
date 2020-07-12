@@ -25,6 +25,7 @@ from discord.ext.commands import Bot, Context, CommandError, guild_only, Command
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
@@ -38,9 +39,10 @@ from cogs.permissions import PermissionsCog
 from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
-from cogs.rules import RulesCog
-from cogs.voice_channel import VoiceChannelCog
 from cogs.reddit import RedditCog
+from cogs.rules import RulesCog
+from cogs.verification import VerificationCog
+from cogs.voice_channel import VoiceChannelCog
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permission import Permission
@@ -291,6 +293,15 @@ async def github(ctx: Context):
     await ctx.send(GITHUB_LINK)
 
 
+@bot.command(name="version")
+async def version(ctx: Context):
+    """
+    show version
+    """
+
+    await ctx.send(f"MorpheusHelper v{VERSION}")
+
+
 @bot.command(name="info", aliases=["infos", "about"])
 async def info(ctx: Context):
     """
@@ -325,17 +336,24 @@ async def on_command_error(ctx: Context, error: CommandError):
     await ctx.send(make_error(error))
 
 
+async def extract_from_raw_reaction_event(event: RawReactionActionEvent):
+    channel: TextChannel = bot.get_channel(event.channel_id)
+    member: Member = channel.guild.get_member(event.user_id)
+    if not isinstance(channel, TextChannel) or member is None:
+        return None
+
+    try:
+        message = await channel.fetch_message(event.message_id)
+    except NotFound:
+        return None
+
+    return message, event.emoji, member
+
+
 @bot.event
 async def on_raw_reaction_add(event: RawReactionActionEvent):
     async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-        return message, event.emoji, channel.guild.get_member(event.user_id)
+        return await extract_from_raw_reaction_event(event)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
@@ -343,14 +361,7 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
 @bot.event
 async def on_raw_reaction_remove(event: RawReactionActionEvent):
     async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-        return message, event.emoji, channel.guild.get_member(event.user_id)
+        return await extract_from_raw_reaction_event(event)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
@@ -425,7 +436,17 @@ async def on_member_remove(member: Member):
 
 @bot.event
 async def on_member_update(before: Member, after: Member):
-    await call_event_handlers("member_update", before, after, identifier=before.id)
+    if before.nick != after.nick:
+        await call_event_handlers("member_nick_update", before, after, identifier=before.id)
+
+    roles_before = set(before.roles)
+    roles_after = set(after.roles)
+    for role in roles_before:
+        if role not in roles_after:
+            await call_event_handlers("member_role_remove", after, role, identifier=before.id)
+    for role in roles_after:
+        if role not in roles_before:
+            await call_event_handlers("member_role_add", after, role, identifier=before.id)
 
 
 @bot.event
@@ -474,5 +495,7 @@ register_cogs(
     ModCog,
     PermissionsCog,
     RedditCog,
+    AutoModCog,
+    VerificationCog,
 )
 bot.run(os.environ["TOKEN"])
