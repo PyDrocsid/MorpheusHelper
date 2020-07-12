@@ -250,7 +250,7 @@ async def send_help(ctx: Context, *args):
 
                 subcommand_description = ""
                 for c in group.commands:
-                    subcommand_description += c.name + (" | " + c.short_doc if len(c.short_doc) != 0 else "") + "\n"
+                    subcommand_description += c.name + (" | " + c.short_doc if c.short_doc else "") + "\n"
 
                 embed.add_field(name="Subcommands", value=subcommand_description, inline=False)
                 embed.add_field(name="Description", value=command.short_doc, inline=False)
@@ -271,7 +271,7 @@ async def send_help(ctx: Context, *args):
 
                 embed = Embed(title="Command Help for " + args[0], description=executing, color=0x008080)
                 embed.add_field(
-                    name="Description", value=(command.short_doc if len(command.short_doc) != 0 else "** **")
+                    name="Description", value=(command.short_doc if command.short_doc else "** **")
                 )
                 await ctx.send(embed=embed)
         else:
@@ -285,7 +285,7 @@ async def send_help(ctx: Context, *args):
                             if not command.hidden:
                                 embed.add_field(
                                     name=command.name,
-                                    value=(command.short_doc if len(command.short_doc) != 0 else "** **"),
+                                    value=(command.short_doc if command.short_doc else "** **"),
                                     inline=False,
                                 )
                         found = True
