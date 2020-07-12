@@ -206,7 +206,9 @@ async def send_help(ctx: Context, *args):
             description = ""
             for command in cog.get_commands():
                 description += command.name + " | " + command.short_doc + "\n"
-            embed.add_field(name=title, value=description, inline=False)
+
+            if not len(cog.get_commands()) == 0:
+                embed.add_field(name=title, value=description, inline=False)
 
         title = "No Category"
         description = ""
