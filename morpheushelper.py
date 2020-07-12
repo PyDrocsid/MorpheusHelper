@@ -298,7 +298,7 @@ async def send_help(ctx: Context, *args):
 
 
 @bot.command(name="help")
-async def help(ctx: Context, *args):
+async def help_cmd(ctx: Context, *args):
     """
     Shows this Message
     """
