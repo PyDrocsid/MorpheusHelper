@@ -13,6 +13,7 @@ from discord.ext.commands import (
     PartialEmojiConverter,
     BadArgument,
     CommandError,
+    Command,
 )
 
 from database import run_in_thread
@@ -36,6 +37,13 @@ class FixedEmojiConverter(PartialEmojiConverter):
 
 def make_error(message) -> str:
     return f":x: Error: {message}"
+
+
+async def can_run_command(command: Command, ctx: Context) -> bool:
+    try:
+        return await command.can_run(ctx)
+    except CommandError:
+        return False
 
 
 PUBLIC, SUPPORTER, MODERATOR, ADMINISTRATOR, OWNER = range(5)

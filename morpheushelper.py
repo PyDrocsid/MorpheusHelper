@@ -22,6 +22,7 @@ from discord import (
 )
 from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound, Group
+from discord.ext.commands import Command
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -56,6 +57,7 @@ from util import (
     register_cogs,
     get_prefix,
     set_prefix,
+    can_run_command,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -78,7 +80,7 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
 
 
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
-bot.remove_command('help')
+bot.remove_command("help")
 
 
 def get_owner() -> Optional[User]:
@@ -197,35 +199,33 @@ async def send_help(ctx: Context, *args):
     Shows this message
     """
 
-    await ctx.send_help(args)
     if len(args) == 0:
         embed = Embed(title="Command Help", color=0x008080)
-        for cog in ctx.bot.cogs:
-            cog = ctx.bot.get_cog(cog)
-            title = cog.qualified_name
-            description = ""
+        for cog in ctx.bot.cogs.values():
+            description = []
             for command in cog.get_commands():
-                if not command.hidden:
-                    description += command.name + " | " + command.short_doc + "\n"
+                if not command.hidden and await can_run_command(command, ctx):
+                    description.append(command.name + " | " + command.short_doc)
 
-            if not len(cog.get_commands()) == 0:
-                embed.add_field(name=title, value=description, inline=False)
+            if description:
+                embed.add_field(name=cog.qualified_name, value="\n".join(description), inline=False)
 
-        title = "No Category"
-        description = ""
+        description = []
+        for command in ctx.bot.commands:  # type: Command
+            if command.cog is None and not command.hidden and await can_run_command(command, ctx):
+                description.append(command.name + " | " + command.short_doc)
 
-        for command in ctx.bot.commands:
-            if command.cog is None:
-                if not command.hidden:
-                    description += command.name + " | " + command.short_doc + "\n"
+        embed.add_field(name="No Category", value="\n".join(description), inline=False)
 
-        embed.add_field(name=title, value=description, inline=False)
-
-        embed.add_field(name="** **",
-                        value="Type {}help <command> for more info on a command.".format(
-                            ctx.bot.command_prefix) + "\n" + "Type {}help <cog> for more info on a cog.".format(
-                            ctx.bot.command_prefix),
-                        inline=False)
+        prefix = await get_prefix()
+        embed.add_field(
+            name="** **",
+            value=(
+                f"Type {prefix}help <command> for more info on a command.\n"
+                f"Type {prefix}help <cog> for more info on a cog."
+            ),
+            inline=False,
+        )
 
         await ctx.send(embed=embed)
 
@@ -235,9 +235,14 @@ async def send_help(ctx: Context, *args):
             try:
                 # Command Help for grouped commands
                 group: Group = ctx.bot.get_command(args[0])
-                executing = ctx.bot.command_prefix + "[" + command.name + (
-                    "|" if len(command.aliases) != 0 else "") + "|".join(
-                    command.aliases) + "]"
+                executing = (
+                    ctx.bot.command_prefix
+                    + "["
+                    + command.name
+                    + ("|" if len(command.aliases) != 0 else "")
+                    + "|".join(command.aliases)
+                    + "]"
+                )
 
                 if len(command.aliases) == 0:
                     executing = ctx.bot.command_prefix + command.name
@@ -253,9 +258,14 @@ async def send_help(ctx: Context, *args):
                 await ctx.send(embed=embed)
             except AttributeError:
                 # Command Help for none group commands
-                executing = ctx.bot.command_prefix + "[" + command.name + (
-                    "|" if len(command.aliases) != 0 else "") + "|".join(
-                    command.aliases) + "]"
+                executing = (
+                    ctx.bot.command_prefix
+                    + "["
+                    + command.name
+                    + ("|" if len(command.aliases) != 0 else "")
+                    + "|".join(command.aliases)
+                    + "]"
+                )
 
                 if len(command.aliases) == 0:
                     executing = ctx.bot.command_prefix + command.name
@@ -279,7 +289,7 @@ async def send_help(ctx: Context, *args):
                         found = True
 
             if not found:
-                embed = Embed(description="This Cog or Command does not exists!", color=0xff0000)
+                embed = Embed(description="This Cog or Command does not exists!", color=0xFF0000)
 
             await ctx.send(embed=embed)
 
