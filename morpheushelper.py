@@ -271,7 +271,7 @@ async def send_help(ctx: Context, *args):
                         found = True
 
             if not found:
-                embed = Embed(title="This Cog or Command does not exists!", color=0xff0000)
+                embed = Embed(description="This Cog or Command does not exists!", color=0xff0000)
 
             await ctx.send(embed=embed)
 
