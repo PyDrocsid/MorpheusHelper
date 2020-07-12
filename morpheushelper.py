@@ -196,7 +196,7 @@ async def send_help(ctx: Context, *args):
     """
     Shows this message
     """
-    global embed
+
     await ctx.send_help(args)
     if len(args) == 0:
         embed = Embed(title="Command Help", color=0x008080)
