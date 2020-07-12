@@ -2,7 +2,7 @@ import os
 import re
 import string
 import time
-from typing import Optional, Iterable, List, Union
+from typing import Optional, Iterable
 
 import sentry_sdk
 from discord import (
@@ -21,8 +21,7 @@ from discord import (
     Forbidden,
 )
 from discord.ext import tasks
-from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound, Group, Cog
-from discord.ext.commands import Command
+from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -57,7 +56,7 @@ from util import (
     register_cogs,
     get_prefix,
     set_prefix,
-    can_run_command,
+    send_help,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -79,7 +78,7 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description)
 bot.remove_command("help")
 
 
@@ -171,7 +170,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
+    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -194,76 +193,13 @@ async def build_info_embed(authorized: bool) -> Embed:
     return embed
 
 
-async def send_help(ctx: Context, *args):
-    """
-    Shows this message
-    """
-
-    def format_command(cmd: Command) -> str:
-        return f"{cmd.name} | {cmd.short_doc}" if cmd.short_doc else cmd.name
-
-    async def add_commands(cog_name: str, commands: List[Command]):
-        desc: List[str] = []
-        for cmd in commands:
-            if not cmd.hidden and await can_run_command(cmd, ctx):
-                desc.append(format_command(cmd))
-        if desc:
-            embed.add_field(name=cog_name, value="\n".join(desc), inline=False)
-
-    prefix: str = await get_prefix()
-    embed = Embed(title="Help", color=0x008080)
-    if not args:
-        for cog in bot.cogs.values():
-            await add_commands(cog.qualified_name, cog.get_commands())
-        await add_commands("No Category", [command for command in bot.commands if command.cog is None])
-
-        embed.add_field(
-            name="** **",
-            value=(
-                f"Type {prefix}help <command> for more info on a command.\n"
-                f"Type {prefix}help <cog> for more info on a cog."
-            ),
-            inline=False,
-        )
-
-        await ctx.send(embed=embed)
-        return
-
-    cog: Optional[Cog] = bot.get_cog(" ".join(args)) or bot.get_cog(args[0])
-    if cog is not None:
-        await add_commands(cog.qualified_name, cog.get_commands())
-        await ctx.send(embed=embed)
-        return
-
-    path = " ".join(args)
-    command: Optional[Union[Command, Group]] = ctx.bot.get_command(path)
-    if command is None:
-        raise CommandError("This Cog or Command does not exists!")
-
-    description = prefix
-    if command.full_parent_name:
-        description += command.full_parent_name + " "
-    if command.aliases:
-        description += "[" + "|".join([command.name] + command.aliases) + "] "
-    else:
-        description += command.name + " "
-    description += command.signature
-
-    embed.description = description
-    embed.add_field(name="Description", value=command.help, inline=False)
-
-    if isinstance(command, Group):
-        await add_commands("Subcommands", command.commands)
-
-    await ctx.send(embed=embed)
-
-
 @bot.command(name="help")
-async def help_cmd(ctx: Context, *args):
+async def help_cmd(ctx: Context, *, cog_or_command: Optional[str]):
     """
     Shows this Message
     """
-    await send_help(ctx, *args)
+
+    await send_help(ctx, cog_or_command)
 
 
 @bot.command(name="github", aliases=["gh"])

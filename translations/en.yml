@@ -26,7 +26,7 @@ role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 log_role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 
 # info
-description: Helper Bot for the Discord Server of The Morpheus Tutorials
+bot_description: Helper Bot for the Discord Server of The Morpheus Tutorials
 test:
 features:
   - Role system for topics you are interested in
@@ -59,6 +59,16 @@ bugs_features_title: Bug Reports / Feature Requests
 bugs_features: >
   Please [create an issue](https://github.com/Defelo/MorpheusHelper/issues/new) in the GitHub repository
   or contact me (<@370876111992913922>) via Discord.
+
+# help
+cog_or_command_not_found: This cog or command does not exist.
+description: Description
+subcommands: Subcommands
+no_category: No category
+help: Help
+help_usage: |
+  Type `{0}help <command>` for more info on a command.
+  Type `{0}help <cog>` for more info on a cog.
 
 # betheprofessional
 youre_not_the_first_one: "Topic `{}` not found.\nYou're not the first one to try this, {}"
