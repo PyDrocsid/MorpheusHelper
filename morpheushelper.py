@@ -213,7 +213,7 @@ async def send_help(ctx: Context, *args):
         description: List[str] = []
         for command in ctx.bot.commands:  # type: Command
             if command.cog is None and not command.hidden and await can_run_command(command, ctx):
-                description.append(command.name + (" | " + command.short_doc if len(command.short_doc) != 0 else "") + "\n" + command.short_doc)
+                description.append(command.name + (" | " + command.short_doc if len(command.short_doc) != 0 else ""))
 
         embed.add_field(name="No Category", value="\n".join(description), inline=False)
 
