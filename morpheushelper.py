@@ -217,7 +217,7 @@ async def send_help(ctx: Context, *args):
         for command in ctx.bot.commands:
             if command.cog is None:
                 if not command.hidden:
-                    description += command.name + " | " + command.short_doc + "\n"
+                    description += (" | " + command.short_doc if len(command.short_doc) != 0 else "") + "\n"
 
         embed.add_field(name=title, value=description, inline=False)
 
