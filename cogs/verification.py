@@ -27,9 +27,8 @@ class VerificationCog(Cog, name="Verification"):
     @commands.command(name="verify")
     @private_only
     async def verify(self, ctx: Context, *, password: str):
-        mode: int = await run_in_thread(Settings.get, int, "verification_mode", 0)
         correct_password: str = await run_in_thread(Settings.get, str, "verification_password")
-        if mode == 0 or correct_password is None:
+        if correct_password is None:
             raise CommandError(translations.verification_disabled)
 
         if password != correct_password:
@@ -68,9 +67,8 @@ class VerificationCog(Cog, name="Verification"):
                 await ctx.send_help(self.verification)
             return
 
-        mode: int = await run_in_thread(Settings.get, int, "verification_mode", 0)
         password: str = await run_in_thread(Settings.get, str, "verification_password")
-        if mode == 0 or password is None:
+        if password is None:
             await ctx.send(translations.verification_disabled)
             return
 
