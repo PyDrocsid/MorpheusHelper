@@ -199,7 +199,7 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
 
     async def add_commands(cog_name: str, commands: List[Command]):
         desc: List[str] = []
-        for cmd in commands:
+        for cmd in sorted(commands, key=lambda c: c.name):
             if not cmd.hidden and await can_run_command(cmd, ctx):
                 desc.append(format_command(cmd))
         if desc:
@@ -208,7 +208,7 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
     prefix: str = await get_prefix()
     embed = Embed(title=translations.help, color=0x008080)
     if command_name is None:
-        for cog in ctx.bot.cogs.values():
+        for cog in sorted(ctx.bot.cogs.values(), key=lambda c: c.qualified_name):
             await add_commands(cog.qualified_name, cog.get_commands())
         await add_commands(translations.no_category, [command for command in ctx.bot.commands if command.cog is None])
 
