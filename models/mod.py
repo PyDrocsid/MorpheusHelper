@@ -186,3 +186,37 @@ class Ban(db.Base):
         row.deactivation_timestamp = datetime.utcnow()
         row.unban_mod = unban_mod
         row.unban_reason = unban_reason
+
+class ServerInvites(db.Base):
+    __tablename__ = "server_invites"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
+    code: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
+    uses: Union[Column, int] = Column(Integer)
+    created_at: Union[Column, datetime] = Column(DateTime)
+    is_expired: Union[Column, bool] = Column(Boolean)
+
+    @staticmethod
+    def create(member: int, member_name: str, code: str, uses: int, created_at: datetime) -> "ServerInvites":
+        row = ServerInvites(
+            member=member,
+            member_name=member_name,
+            code=code,
+            uses=uses,
+            created_at=created_at,
+            is_expired=False,
+        )
+        db.add(row)
+        return row
+
+    @staticmethod
+    def update(id: int, uses: int):
+        row = db.get(ServerInvites, id)
+        row.uses = uses
+
+    @staticmethod
+    def updateExpired(id: int, expired: bool):
+        row = db.get(ServerInvites, id)
+        row.is_expired = expired
