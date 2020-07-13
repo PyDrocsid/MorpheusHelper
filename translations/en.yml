@@ -517,6 +517,7 @@ reddit_limit_set: Reddit limit has been updated.
 log_reddit_limit_set: Reddit limit has been set to {}.
 
 # autokick
+autokick: AutoKick
 autokick_mode_configured:
   - AutoKick has been disabled.
   - AutoKick mode has been set to normal.
@@ -529,20 +530,23 @@ autokick_disabled: AutoKick is disabled.
 autokick_mode:
  - Mode is set to normal.
  - Mode is set to reverse.
-autokick_delay: "Delay: {} seconds"
-autokick_role: "Role: `@{}` ({})"
+delay: Delay
+x_seconds: "{} seconds"
+role: Role
 autokicked: "You have been automatically kicked from {}."
 log_autokicked: "Kicked automatically."
 
 # instantkick
+instantkick: InstantKick
 instantkick_disabled: InstantKick is disabled.
-instantkick_enabled: Members with the {} role will be kicked automatically.
+instantkick_enabled: InstantKick is enabled.
 instantkick_set_disabled: InstantKick has been disabled.
 instantkick_role_configured: InstantKick role has been configured.
 log_instantkick_role_configured: "InstantKick role has been set to `@{}` ({})"
 instantkick_cannot_kick: Members with this role cannot be kicked.
 
 # verification
+verification: Verification
 verification_role_added: Verification role has been added.
 log_verification_role_added: "Verification role has been added: `@{}` ({}) (normal)"
 log_verification_role_added_reverse: "Verification role has been added: `@{}` ({}) (reverse)"
@@ -552,8 +556,10 @@ password_too_long: Password is too long, sorry.
 verification_password_configured: Verification password has been configured.
 log_verification_password_configured: Verification password has been set to `{}`
 verification_disabled: Verification command is disabled.
-verification_password: "Password: `{}`"
-verification_roles: "Verification roles:"
+verification_enabled: Verification command is enabled.
+password: Password
+roles_normal: Roles (normal)
+roles_reverse: Roles (reverse)
 verification_role: " - `@{}` ({}) (normal)"
 verification_role_reverse: " - `@{}` ({}) (reverse)"
 private_only: This command can only be used in direct messages.

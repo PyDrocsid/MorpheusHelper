@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from discord import Role, Member, Guild
+from discord import Role, Member, Guild, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only
 
@@ -68,29 +68,38 @@ class VerificationCog(Cog, name="Verification"):
             return
 
         password: str = await run_in_thread(Settings.get, str, "verification_password")
-        if password is None:
-            await ctx.send(translations.verification_disabled)
-            return
 
-        normal = []
-        reverse = []
+        normal: List[Role] = []
+        reverse: List[Role] = []
         for vrole in await run_in_thread(db.all, VerificationRole):  # type: VerificationRole
             role: Optional[Role] = ctx.guild.get_role(vrole.role_id)
             if role is None:
                 await run_in_thread(db.delete, vrole)
-                continue
-
-            if vrole.reverse:
-                reverse.append(translations.f_verification_role_reverse(role.name, role.id))
             else:
-                normal.append(translations.f_verification_role(role.name, role.id))
-        out = normal + reverse
-        if not out:
-            await ctx.send(translations.verification_disabled)
+                [normal, reverse][vrole.reverse].append(role)
+
+        embed = Embed(title=translations.verification, colour=0xCF0606)
+        if password is None or not (normal + reverse):
+            embed.add_field(name=translations.status, value=translations.verification_disabled, inline=False)
+            await ctx.send(embed=embed)
             return
 
-        out = [translations.f_verification_password(password), "\n" + translations.verification_roles] + out
-        await ctx.send("\n".join(out))
+        embed.colour = 0x256BE6
+        embed.add_field(name=translations.status, value=translations.verification_enabled, inline=False)
+        embed.add_field(name=translations.password, value=f"`{password}`", inline=False)
+
+        if normal:
+            embed.add_field(
+                name=translations.roles_normal,
+                value="\n".join(f":small_orange_diamond: {role.mention}" for role in normal),
+            )
+        if reverse:
+            embed.add_field(
+                name=translations.roles_reverse,
+                value="\n".join(f":small_blue_diamond: {role.mention}" for role in reverse),
+            )
+
+        await ctx.send(embed=embed)
 
     @verification.command(name="add", aliases=["a", "+"])
     async def verification_role_add(self, ctx: Context, role: Role, reverse: bool = False):
