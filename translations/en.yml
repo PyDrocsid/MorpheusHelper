@@ -496,7 +496,12 @@ permissions:
   manage_reddit: manage reddit integration
 
 # reddit
-no_reddit_channels: No reddit links have been created yet.
+reddit: Reddit
+interval: Interval
+x_hours: "{} hours"
+limit: Limit
+reddit_links: Reddit links
+no_reddit_links: No reddit links have been created yet.
 subreddit_not_found: Subreddit does not exist.
 reddit_link_not_created_permission: >
   Reddit link could not be created because I don't have `send_messages` permission in this channel.

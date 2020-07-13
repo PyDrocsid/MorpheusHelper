@@ -116,27 +116,32 @@ class RedditCog(Cog, name="Reddit"):
         manage reddit integration
         """
 
-        if ctx.invoked_subcommand is None:
-            await send_help(ctx, RedditCog.reddit)
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                await send_help(ctx, RedditCog.reddit)
+            return
 
-    @reddit.command(name="list", aliases=["l", "?"])
-    async def lst(self, ctx: Context):
-        """
-        list reddit links
-        """
+        embed = Embed(title=translations.reddit, colour=0xFF4500)
+
+        interval = await run_in_thread(Settings.get, int, "reddit_interval", 4)
+        embed.add_field(name=translations.interval, value=translations.f_x_hours(interval))
+
+        limit = await run_in_thread(Settings.get, int, "reddit_limit", 4)
+        embed.add_field(name=translations.limit, value=str(limit))
 
         out = []
         for reddit_channel in await run_in_thread(db.all, RedditChannel):  # type: RedditChannel
             text_channel: Optional[TextChannel] = self.bot.get_channel(reddit_channel.channel)
             if text_channel is None:
                 await run_in_thread(db.delete, reddit_channel)
-                continue
-            out.append(f"`r/{reddit_channel.subreddit}` -> {text_channel.mention}")
+            else:
+                sub = reddit_channel.subreddit
+                out.append(f"[r/{sub}](https://reddit.com/r/{sub}) -> {text_channel.mention}")
+        embed.add_field(
+            name=translations.reddit_links, value="\n".join(out) or translations.no_reddit_links, inline=False
+        )
 
-        if not out:
-            await ctx.send(translations.no_reddit_channels)
-        else:
-            await ctx.send("\n".join(out))
+        await ctx.send(embed=embed)
 
     @reddit.command(name="add", aliases=["a", "+"])
     async def add(self, ctx: Context, subreddit: str, channel: TextChannel):
@@ -175,14 +180,10 @@ class RedditCog(Cog, name="Reddit"):
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_removed(subreddit, channel.mention))
 
     @reddit.command(name="interval", aliases=["int", "i"])
-    async def interval(self, ctx: Context, hours: Optional[int]):
+    async def interval(self, ctx: Context, hours: int):
         """
         change lookup interval (in hours)
         """
-
-        if hours is None:
-            await ctx.send(translations.f_reddit_interval(await run_in_thread(Settings.get, int, "reddit_interval", 4)))
-            return
 
         if not 0 < hours < (1 << 31):
             raise CommandError(translations.invalid_interval)
@@ -193,14 +194,10 @@ class RedditCog(Cog, name="Reddit"):
         await send_to_changelog(ctx.guild, translations.f_log_reddit_interval_set(hours))
 
     @reddit.command(name="limit", aliases=["lim"])
-    async def limit(self, ctx: Context, limit: Optional[int]):
+    async def limit(self, ctx: Context, limit: int):
         """
         change limit of posts to be sent concurrently
         """
-
-        if limit is None:
-            await ctx.send(translations.f_reddit_limit(await run_in_thread(Settings.get, int, "reddit_limit", 4)))
-            return
 
         if not 0 < limit < (1 << 31):
             raise CommandError(translations.invalid_limit)
