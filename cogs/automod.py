@@ -11,7 +11,7 @@ from models.mod import Kick
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, send_help
 
 
 async def kick(member: Member) -> bool:
@@ -108,7 +108,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await ctx.send_help(self.autokick)
+                await send_help(ctx, self.autokick)
             return
 
         mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
@@ -128,15 +128,16 @@ class AutoModCog(Cog, name="AutoMod"):
     @autokick.command(name="mode", aliases=["m"])
     async def autokick_mode(self, ctx: Context, mode: str):
         """
-        configure autokick mode:
-        off:     disable autokick
-        normal:  kick members without a specific role
-        reverse: kick members with a specific role
+        configure autokick mode
+
+        `off` - disable autokick
+        `normal` - kick members without a specific role
+        `reverse` - kick members with a specific role
         """
 
         mode: Optional[int] = {"off": 0, "normal": 1, "reverse": 2}.get(mode.lower())
         if mode is None:
-            await ctx.send_help(self.autokick_mode)
+            await send_help(ctx, self.autokick_mode)
             return
 
         await run_in_thread(Settings.set, int, "autokick_mode", mode)
@@ -176,7 +177,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await ctx.send_help(self.instantkick)
+                await send_help(ctx, self.instantkick)
             return
 
         role: Optional[Role] = await self.get_instantkick_role()

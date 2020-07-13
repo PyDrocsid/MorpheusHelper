@@ -12,7 +12,7 @@ from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdat
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions
+from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions, send_help
 
 
 class DurationConverter(Converter):
@@ -134,7 +134,7 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ModCog.roles)
+            await send_help(ctx, ModCog.roles)
 
     @roles.command(name="administrator", aliases=["admin"])
     async def set_admin(self, ctx: Context, role: Optional[Role]):

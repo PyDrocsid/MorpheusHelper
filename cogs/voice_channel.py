@@ -14,7 +14,7 @@ from models.settings import Settings
 from multilock import MultiLock
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, check_permissions, get_prefix
+from util import permission_level, send_to_changelog, check_permissions, get_prefix, send_help
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -255,7 +255,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(VoiceChannelCog.voice)
+            await send_help(ctx, VoiceChannelCog.voice)
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
     @permission_level(Permission.vc_manage_dyn)
@@ -265,7 +265,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(VoiceChannelCog.dynamic)
+            await send_help(ctx, VoiceChannelCog.dynamic)
 
     @dynamic.command(name="list", aliases=["l", "?"])
     async def list_dyn(self, ctx: Context):
@@ -420,7 +420,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(VoiceChannelCog.link)
+            await send_help(ctx, VoiceChannelCog.link)
 
     @link.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context):

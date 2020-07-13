@@ -12,7 +12,7 @@ from models.reddit import RedditPost, RedditChannel
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, send_help
 
 
 def exists_subreddit(subreddit: str) -> bool:
@@ -117,7 +117,7 @@ class RedditCog(Cog, name="Reddit"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(RedditCog.reddit)
+            await send_help(ctx, RedditCog.reddit)
 
     @reddit.command(name="list", aliases=["l", "?"])
     async def lst(self, ctx: Context):

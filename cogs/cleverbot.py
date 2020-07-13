@@ -12,7 +12,7 @@ from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, send_help
 
 cleverbot_lock = Lock()
 
@@ -53,7 +53,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(CleverBotCog.cleverbot)
+            await send_help(ctx, CleverBotCog.cleverbot)
 
     @cleverbot.command(name="list", aliases=["l", "?"])
     @permission_level(Permission.cb_list)

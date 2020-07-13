@@ -8,7 +8,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from permission import Permission
 from translations import translations
-from util import permission_level, read_normal_message, read_embed, read_complete_message
+from util import permission_level, read_normal_message, read_embed, read_complete_message, send_help
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -24,7 +24,7 @@ class RulesCog(Cog, name="Rule Commands"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.send)
+            await send_help(ctx, self.send)
 
     @send.command(name="text", aliases=["t"])
     async def send_text(self, ctx: Context, channel: TextChannel):
@@ -94,7 +94,7 @@ class RulesCog(Cog, name="Rule Commands"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.edit)
+            await send_help(ctx, self.edit)
 
     @edit.command(name="text", aliases=["t"])
     async def edit_text(self, ctx: Context, message: Message):

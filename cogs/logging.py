@@ -15,7 +15,7 @@ from database import run_in_thread
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, calculate_edit_distance
+from util import permission_level, calculate_edit_distance, send_help
 
 
 def add_field(embed: Embed, name: str, text: str):
@@ -143,7 +143,7 @@ class LoggingCog(Cog, name="Logging"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await ctx.send_help(self.logging)
+                await send_help(ctx, self.logging)
             return
 
         guild: Guild = ctx.guild
@@ -212,7 +212,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.edit)
+            await send_help(ctx, self.edit)
 
     @edit.command(name="mindiff", aliases=["md"])
     async def edit_mindiff(self, ctx: Context, mindiff: int):
@@ -254,7 +254,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.delete)
+            await send_help(ctx, self.delete)
 
     @delete.command(name="channel", aliases=["ch", "c"])
     async def delete_channel(self, ctx: Context, channel: TextChannel):
@@ -284,7 +284,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.changelog)
+            await send_help(ctx, self.changelog)
 
     @changelog.command(name="channel", aliases=["ch", "c"])
     async def changelog_channel(self, ctx: Context, channel: TextChannel):

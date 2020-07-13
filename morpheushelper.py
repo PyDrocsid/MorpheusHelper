@@ -56,6 +56,7 @@ from util import (
     register_cogs,
     get_prefix,
     set_prefix,
+    send_help,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -77,7 +78,8 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description)
+bot.remove_command("help")
 
 
 def get_owner() -> Optional[User]:
@@ -168,7 +170,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
+    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -189,6 +191,15 @@ async def build_info_embed(authorized: bool) -> Embed:
         name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
     )
     return embed
+
+
+@bot.command(name="help")
+async def help_cmd(ctx: Context, *, cog_or_command: Optional[str]):
+    """
+    Shows this Message
+    """
+
+    await send_help(ctx, cog_or_command)
 
 
 @bot.command(name="github", aliases=["gh"])

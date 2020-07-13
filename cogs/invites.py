@@ -10,7 +10,7 @@ from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite, InviteLog
 from permission import Permission
 from translations import translations
-from util import permission_level, check_permissions, send_to_changelog, get_prefix
+from util import permission_level, check_permissions, send_to_changelog, get_prefix, send_help
 
 
 class AllowedServerConverter(Converter):
@@ -136,7 +136,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.invites)
+            await send_help(ctx, self.invites)
 
     @invites.command(name="list", aliases=["l", "?"])
     async def list_invites(self, ctx: Context):

@@ -9,7 +9,7 @@ from models.settings import Settings
 from models.verification_role import VerificationRole
 from permission import Permission
 from translations import translations
-from util import send_to_changelog, permission_level
+from util import send_to_changelog, permission_level, send_help
 
 
 @check
@@ -64,7 +64,7 @@ class VerificationCog(Cog, name="Verification"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await ctx.send_help(self.verification)
+                await send_help(ctx, self.verification)
             return
 
         password: str = await run_in_thread(Settings.get, str, "verification_password")

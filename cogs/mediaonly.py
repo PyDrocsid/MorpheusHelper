@@ -11,7 +11,7 @@ from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from permission import Permission
 from translations import translations
-from util import permission_level, check_permissions, send_to_changelog
+from util import permission_level, check_permissions, send_to_changelog, send_help
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -55,7 +55,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.mediaonly)
+            await send_help(ctx, self.mediaonly)
 
     @mediaonly.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):
