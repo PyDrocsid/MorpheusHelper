@@ -53,7 +53,7 @@ class VerificationCog(Cog, name="Verification"):
                 add.append(role)
         if not add and not remove:
             raise CommandError(translations.already_verified)
-        elif fail:
+        if fail:
             raise CommandError(translations.verification_reverse_role_not_assigned)
 
         await member.add_roles(*add)
