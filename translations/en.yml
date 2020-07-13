@@ -573,3 +573,4 @@ password_incorrect: Password is incorrect!
 verified: "Verified successfully :white_check_mark:"
 verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
+verification_reverse_role_not_assigned: Verification failed!

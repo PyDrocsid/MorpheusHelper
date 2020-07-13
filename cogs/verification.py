@@ -38,17 +38,23 @@ class VerificationCog(Cog, name="Verification"):
         member: Member = guild.get_member(ctx.author.id)
         add: List[Role] = []
         remove: List[Role] = []
+        fail = False
         for vrole in await run_in_thread(db.all, VerificationRole):  # type: VerificationRole
             role: Optional[Role] = guild.get_role(vrole.role_id)
             if role is None:
                 continue
 
-            if vrole.reverse and role in member.roles:
-                remove.append(role)
+            if vrole.reverse:
+                if role in member.roles:
+                    remove.append(role)
+                else:
+                    fail = True
             elif not vrole.reverse and role not in member.roles:
                 add.append(role)
         if not add and not remove:
             raise CommandError(translations.already_verified)
+        elif fail:
+            raise CommandError(translations.verification_reverse_role_not_assigned)
 
         await member.add_roles(*add)
         await member.remove_roles(*remove)
