@@ -339,7 +339,13 @@ news_not_added_no_permissions: >
 news_you_are_not_authorized: You are not authorized to send news in this channel.
 
 # mod tools
-no_role_set: No role set.
+roles: Roles
+role_admin: Administrator
+role_mod: Moderator
+role_supp: Supporter
+role_team: Team
+role_mute: Mute
+role_not_set: Role not set.
 role_set: Role has been set successfully.
 log_role_set_admin: "Administrator role has been set to `@{}` ({})"
 log_role_set_mod: "Moderator role has been set to `@{}` ({})"
