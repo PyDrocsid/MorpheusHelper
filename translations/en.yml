@@ -435,14 +435,16 @@ utc_note: Timestamps in UTC
 
 # permissions
 permission_levels:
-  - public
-  - supporter
-  - moderator
-  - administrator
+  - Public
+  - Supporter
+  - Moderator
+  - Administrator
 no_permissions: No priviliges granted.
 invalid_permission_level: Invalid permission level.
 invalid_permission: Invalid permission.
 permission_set: Permission `{}` has been granted to `>= {}`
+permissions_title: Permissions
+my_permissions_title: My Permissions
 
 permissions:
   vc_private_owner: pretend to be the owner of a private voice channel
