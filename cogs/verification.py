@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 
 from discord import Role, Member, Guild, Embed
@@ -36,6 +37,11 @@ class VerificationCog(Cog, name="Verification"):
 
         guild: Guild = self.bot.guilds[0]
         member: Member = guild.get_member(ctx.author.id)
+
+        delay: int = await run_in_thread(Settings.get, int, "verification_delay", -1)
+        if delay != -1 and (datetime.utcnow() - member.joined_at).total_seconds() < delay:
+            raise CommandError(translations.password_incorrect)
+
         add: List[Role] = []
         remove: List[Role] = []
         fail = False
@@ -94,6 +100,10 @@ class VerificationCog(Cog, name="Verification"):
         embed.add_field(name=translations.status, value=translations.verification_enabled, inline=False)
         embed.add_field(name=translations.password, value=f"`{password}`", inline=False)
 
+        delay: int = await run_in_thread(Settings.get, int, "verification_delay", -1)
+        val = translations.f_x_seconds(delay) if delay != -1 else translations.disabled
+        embed.add_field(name=translations.delay, value=val, inline=False)
+
         if normal:
             embed.add_field(
                 name=translations.roles_normal,
@@ -128,7 +138,7 @@ class VerificationCog(Cog, name="Verification"):
         else:
             await send_to_changelog(ctx.guild, translations.f_log_verification_role_added(role.name, role.id))
 
-    @verification.command(name="remove", aliases=["r", "del", "d", "-"])
+    @verification.command(name="remove", aliases=["r", "-"])
     async def verification_role_remove(self, ctx: Context, *, role: Role):
         """
         remove verification role
@@ -153,3 +163,21 @@ class VerificationCog(Cog, name="Verification"):
         await run_in_thread(Settings.set, str, "verification_password", password)
         await ctx.send(translations.verification_password_configured)
         await send_to_changelog(ctx.guild, translations.f_log_verification_password_configured(password))
+
+    @verification.command(name="delay", aliases=["d"])
+    async def verification_delay(self, ctx: Context, seconds: int):
+        """
+        configure verification delay
+        set to -1 to disable
+        """
+
+        if seconds != -1 and not 0 <= seconds < (1 << 31):
+            raise CommandError(translations.invalid_duration)
+
+        await run_in_thread(Settings.set, int, "verification_delay", seconds)
+        if seconds == -1:
+            await ctx.send(translations.verification_delay_disabled)
+            await send_to_changelog(ctx.guild, translations.verification_delay_disabled)
+        else:
+            await ctx.send(translations.verification_delay_configured)
+            await send_to_changelog(ctx.guild, translations.f_log_verification_delay_configured(seconds))

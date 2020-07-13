@@ -568,6 +568,9 @@ log_verification_role_removed: "Verification role has been removed: `@{}` ({})"
 password_too_long: Password is too long, sorry.
 verification_password_configured: Verification password has been configured.
 log_verification_password_configured: Verification password has been set to `{}`
+verification_delay_configured: Verification delay has been configured.
+verification_delay_disabled: Verification delay has been disabled.
+log_verification_delay_configured: Verification delay has been set to {} seconds.
 verification_disabled: Verification command is disabled.
 verification_enabled: Verification command is enabled.
 password: Password
@@ -582,3 +585,4 @@ verified: "Verified successfully :white_check_mark:"
 verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
 verification_reverse_role_not_assigned: Verification failed!
+disabled: Disabled
