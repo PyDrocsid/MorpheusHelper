@@ -79,7 +79,7 @@ class VerificationCog(Cog, name="Verification"):
                 [normal, reverse][vrole.reverse].append(role)
 
         embed = Embed(title=translations.verification, colour=0xCF0606)
-        if password is None or not (normal + reverse):
+        if password is None or not normal + reverse:
             embed.add_field(name=translations.status, value=translations.verification_disabled, inline=False)
             await ctx.send(embed=embed)
             return
