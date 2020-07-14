@@ -143,10 +143,12 @@ async def yesno(ctx: Context, message: Optional[Message] = None):
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    if message is None:
+    if message is None or message.guild is None:
         message = ctx.message
-    await message.add_reaction(chr(0x1F44D))
-    await message.add_reaction(chr(0x1F44E))
+
+    if message.channel.permissions_for(ctx.author).add_reactions:
+        await message.add_reaction(chr(0x1F44D))
+        await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
