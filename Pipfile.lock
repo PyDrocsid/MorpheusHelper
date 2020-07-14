@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "fd1f6676855057f126669c41ed5c2f069c8e2adf7f58f68f003378c893961cda"
+            "sha256": "8a71a688f21bb99466a10e8c25a74b1082c7c91317a908c45fd3552058330142"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -65,12 +65,11 @@
             "version": "==3.0.4"
         },
         "discord-py": {
-            "hashes": [
-                "sha256:1b546a32c0cd83d949392a71e5b06e30e19d1067246e3826d32ae9b8b3d06c1e",
-                "sha256:8ef58d6fc1e66903bc00ae79c4c09a38aa71043e88a83da4d2e8b9b1c9f9b9e2"
-            ],
-            "index": "pypi",
-            "version": "==1.3.4"
+            "git": "https://github.com/Rapptz/discord.py.git",
+            "ref": "0bc15fa130b8f01fe2d67446a2184d474b0d0ba7"
+        },
+        "discord.py": {
+            "git": "https://github.com/Rapptz/discord.py.git"
         },
         "idna": {
             "hashes": [
@@ -174,11 +173,11 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:da06bc3641e81ec2c942f87a0676cd9180044fa3d1697524a0005345997542e2",
-                "sha256:e80d61af85d99a1222c1a3e2a24023618374cd50a99673aa7fa3cf920e7d813b"
+                "sha256:2f023ff348359ec5f0b73a840e8b08e6a8d3b2613a98c57d11c222ef43879237",
+                "sha256:380a280cfc7c4ade5912294e6d9aa71ce776b5fca60a3782e9331b0bcd2866bf"
             ],
             "index": "pypi",
-            "version": "==0.16.0"
+            "version": "==0.16.1"
         },
         "sqlalchemy": {
             "hashes": [
