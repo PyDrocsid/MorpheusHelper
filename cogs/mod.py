@@ -20,7 +20,7 @@ class DurationConverter(Converter):
     async def convert(self, ctx, argument: str) -> Optional[int]:
         if argument.lower() in ("inf", "perm", "permanent", "-1", "∞"):
             return None
-        if (match := re.match(r"^(\d+)d$", argument)) is None:
+        if (match := re.match(r"^(\d+)d?$", argument)) is None:
             raise BadArgument(translations.invalid_duration)
         if (days := int(match.group(1))) <= 0:
             raise BadArgument(translations.invalid_duration)
