@@ -11,11 +11,14 @@ class Join(db.Base):
     id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     member: Union[Column, int] = Column(BigInteger)
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
+    invite: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"))
     timestamp: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
-    def create(member: int, member_name: str, timestamp: Optional[datetime] = None) -> "Join":
-        row = Join(member=member, member_name=member_name, timestamp=timestamp or datetime.utcnow())
+    def create(member: int, member_name: str, invite: Optional[str] = None, timestamp: Optional[datetime] = None) -> "Join":
+        row = Join(
+            member=member, member_name=member_name, invite=invite, timestamp=timestamp or datetime.utcnow()
+        )
         db.add(row)
         return row
 
@@ -186,6 +189,7 @@ class Ban(db.Base):
         row.deactivation_timestamp = datetime.utcnow()
         row.unban_mod = unban_mod
         row.unban_reason = unban_reason
+
 
 class ServerInvites(db.Base):
     __tablename__ = "server_invites"

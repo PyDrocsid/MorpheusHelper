@@ -2,7 +2,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Optional, Union, List, Tuple
 
-from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Invite
+from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Invite, utils
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
 
@@ -107,7 +107,6 @@ class ModCog(Cog, name="Mod Tools"):
                 await run_in_thread(Mute.deactivate, mute.id)
 
     async def on_member_join(self, member: Member):
-        await run_in_thread(Join.create, member.id, str(member))
         mute_role: Optional[Role] = member.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is None:
             return True
@@ -117,8 +116,9 @@ class ModCog(Cog, name="Mod Tools"):
 
         invites_before_join = await run_in_thread(db.query, ServerInvites, is_expired=False)
         for invite in await member.guild.invites():
-            db_invite = [i for i in invites_before_join if i.code == invite.code][0]
+            db_invite = utils.find(lambda i: i.code == invite.code, invites_before_join)
             if invite.uses > db_invite.uses:
+                await run_in_thread(Join.create, member.id, str(member), invite.code)
                 await run_in_thread(ServerInvites.update, db_invite.id, invite.uses)
                 return
 
@@ -597,7 +597,7 @@ class ModCog(Cog, name="Mod Tools"):
                     if join.timestamp >= member.joined_at - timedelta(minutes=1):
                         break
                 else:
-                    Join.create(member.id, str(member), member.joined_at)
+                    Join.create(member.id, str(member), None, member.joined_at)
 
         await ctx.send(translations.f_filling_join_log(len(guild.members)))
         await run_in_thread(init)
