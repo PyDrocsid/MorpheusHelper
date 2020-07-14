@@ -1,6 +1,7 @@
+from datetime import datetime
 from typing import Optional, List
 
-from discord import Role, Member, Guild
+from discord import Role, Member, Guild, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only
 
@@ -36,19 +37,30 @@ class VerificationCog(Cog, name="Verification"):
 
         guild: Guild = self.bot.guilds[0]
         member: Member = guild.get_member(ctx.author.id)
+
+        delay: int = await run_in_thread(Settings.get, int, "verification_delay", -1)
+        if delay != -1 and (datetime.utcnow() - member.joined_at).total_seconds() < delay:
+            raise CommandError(translations.password_incorrect)
+
         add: List[Role] = []
         remove: List[Role] = []
+        fail = False
         for vrole in await run_in_thread(db.all, VerificationRole):  # type: VerificationRole
             role: Optional[Role] = guild.get_role(vrole.role_id)
             if role is None:
                 continue
 
-            if vrole.reverse and role in member.roles:
-                remove.append(role)
+            if vrole.reverse:
+                if role in member.roles:
+                    remove.append(role)
+                else:
+                    fail = True
             elif not vrole.reverse and role not in member.roles:
                 add.append(role)
         if not add and not remove:
             raise CommandError(translations.already_verified)
+        if fail:
+            raise CommandError(translations.verification_reverse_role_not_assigned)
 
         await member.add_roles(*add)
         await member.remove_roles(*remove)
@@ -68,29 +80,42 @@ class VerificationCog(Cog, name="Verification"):
             return
 
         password: str = await run_in_thread(Settings.get, str, "verification_password")
-        if password is None:
-            await ctx.send(translations.verification_disabled)
-            return
 
-        normal = []
-        reverse = []
+        normal: List[Role] = []
+        reverse: List[Role] = []
         for vrole in await run_in_thread(db.all, VerificationRole):  # type: VerificationRole
             role: Optional[Role] = ctx.guild.get_role(vrole.role_id)
             if role is None:
                 await run_in_thread(db.delete, vrole)
-                continue
-
-            if vrole.reverse:
-                reverse.append(translations.f_verification_role_reverse(role.name, role.id))
             else:
-                normal.append(translations.f_verification_role(role.name, role.id))
-        out = normal + reverse
-        if not out:
-            await ctx.send(translations.verification_disabled)
+                [normal, reverse][vrole.reverse].append(role)
+
+        embed = Embed(title=translations.verification, colour=0xCF0606)
+        if password is None or not normal + reverse:
+            embed.add_field(name=translations.status, value=translations.verification_disabled, inline=False)
+            await ctx.send(embed=embed)
             return
 
-        out = [translations.f_verification_password(password), "\n" + translations.verification_roles] + out
-        await ctx.send("\n".join(out))
+        embed.colour = 0x256BE6
+        embed.add_field(name=translations.status, value=translations.verification_enabled, inline=False)
+        embed.add_field(name=translations.password, value=f"`{password}`", inline=False)
+
+        delay: int = await run_in_thread(Settings.get, int, "verification_delay", -1)
+        val = translations.f_x_seconds(delay) if delay != -1 else translations.disabled
+        embed.add_field(name=translations.delay, value=val, inline=False)
+
+        if normal:
+            embed.add_field(
+                name=translations.roles_normal,
+                value="\n".join(f":small_orange_diamond: {role.mention}" for role in normal),
+            )
+        if reverse:
+            embed.add_field(
+                name=translations.roles_reverse,
+                value="\n".join(f":small_blue_diamond: {role.mention}" for role in reverse),
+            )
+
+        await ctx.send(embed=embed)
 
     @verification.command(name="add", aliases=["a", "+"])
     async def verification_role_add(self, ctx: Context, role: Role, reverse: bool = False):
@@ -113,7 +138,7 @@ class VerificationCog(Cog, name="Verification"):
         else:
             await send_to_changelog(ctx.guild, translations.f_log_verification_role_added(role.name, role.id))
 
-    @verification.command(name="remove", aliases=["r", "del", "d", "-"])
+    @verification.command(name="remove", aliases=["r", "-"])
     async def verification_role_remove(self, ctx: Context, *, role: Role):
         """
         remove verification role
@@ -138,3 +163,21 @@ class VerificationCog(Cog, name="Verification"):
         await run_in_thread(Settings.set, str, "verification_password", password)
         await ctx.send(translations.verification_password_configured)
         await send_to_changelog(ctx.guild, translations.f_log_verification_password_configured(password))
+
+    @verification.command(name="delay", aliases=["d"])
+    async def verification_delay(self, ctx: Context, seconds: int):
+        """
+        configure verification delay
+        set to -1 to disable
+        """
+
+        if seconds != -1 and not 0 <= seconds < (1 << 31):
+            raise CommandError(translations.invalid_duration)
+
+        await run_in_thread(Settings.set, int, "verification_delay", seconds)
+        if seconds == -1:
+            await ctx.send(translations.verification_delay_disabled)
+            await send_to_changelog(ctx.guild, translations.verification_delay_disabled)
+        else:
+            await ctx.send(translations.verification_delay_configured)
+            await send_to_changelog(ctx.guild, translations.f_log_verification_delay_configured(seconds))

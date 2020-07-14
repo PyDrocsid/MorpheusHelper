@@ -19,6 +19,7 @@ from discord import (
     User,
     NotFound,
     Forbidden,
+    AllowedMentions,
     Invite,
 )
 from discord.ext import tasks
@@ -144,10 +145,12 @@ async def yesno(ctx: Context, message: Optional[Message] = None):
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    if message is None:
+    if message is None or message.guild is None:
         message = ctx.message
-    await message.add_reaction(chr(0x1F44D))
-    await message.add_reaction(chr(0x1F44E))
+
+    if message.channel.permissions_for(ctx.author).add_reactions:
+        await message.add_reaction(chr(0x1F44D))
+        await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
@@ -252,7 +255,7 @@ async def on_error(*_, **__):
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
         return
-    await ctx.send(make_error(error))
+    await ctx.send(make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
 
 
 async def extract_from_raw_reaction_event(event: RawReactionActionEvent):

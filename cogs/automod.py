@@ -2,7 +2,7 @@ import asyncio
 from asyncio import Task
 from typing import Optional, Dict
 
-from discord import Role, Member, Guild, Forbidden, HTTPException
+from discord import Role, Member, Guild, Forbidden, HTTPException, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
@@ -111,19 +111,21 @@ class AutoModCog(Cog, name="AutoMod"):
                 await send_help(ctx, self.autokick)
             return
 
+        embed = Embed(title=translations.autokick, colour=0xCF0606)
         mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
         role: Optional[Role] = await self.get_autokick_role()
         if mode == 0 or role is None:
-            await ctx.send(translations.autokick_disabled)
+            embed.add_field(name=translations.status, value=translations.autokick_disabled, inline=False)
+            await ctx.send(embed=embed)
             return
 
+        embed.add_field(name=translations.status, value=translations.autokick_mode[mode - 1], inline=False)
+        embed.colour = [0x256BE6, 0x03AD28][mode - 1]
         delay: int = await run_in_thread(Settings.get, int, "autokick_delay", 30)
-        out = [
-            translations.autokick_mode[mode - 1],
-            translations.f_autokick_delay(delay),
-            translations.f_autokick_role(role.name, role.id),
-        ]
-        await ctx.send("\n".join(out))
+        embed.add_field(name=translations.delay, value=translations.f_x_seconds(delay), inline=False)
+        embed.add_field(name=translations.role, value=role.mention, inline=False)
+
+        await ctx.send(embed=embed)
 
     @autokick.command(name="mode", aliases=["m"])
     async def autokick_mode(self, ctx: Context, mode: str):
@@ -180,12 +182,18 @@ class AutoModCog(Cog, name="AutoMod"):
                 await send_help(ctx, self.instantkick)
             return
 
+        embed = Embed(title=translations.instantkick, colour=0xCF0606)
         role: Optional[Role] = await self.get_instantkick_role()
         if role is None:
-            await ctx.send(translations.instantkick_disabled)
+            embed.add_field(name=translations.status, value=translations.instantkick_disabled)
+            await ctx.send(embed=embed)
             return
 
-        await ctx.send(translations.f_instantkick_enabled(role.mention))
+        embed.add_field(name=translations.status, value=translations.instantkick_enabled, inline=False)
+        embed.colour = 0x256BE6
+        embed.add_field(name=translations.role, value=role.mention, inline=False)
+
+        await ctx.send(embed=embed)
 
     @instantkick.command(name="disable", aliases=["d", "off"])
     async def instantkick_mode(self, ctx: Context):

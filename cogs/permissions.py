@@ -1,5 +1,6 @@
 from typing import Optional
 
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadArgument, CommandError
 
@@ -8,24 +9,24 @@ from translations import translations
 from util import permission_level, ADMINISTRATOR, get_permission_level, MODERATOR, SUPPORTER, PUBLIC, send_help
 
 
-async def list_permissions(ctx: Context, min_level: int):
-    min_level: int
+async def list_permissions(ctx: Context, title: str, min_level: int):
     out = {}
     for permission in Permission:  # type: Permission
         level = await permission.resolve()
         if min_level >= level:
-            out.setdefault(level, []).append(f"  {permission.name} ({permission.description})")
-    if out:
-        await ctx.send(
-            "```\n"
-            + "\n\n".join(
-                "\n".join([translations.permission_levels[level] + ":"] + lines)
-                for level, lines in sorted(out.items(), reverse=True)
-            )
-            + "\n```"
-        )
-    else:
-        await ctx.send(translations.no_permissions)
+            out.setdefault(level, []).append(f"`{permission.name}` - {permission.description}")
+
+    embed = Embed(title=title, colour=0xCF0606)
+    if not out:
+        embed.description = translations.no_permissions
+        await ctx.send(embed=embed)
+        return
+
+    embed.colour = 0x256BE6
+    for level, lines in sorted(out.items(), reverse=True):
+        embed.add_field(name=translations.permission_levels[level], value="\n".join(sorted(lines)), inline=False)
+
+    await ctx.send(embed=embed)
 
 
 class PermissionLevelConverter(Converter):
@@ -57,13 +58,12 @@ class PermissionsCog(Cog, name="Permissions"):
 
     @permissions.command(name="list", aliases=["show", "l", "?"])
     @permission_level(Permission.view_all_permissions)
-    async def list_permissions(self, ctx: Context, min_level: Optional[PermissionLevelConverter] = ADMINISTRATOR):
+    async def list_permissions(self, ctx: Context, min_level: Optional[PermissionLevelConverter]):
         """
         list all permissions
         """
 
-        min_level: int
-        await list_permissions(ctx, min_level)
+        await list_permissions(ctx, translations.permissions_title, ADMINISTRATOR if min_level is None else min_level)
 
     @permissions.command(name="my", aliases=["m", "own", "o"])
     @permission_level(Permission.view_own_permissions)
@@ -72,7 +72,7 @@ class PermissionsCog(Cog, name="Permissions"):
         list all permissions granted to the user
         """
 
-        await list_permissions(ctx, await get_permission_level(ctx.author))
+        await list_permissions(ctx, translations.my_permissions_title, await get_permission_level(ctx.author))
 
     @permissions.command(name="set", aliases=["s", "="])
     @permission_level(ADMINISTRATOR)

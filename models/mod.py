@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Union, Optional
 
 from sqlalchemy import Column, Integer, BigInteger, DateTime, Text, Boolean
@@ -21,6 +21,14 @@ class Join(db.Base):
         )
         db.add(row)
         return row
+
+    @staticmethod
+    def update(member: int, member_name: str, joined_at: datetime):
+        for join in db.query(Join, member=member):
+            if join.timestamp >= joined_at - timedelta(minutes=1):
+                break
+        else:
+            Join.create(member, member_name, joined_at)
 
 
 class Leave(db.Base):

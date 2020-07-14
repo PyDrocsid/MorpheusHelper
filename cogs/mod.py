@@ -5,6 +5,7 @@ from typing import Optional, Union, List, Tuple
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Invite, utils
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.utils import snowflake_time
 
 from database import run_in_thread, db
 from models.allowed_invite import InviteLog
@@ -28,23 +29,15 @@ class DurationConverter(Converter):
         return days
 
 
-async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
-    guild: Guild = ctx.guild
-    if role is None:
-        role = guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
-        if role is None:
-            await ctx.send(translations.no_role_set)
-        else:
-            await ctx.send(f"`@{role}` ({role.id})")
-    else:
-        if check_assignable:
-            if role > ctx.me.top_role:
-                raise CommandError(translations.f_role_not_set_too_high(role, ctx.me.top_role))
-            if role.managed:
-                raise CommandError(translations.f_role_not_set_managed_role(role))
-        await run_in_thread(Settings.set, int, role_name + "_role", role.id)
-        await ctx.send(translations.role_set)
-        await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
+async def configure_role(ctx: Context, role_name: str, role: Role, check_assignable: bool = False):
+    if check_assignable:
+        if role > ctx.me.top_role:
+            raise CommandError(translations.f_role_not_set_too_high(role, ctx.me.top_role))
+        if role.managed:
+            raise CommandError(translations.f_role_not_set_managed_role(role))
+    await run_in_thread(Settings.set, int, role_name + "_role", role.id)
+    await ctx.send(translations.role_set)
+    await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
 
 
 async def get_mute_role(guild: Guild) -> Role:
@@ -52,6 +45,12 @@ async def get_mute_role(guild: Guild) -> Role:
     if mute_role is None:
         raise CommandError(translations.mute_role_not_set)
     return mute_role
+
+
+async def update_join_date(guild: Guild, user_id: int):
+    member: Optional[Member] = guild.get_member(user_id)
+    if member is not None:
+        await run_in_thread(Join.update, member.id, str(member), member.joined_at)
 
 
 class ModCog(Cog, name="Mod Tools"):
@@ -156,11 +155,20 @@ class ModCog(Cog, name="Mod Tools"):
         configure roles
         """
 
-        if ctx.invoked_subcommand is None:
-            await send_help(ctx, ModCog.roles)
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                await send_help(ctx, ModCog.roles)
+            return
+
+        embed = Embed(title=translations.roles, color=0x256BE6)
+        for role_name in ["admin", "mod", "supp", "team", "mute"]:
+            role = ctx.guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
+            val = role.mention if role is not None else translations.role_not_set
+            embed.add_field(name=getattr(translations, f"role_{role_name}"), value=val, inline=False)
+        await ctx.send(embed=embed)
 
     @roles.command(name="administrator", aliases=["admin"])
-    async def set_admin(self, ctx: Context, role: Optional[Role]):
+    async def set_admin(self, ctx: Context, role: Role):
         """
         set administrator role
         """
@@ -168,7 +176,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "admin", role)
 
     @roles.command(name="moderator", aliases=["mod"])
-    async def set_mod(self, ctx: Context, role: Optional[Role]):
+    async def set_mod(self, ctx: Context, role: Role):
         """
         set moderator role
         """
@@ -176,7 +184,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "mod", role)
 
     @roles.command(name="supporter", aliases=["supp"])
-    async def set_supp(self, ctx: Context, role: Optional[Role]):
+    async def set_supp(self, ctx: Context, role: Role):
         """
         set supporter role
         """
@@ -184,7 +192,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "supp", role)
 
     @roles.command(name="team")
-    async def set_team(self, ctx: Context, role: Optional[Role]):
+    async def set_team(self, ctx: Context, role: Role):
         """
         set team role
         """
@@ -192,7 +200,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "team", role)
 
     @roles.command(name="mute")
-    async def set_mute(self, ctx: Context, role: Optional[Role]):
+    async def set_mute(self, ctx: Context, role: Role):
         """
         set mute role
         """
@@ -443,6 +451,8 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         user, user_id = await self.get_stats_user(ctx.author, user)
+        await update_join_date(self.bot.guilds[0], user_id)
+
         embed = Embed(title=translations.stats, color=0x35992C)
         if isinstance(user, int):
             embed.set_author(name=str(user))
@@ -492,10 +502,9 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         user, user_id = await self.get_stats_user(ctx.author, user)
+        await update_join_date(self.bot.guilds[0], user_id)
 
-        out: List[Tuple[datetime, str]] = []
-        if isinstance(user, User):
-            out.append((user.created_at, translations.ulog_created))
+        out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
         for join in await run_in_thread(db.query, Join, member=user_id):
             out.append((join.timestamp, translations.ulog_joined))
         for leave in await run_in_thread(db.query, Leave, member=user_id):
@@ -593,11 +602,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         def init():
             for member in guild.members:  # type: Member
-                for join in db.query(Join, member=member.id):
-                    if join.timestamp >= member.joined_at - timedelta(minutes=1):
-                        break
-                else:
-                    Join.create(member.id, str(member), None, member.joined_at)
+                Join.update(member.id, str(member), member.joined_at)
 
         await ctx.send(translations.f_filling_join_log(len(guild.members)))
         await run_in_thread(init)
