@@ -10,6 +10,7 @@ from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
 from models.settings import Settings
 from translations import translations
+from util import send_help
 
 
 class InfoCog(Cog, name="Server Information"):
@@ -38,7 +39,9 @@ class InfoCog(Cog, name="Server Information"):
         displays information about this discord server
         """
 
-        if ctx.invoked_subcommand is not None:
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                await send_help(ctx, self.server)
             return
 
         guild: Guild = ctx.guild

@@ -22,7 +22,14 @@ from discord import (
     AllowedMentions,
 )
 from discord.ext import tasks
-from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
+from discord.ext.commands import (
+    Bot,
+    Context,
+    CommandError,
+    guild_only,
+    CommandNotFound,
+    UserInputError,
+)
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -254,6 +261,10 @@ async def on_error(*_, **__):
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
         return
+    if isinstance(error, UserInputError):
+        await send_help(ctx, ctx.command)
+        return
+
     await ctx.send(make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
 
 
