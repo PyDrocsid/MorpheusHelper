@@ -19,6 +19,7 @@ from discord import (
     User,
     NotFound,
     Forbidden,
+    AllowedMentions,
 )
 from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
@@ -253,7 +254,7 @@ async def on_error(*_, **__):
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
         return
-    await ctx.send(make_error(error))
+    await ctx.send(make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
 
 
 async def extract_from_raw_reaction_event(event: RawReactionActionEvent):
