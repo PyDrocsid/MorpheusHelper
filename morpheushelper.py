@@ -355,13 +355,16 @@ async def on_member_join(member: Member):
 async def on_member_remove(member: Member):
     await call_event_handlers("member_remove", member, identifier=member.id)
 
+
 @bot.event
 async def on_invite_create(invite: Invite):
     await call_event_handlers("invite_create", invite)
 
+
 @bot.event
 async def on_invite_delete(invite: Invite):
     await call_event_handlers("invite_delete", invite)
+
 
 @bot.event
 async def on_member_update(before: Member, after: Member):

@@ -69,7 +69,14 @@ class ModCog(Cog, name="Mod Tools"):
         for invite in await guild.invites():
             db_invite = await run_in_thread(db.first, ServerInvites, code=invite.code, is_expired=False)
             if db_invite is None:
-                await run_in_thread(ServerInvites.create, invite.inviter.id, str(invite.inviter), invite.code, invite.uses, invite.created_at)
+                await run_in_thread(
+                    ServerInvites.create,
+                    invite.inviter.id,
+                    str(invite.inviter),
+                    invite.code,
+                    invite.uses,
+                    invite.created_at,
+                )
             elif invite.uses is not db_invite.uses:
                 await run_in_thread(ServerInvites.update, db_invite.id, invite.uses)
 
@@ -139,7 +146,9 @@ class ModCog(Cog, name="Mod Tools"):
         return True
 
     async def on_invite_create(self, invite: Invite):
-        await run_in_thread(ServerInvites.create, invite.inviter.id, str(invite.inviter), invite.code, invite.uses, invite.created_at)
+        await run_in_thread(
+            ServerInvites.create, invite.inviter.id, str(invite.inviter), invite.code, invite.uses, invite.created_at
+        )
         return True
 
     async def on_invite_delete(self, invite: Invite):

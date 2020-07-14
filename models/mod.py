@@ -15,10 +15,10 @@ class Join(db.Base):
     timestamp: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
-    def create(member: int, member_name: str, invite: Optional[str] = None, timestamp: Optional[datetime] = None) -> "Join":
-        row = Join(
-            member=member, member_name=member_name, invite=invite, timestamp=timestamp or datetime.utcnow()
-        )
+    def create(
+        member: int, member_name: str, invite: Optional[str] = None, timestamp: Optional[datetime] = None
+    ) -> "Join":
+        row = Join(member=member, member_name=member_name, invite=invite, timestamp=timestamp or datetime.utcnow())
         db.add(row)
         return row
 
@@ -28,7 +28,7 @@ class Join(db.Base):
             if join.timestamp >= joined_at - timedelta(minutes=1):
                 break
         else:
-            Join.create(member, member_name, joined_at)
+            Join.create(member, member_name, timestamp=joined_at)
 
 
 class Leave(db.Base):
@@ -213,12 +213,7 @@ class ServerInvites(db.Base):
     @staticmethod
     def create(member: int, member_name: str, code: str, uses: int, created_at: datetime) -> "ServerInvites":
         row = ServerInvites(
-            member=member,
-            member_name=member_name,
-            code=code,
-            uses=uses,
-            created_at=created_at,
-            is_expired=False,
+            member=member, member_name=member_name, code=code, uses=uses, created_at=created_at, is_expired=False,
         )
         db.add(row)
         return row
