@@ -112,6 +112,10 @@ topics: Topics
 cnt_topics: "{} Topics registered"
 allowed_discord_server: Allowed Discord Servers
 cnt_servers_whitelisted: "{} servers whitelisted"
+bots: Bots
+no_bots: No bots found.
+online: Online
+offline: Offline
 
 # invites
 illegal_invite_link: >
