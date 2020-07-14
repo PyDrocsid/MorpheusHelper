@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import Optional, List
 
-from discord import Embed, Guild, Status, Game
+from discord import Embed, Guild, Status, Game, Member
 from discord import Role
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context
@@ -92,9 +92,25 @@ class InfoCog(Cog, name="Server Information"):
         """
 
         guild: Guild = ctx.guild
-        bots = [(str(m), m.status != Status.offline) for m in guild.members if m.bot]
-        bots.sort(key=lambda m: (-m[1], m[0]))
-        out = []
-        for (bot, online) in bots:
-            out.append(f"- `@{bot}` ({['offline', 'online'][online]})")
-        await ctx.send("\n".join(out))
+        embed = Embed(title=translations.bots, color=0x005180)
+        online: List[Member] = []
+        offline: List[Member] = []
+        for member in guild.members:  # type: Member
+            if member.bot:
+                [offline, online][member.status != Status.offline].append(member)
+
+        if not online + offline:
+            embed.colour = 0xCF0606
+            embed.description = translations.no_bots
+            await ctx.send(embed=embed)
+            return
+
+        if online:
+            embed.add_field(
+                name=translations.online, value="\n".join(":small_orange_diamond: " + m.mention for m in online)
+            )
+        if offline:
+            embed.add_field(
+                name=translations.offline, value="\n".join(":small_blue_diamond: " + m.mention for m in offline)
+            )
+        await ctx.send(embed=embed)
