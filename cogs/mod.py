@@ -5,6 +5,7 @@ from typing import Optional, Union, List, Tuple
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.utils import snowflake_time
 
 from database import run_in_thread, db
 from models.allowed_invite import InviteLog
@@ -44,6 +45,12 @@ async def get_mute_role(guild: Guild) -> Role:
     if mute_role is None:
         raise CommandError(translations.mute_role_not_set)
     return mute_role
+
+
+async def update_join_date(guild: Guild, user_id: int):
+    member: Optional[Member] = guild.get_member(user_id)
+    if member is not None:
+        await run_in_thread(Join.update, member.id, str(member), member.joined_at)
 
 
 class ModCog(Cog, name="Mod Tools"):
@@ -421,6 +428,8 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         user, user_id = await self.get_stats_user(ctx.author, user)
+        await update_join_date(self.bot.guilds[0], user_id)
+
         embed = Embed(title=translations.stats, color=0x35992C)
         if isinstance(user, int):
             embed.set_author(name=str(user))
@@ -470,10 +479,9 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         user, user_id = await self.get_stats_user(ctx.author, user)
+        await update_join_date(self.bot.guilds[0], user_id)
 
-        out: List[Tuple[datetime, str]] = []
-        if isinstance(user, User):
-            out.append((user.created_at, translations.ulog_created))
+        out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
         for join in await run_in_thread(db.query, Join, member=user_id):
             out.append((join.timestamp, translations.ulog_joined))
         for leave in await run_in_thread(db.query, Leave, member=user_id):
@@ -571,11 +579,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         def init():
             for member in guild.members:  # type: Member
-                for join in db.query(Join, member=member.id):
-                    if join.timestamp >= member.joined_at - timedelta(minutes=1):
-                        break
-                else:
-                    Join.create(member.id, str(member), member.joined_at)
+                Join.update(member.id, str(member), member.joined_at)
 
         await ctx.send(translations.f_filling_join_log(len(guild.members)))
         await run_in_thread(init)
