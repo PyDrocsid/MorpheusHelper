@@ -219,11 +219,11 @@ class ServerInvites(db.Base):
         return row
 
     @staticmethod
-    def update(id: int, uses: int):
-        row = db.get(ServerInvites, id)
+    def update(invite_id: int, uses: int):
+        row = db.get(ServerInvites, invite_id)
         row.uses = uses
 
     @staticmethod
-    def updateExpired(id: int, expired: bool):
-        row = db.get(ServerInvites, id)
+    def updateExpired(invite_id: int, expired: bool):
+        row = db.get(ServerInvites, invite_id)
         row.is_expired = expired

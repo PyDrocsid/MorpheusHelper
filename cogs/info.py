@@ -46,7 +46,7 @@ class InfoCog(Cog, name="Server Information"):
         embed.set_thumbnail(url=guild.icon_url)
         created = guild.created_at.date()
         embed.add_field(name=translations.creation_date, value=f"{created.day}.{created.month}.{created.year}")
-        online_count = sum(m.status != Status.offline for m in guild.members)
+        online_count = sum([m.status != Status.offline for m in guild.members])
         embed.add_field(
             name=translations.f_cnt_members(guild.member_count), value=translations.f_cnt_online(online_count)
         )
@@ -73,7 +73,7 @@ class InfoCog(Cog, name="Server Information"):
             )
 
         bots = [m for m in guild.members if m.bot]
-        bots_online = sum(m.status != Status.offline for m in bots)
+        bots_online = sum([m.status != Status.offline for m in bots])
         embed.add_field(name=translations.f_cnt_bots(len(bots)), value=translations.f_cnt_online(bots_online))
         embed.add_field(
             name=translations.topics, value=translations.f_cnt_topics(len(await run_in_thread(db.all, BTPRole)))
