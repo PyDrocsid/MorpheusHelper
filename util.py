@@ -192,7 +192,7 @@ async def read_complete_message(message: Message) -> Tuple[str, List[File], Opti
     return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed
 
 
-async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
+async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]) -> Message:
     def format_command(cmd: Command) -> str:
         doc = " - " + cmd.short_doc if cmd.short_doc else ""
         return f"`{cmd.name}`{doc}"
@@ -214,15 +214,13 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
 
         embed.add_field(name="** **", value=translations.f_help_usage(prefix), inline=False)
 
-        await ctx.send(embed=embed)
-        return
+        return await ctx.send(embed=embed)
 
     if isinstance(command_name, str):
         cog: Optional[Cog] = ctx.bot.get_cog(command_name)
         if cog is not None:
             await add_commands(cog.qualified_name, cog.get_commands())
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         command: Optional[Union[Command, Group]] = ctx.bot.get_command(command_name)
         if command is None:
@@ -248,4 +246,4 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
     if isinstance(command, Group):
         await add_commands(translations.subcommands, command.commands)
 
-    await ctx.send(embed=embed)
+    return await ctx.send(embed=embed)

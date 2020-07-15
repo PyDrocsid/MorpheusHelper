@@ -2,7 +2,7 @@ import os
 import re
 import string
 import time
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Dict, List
 
 import sentry_sdk
 from discord import (
@@ -257,15 +257,39 @@ async def on_error(*_, **__):
         raise  # skipcq: PYL-E0704
 
 
+error_cache: Dict[Message, Optional[Message]] = {}
+error_queue: List[Message] = []
+
+
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
-        return
-    if isinstance(error, UserInputError):
-        await send_help(ctx, ctx.command)
+        msg = None
+    elif isinstance(error, UserInputError):
+        msg = await send_help(ctx, ctx.command)
+    else:
+        msg = await ctx.send(
+            make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
+        )
+    error_cache[ctx.message] = msg
+    error_queue.append(ctx.message)
+    while len(error_queue) > 1000:
+        msg = error_queue.pop(0)
+        if msg in error_cache:
+            error_cache.pop(msg)
+
+
+async def handle_command_edit(message: Message):
+    if message not in error_cache:
         return
 
-    await ctx.send(make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
+    msg = error_cache.pop(message)
+    if msg is not None:
+        try:
+            await msg.delete()
+        except NotFound:
+            pass
+    await bot.process_commands(message)
 
 
 async def extract_from_raw_reaction_event(event: RawReactionActionEvent):
@@ -317,6 +341,7 @@ async def on_message_edit(before: Message, after: Message):
     if before.guild is None:
         return
     await call_event_handlers("message_edit", before, after, identifier=after.id)
+    await handle_command_edit(after)
 
 
 @bot.event
@@ -324,16 +349,24 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
     if event.cached_message is not None:
         return
 
+    prepared = []
+
     async def prepare():
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
         try:
-            return channel, await channel.fetch_message(event.message_id)
+            message = await channel.fetch_message(event.message_id)
         except NotFound:
             return
 
+        prepared.append(message)
+        return channel, message
+
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
+
+    if prepared:
+        await handle_command_edit(*prepared)
 
 
 @bot.event

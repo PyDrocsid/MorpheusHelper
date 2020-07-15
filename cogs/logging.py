@@ -9,13 +9,13 @@ from discord import (
     RawMessageDeleteEvent,
 )
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, calculate_edit_distance, send_help
+from util import permission_level, calculate_edit_distance
 
 
 def add_field(embed: Embed, name: str, text: str):
@@ -143,7 +143,7 @@ class LoggingCog(Cog, name="Logging"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, self.logging)
+                raise UserInputError
             return
 
         guild: Guild = ctx.guild
@@ -212,7 +212,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, self.edit)
+            raise UserInputError
 
     @edit.command(name="mindiff", aliases=["md"])
     async def edit_mindiff(self, ctx: Context, mindiff: int):
@@ -254,7 +254,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, self.delete)
+            raise UserInputError
 
     @delete.command(name="channel", aliases=["ch", "c"])
     async def delete_channel(self, ctx: Context, channel: TextChannel):
@@ -284,7 +284,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, self.changelog)
+            raise UserInputError
 
     @changelog.command(name="channel", aliases=["ch", "c"])
     async def changelog_channel(self, ctx: Context, channel: TextChannel):

@@ -4,7 +4,7 @@ from typing import Optional, Union, List, Tuple
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
 from discord.utils import snowflake_time
 
 from database import run_in_thread, db
@@ -13,7 +13,7 @@ from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdat
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions, send_help
+from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions
 
 
 class DurationConverter(Converter):
@@ -134,7 +134,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, ModCog.roles)
+                raise UserInputError
             return
 
         embed = Embed(title=translations.roles, color=0x256BE6)

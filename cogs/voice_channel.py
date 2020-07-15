@@ -5,7 +5,7 @@ from typing import Optional, Union, Tuple, List
 from discord import CategoryChannel, PermissionOverwrite, NotFound
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
@@ -14,7 +14,7 @@ from models.settings import Settings
 from multilock import MultiLock
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, check_permissions, get_prefix, send_help
+from util import permission_level, send_to_changelog, check_permissions, get_prefix
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -255,7 +255,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, VoiceChannelCog.voice)
+            raise UserInputError
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
     @permission_level(Permission.vc_manage_dyn)
@@ -265,7 +265,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, VoiceChannelCog.dynamic)
+            raise UserInputError
 
     @dynamic.command(name="list", aliases=["l", "?"])
     async def list_dyn(self, ctx: Context):
@@ -420,7 +420,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, VoiceChannelCog.link)
+            raise UserInputError
 
     @link.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context):

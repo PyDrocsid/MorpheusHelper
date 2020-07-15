@@ -10,14 +10,14 @@ from discord import (
     PartialEmoji,
 )
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
+from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, make_error, check_permissions, send_to_changelog, send_help
+from util import permission_level, make_error, check_permissions, send_to_changelog
 
 EMOJI = chr(int("1f4cc", 16))
 
@@ -87,7 +87,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, ReactionPinCog.reactionpin)
+            raise UserInputError
 
     @reactionpin.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):

@@ -4,7 +4,7 @@ from typing import Optional, List
 import requests
 from discord import Embed, TextChannel
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from info import VERSION
@@ -12,7 +12,7 @@ from models.reddit import RedditPost, RedditChannel
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, send_help
+from util import permission_level, send_to_changelog
 
 
 def exists_subreddit(subreddit: str) -> bool:
@@ -118,7 +118,7 @@ class RedditCog(Cog, name="Reddit"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, RedditCog.reddit)
+                raise UserInputError
             return
 
         embed = Embed(title=translations.reddit, colour=0xFF4500)

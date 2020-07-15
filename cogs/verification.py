@@ -3,14 +3,14 @@ from typing import Optional, List
 
 from discord import Role, Member, Guild, Embed
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only
+from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only, UserInputError
 
 from database import run_in_thread, db
 from models.settings import Settings
 from models.verification_role import VerificationRole
 from permission import Permission
 from translations import translations
-from util import send_to_changelog, permission_level, send_help
+from util import send_to_changelog, permission_level
 
 
 @check
@@ -76,7 +76,7 @@ class VerificationCog(Cog, name="Verification"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, self.verification)
+                raise UserInputError
             return
 
         password: str = await run_in_thread(Settings.get, str, "verification_password")

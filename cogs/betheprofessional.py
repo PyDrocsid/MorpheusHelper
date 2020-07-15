@@ -3,13 +3,13 @@ from typing import List
 
 from discord import Role, Guild, Member
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.btp_role import BTPRole
 from permission import Permission
 from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog, send_help
+from util import permission_level, calculate_edit_distance, send_to_changelog
 
 
 def split_topics(topics: str) -> List[str]:
@@ -116,8 +116,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         guild: Guild = ctx.guild
         names = split_topics(topics)
         if not names:
-            await send_help(ctx, self.register_role)
-            return
+            raise UserInputError
 
         valid_chars = set(string.ascii_letters + string.digits + " !#$%&'()+-./:<=>?[\\]^_`{|}~")
         to_be_created: List[str] = []
@@ -169,8 +168,8 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         btp_roles: List[BTPRole] = []
         names = split_topics(topics)
         if not names:
-            await send_help(ctx, self.register_role)
-            return
+            raise UserInputError
+
         for topic in names:
             for role in guild.roles:
                 if role.name.lower() == topic.lower():

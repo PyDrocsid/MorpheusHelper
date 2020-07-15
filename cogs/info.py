@@ -3,14 +3,13 @@ from typing import Optional, List
 from discord import Embed, Guild, Status, Game, Member
 from discord import Role
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context
+from discord.ext.commands import Cog, Bot, guild_only, Context, UserInputError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
 from models.settings import Settings
 from translations import translations
-from util import send_help
 
 
 class InfoCog(Cog, name="Server Information"):
@@ -41,7 +40,7 @@ class InfoCog(Cog, name="Server Information"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, self.server)
+                raise UserInputError
             return
 
         guild: Guild = ctx.guild

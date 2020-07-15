@@ -2,13 +2,13 @@ from typing import Optional, Tuple
 
 from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.reactionrole import ReactionRole
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, FixedEmojiConverter, send_help
+from util import permission_level, send_to_changelog, FixedEmojiConverter
 
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
@@ -67,7 +67,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, ReactionRoleCog.reactionrole)
+            raise UserInputError
 
     @reactionrole.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context, message: Optional[Message] = None):
