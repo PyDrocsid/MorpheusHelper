@@ -442,6 +442,8 @@ ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
 ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
 ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"
 ulog_invite_removed: ":-1:  **Invite removed** by {}: {}"
+ulog_invite_created: ":small_orange_diamond: **Created** server invite `{}`"
+ulog_invite_created_expired: ":small_blue_diamond: **Created** server invite `{}`"
 utc_note: Timestamps in UTC
 
 # permissions

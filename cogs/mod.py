@@ -576,6 +576,11 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
             else:
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
+        for invite in await run_in_thread(db.query, ServerInvites, member=user_id):  # type: ServerInvites
+            if invite.is_expired is True:
+                out.append((invite.created_at, translations.f_ulog_invite_created_expired(invite.code)))
+            else:
+                out.append((invite.created_at, translations.f_ulog_invite_created(invite.code)))
 
         out.sort()
         embeds = [Embed(color=0x34B77E)]
