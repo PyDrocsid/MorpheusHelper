@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Set
 
 from discord import (
     TextChannel,
@@ -16,6 +16,12 @@ from models.settings import Settings
 from permission import Permission
 from translations import translations
 from util import permission_level, calculate_edit_distance
+
+ignored_messages: Set[int] = set()
+
+
+def ignore(message: Message):
+    ignored_messages.add(message.id)
 
 
 def add_field(embed: Embed, name: str, text: str):
@@ -63,6 +69,9 @@ class LoggingCog(Cog, name="Logging"):
                 await message.delete()
 
     async def on_message_edit(self, before: Message, after: Message) -> bool:
+        if before.id in ignored_messages:
+            ignored_messages.remove(before.id)
+            return True
         mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
         if calculate_edit_distance(before.content, after.content) < mindiff:
             return True
@@ -80,6 +89,9 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]) -> bool:
+        if message.id in ignored_messages:
+            ignored_messages.remove(message.id)
+            return True
         if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
@@ -94,6 +106,9 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_message_delete(self, message: Message) -> bool:
+        if message.id in ignored_messages:
+            ignored_messages.remove(message.id)
+            return True
         if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
         if await self.is_logging_channel(message.channel):
@@ -118,6 +133,9 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent) -> bool:
+        if event.message_id in ignored_messages:
+            ignored_messages.remove(event.message_id)
+            return True
         if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
 
