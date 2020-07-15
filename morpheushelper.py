@@ -366,7 +366,7 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
 
     if prepared:
-        await handle_command_edit(*prepared)
+        await handle_command_edit(prepared[0])
 
 
 @bot.event
