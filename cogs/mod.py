@@ -471,6 +471,11 @@ class ModCog(Cog, name="Mod Tools"):
         async def count(cls):
             if cls is Report:
                 active = await run_in_thread(db.count, cls, reporter=user_id)
+            elif cls is ServerInvites:
+                active = 0
+                for invites in await run_in_thread(db.query, cls, member=user_id):
+                    active += invites.uses
+                return translations.f_active(active)
             else:
                 active = await run_in_thread(db.count, cls, mod=user_id)
             passive = await run_in_thread(db.count, cls, member=user_id)
@@ -481,6 +486,7 @@ class ModCog(Cog, name="Mod Tools"):
         embed.add_field(name=translations.muted_cnt, value=await count(Mute))
         embed.add_field(name=translations.kicked_cnt, value=await count(Kick))
         embed.add_field(name=translations.banned_cnt, value=await count(Ban))
+        embed.add_field(name=translations.invitations_cnt, value=await count(ServerInvites))
 
         if (ban := await run_in_thread(db.first, Ban, member=user_id, active=True)) is not None:
             if ban.days != -1:
