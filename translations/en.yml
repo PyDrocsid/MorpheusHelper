@@ -421,7 +421,8 @@ status_muted_days: ":mute:  User is muted for {} days on this server ({} days le
 userlogs: User Logs
 ulog_empty: No entries for this user.
 ulog_created: ":sparkles:  **Created** this account."
-ulog_joined: ":tada:  **Joined** this server."
+ulog_joined: ":tada:  **Invited** to this server."
+ulog_joined_by_code: ":tada:  **Invited** by `{}` with `{}`"
 ulog_left: ":door:  **Left** this server."
 ulog_nick_set: ":label:  **Nickname set** to `{}`"
 ulog_nick_updated: ":label:  **Nickname changed** from `{}` to `{}`"

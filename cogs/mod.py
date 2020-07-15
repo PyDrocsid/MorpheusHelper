@@ -515,7 +515,11 @@ class ModCog(Cog, name="Mod Tools"):
 
         out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
         for join in await run_in_thread(db.query, Join, member=user_id):
-            out.append((join.timestamp, translations.ulog_joined))
+            if join.invite is None:
+                out.append((join.timestamp, translations.ulog_joined))
+            else:
+                invite = await run_in_thread(db.first, ServerInvites, code=join.invite)
+                out.append((join.timestamp, translations.f_ulog_joined_by_code(invite.member_name, join.invite)))
         for leave in await run_in_thread(db.query, Leave, member=user_id):
             out.append((leave.timestamp, translations.ulog_left))
         for username_update in await run_in_thread(db.query, UsernameUpdate, member=user_id):
