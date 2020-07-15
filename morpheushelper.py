@@ -338,9 +338,8 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
-    if before.guild is None:
-        return
-    await call_event_handlers("message_edit", before, after, identifier=after.id)
+    if after.guild is not None:
+        await call_event_handlers("message_edit", before, after, identifier=after.id)
     await handle_command_edit(after)
 
 
