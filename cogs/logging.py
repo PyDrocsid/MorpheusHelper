@@ -24,6 +24,11 @@ def ignore(message: Message):
     ignored_messages.add(message.id)
 
 
+async def delete_nolog(message: Message, delay: Optional[int] = None):
+    ignore(message)
+    await message.delete(delay=delay)
+
+
 def add_field(embed: Embed, name: str, text: str):
     first = True
     while text:
