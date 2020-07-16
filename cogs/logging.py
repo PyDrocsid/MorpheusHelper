@@ -15,7 +15,7 @@ from models.log_exclude import LogExclude
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, calculate_edit_distance
+from util import permission_level, calculate_edit_distance, send_to_changelog
 
 ignored_messages: Set[int] = set()
 
@@ -220,8 +220,10 @@ class LoggingCog(Cog, name="Logging"):
         await run_in_thread(Settings.set, int, "logging_maxage", days)
         if days == -1:
             await ctx.send(translations.maxage_set_disabled)
+            await send_to_changelog(ctx.guild, translations.maxage_set_disabled)
         else:
             await ctx.send(translations.f_maxage_set(days))
+            await send_to_changelog(ctx.guild, translations.f_maxage_set(days))
 
     @logging.group(name="edit", aliases=["e"])
     async def edit(self, ctx: Context):
@@ -232,17 +234,18 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             raise UserInputError
 
-    @edit.command(name="mindiff", aliases=["md"])
-    async def edit_mindiff(self, ctx: Context, mindiff: int):
+    @edit.command(name="mindist", aliases=["md"])
+    async def edit_mindist(self, ctx: Context, mindist: int):
         """
-        change the minimum difference between the old and new content of the message to be logged
+        change the minimum edit distance between the old and new content of the message to be logged
         """
 
-        if mindiff <= 0:
+        if mindist <= 0:
             raise CommandError(translations.min_diff_gt_zero)
 
-        await run_in_thread(Settings.set, int, "logging_edit_mindiff", mindiff)
-        await ctx.send(translations.f_edit_mindiff_updated(mindiff))
+        await run_in_thread(Settings.set, int, "logging_edit_mindiff", mindist)
+        await ctx.send(translations.f_edit_mindiff_updated(mindist))
+        await ctx.send(translations.f_log_mindiff_updated(mindist))
 
     @edit.command(name="channel", aliases=["ch", "c"])
     async def edit_channel(self, ctx: Context, channel: TextChannel):
@@ -255,6 +258,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_edit", channel.id)
         await ctx.send(translations.f_log_edit_updated(channel.mention))
+        await send_to_changelog(ctx.guild, translations.f_log_edit_updated(channel.mention))
 
     @edit.command(name="disable", aliases=["d"])
     async def edit_disable(self, ctx: Context):
@@ -264,6 +268,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_edit", -1)
         await ctx.send(translations.log_edit_disabled)
+        await send_to_changelog(ctx.guild, translations.log_edit_disabled)
 
     @logging.group(name="delete", aliases=["d"])
     async def delete(self, ctx: Context):
@@ -285,6 +290,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_delete", channel.id)
         await ctx.send(translations.f_log_delete_updated(channel.mention))
+        await send_to_changelog(ctx.guild, translations.f_log_delete_updated(channel.mention))
 
     @delete.command(name="disable", aliases=["d"])
     async def delete_disable(self, ctx: Context):
@@ -294,6 +300,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_delete", -1)
         await ctx.send(translations.log_delete_disabled)
+        await send_to_changelog(ctx.guild, translations.log_delete_disabled)
 
     @logging.group(name="changelog", aliases=["cl", "c", "change"])
     async def changelog(self, ctx: Context):
@@ -315,6 +322,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_changelog", channel.id)
         await ctx.send(translations.f_log_changelog_updated(channel.mention))
+        await send_to_changelog(ctx.guild, translations.f_log_changelog_updated(channel.mention))
 
     @changelog.command(name="disable", aliases=["d"])
     async def changelog_disable(self, ctx: Context):
@@ -322,6 +330,7 @@ class LoggingCog(Cog, name="Logging"):
         disable changelog
         """
 
+        await send_to_changelog(ctx.guild, translations.log_changelog_disabled)
         await run_in_thread(Settings.set, int, "logging_changelog", -1)
         await ctx.send(translations.log_changelog_disabled)
 
@@ -362,6 +371,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(LogExclude.add, channel.id)
         await ctx.send(translations.excluded)
+        await send_to_changelog(ctx.guild, translations.f_log_excluded(channel.mention))
 
     @exclude.command(name="remove", aliases=["r", "del", "d", "-"])
     async def exclude_remove(self, ctx: Context, channel: TextChannel):
@@ -374,3 +384,4 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(LogExclude.remove, channel.id)
         await ctx.send(translations.unexcluded)
+        await send_to_changelog(ctx.guild, translations.f_log_unexcluded(channel.mention))
