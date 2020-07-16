@@ -3,7 +3,6 @@ from typing import Optional, Set
 
 from discord import (
     TextChannel,
-    Guild,
     Message,
     Embed,
     RawMessageDeleteEvent,
@@ -42,8 +41,7 @@ class LoggingCog(Cog, name="Logging"):
         self.bot = bot
 
     async def get_logging_channel(self, event: str) -> Optional[TextChannel]:
-        channel_id = await run_in_thread(Settings.get, int, "logging_" + event, -1)
-        return self.bot.get_channel(channel_id) if channel_id != -1 else None
+        return self.bot.get_channel(await run_in_thread(Settings.get, int, "logging_" + event, -1))
 
     async def is_logging_channel(self, channel: TextChannel) -> bool:
         return channel.id in [(await self.get_logging_channel(event)).id for event in ["edit", "delete"]]
@@ -169,64 +167,52 @@ class LoggingCog(Cog, name="Logging"):
                 raise UserInputError
             return
 
-        guild: Guild = ctx.guild
-        edit_id = await run_in_thread(Settings.get, int, "logging_edit", -1)
-        delete_id = await run_in_thread(Settings.get, int, "logging_delete", -1)
-        changelog_id = await run_in_thread(Settings.get, int, "logging_changelog", -1)
-        edit_channel: Optional[TextChannel] = guild.get_channel(edit_id) if edit_id != -1 else None
-        delete_channel: Optional[TextChannel] = guild.get_channel(delete_id) if delete_id != -1 else None
-        changelog_channel: Optional[TextChannel] = guild.get_channel(changelog_id) if changelog_id != -1 else None
-        out = [translations.logging_channels_header]
+        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
+        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
+        changelog_channel: Optional[TextChannel] = await self.get_logging_channel("changelog")
+        maxage: int = await run_in_thread(Settings.get, int, "logging_maxage", -1)
+
+        embed = Embed(title=translations.logging, color=0x256BE6)
+
+        if maxage != -1:
+            embed.add_field(name=translations.maxage, value=translations.f_x_days(maxage), inline=False)
+        else:
+            embed.add_field(name=translations.maxage, value=translations.disabled, inline=False)
+
         if edit_channel is not None:
             mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
-            out.append(" - " + translations.f_msg_edit_on(edit_channel.mention, mindiff))
+            embed.add_field(name=translations.msg_edit, value=edit_channel.mention, inline=True)
+            embed.add_field(name=translations.mindiff, value=str(mindiff), inline=True)
         else:
-            out.append(" - " + translations.msg_edit_off)
+            embed.add_field(name=translations.msg_edit, value=translations.logging_disabled, inline=False)
+
         if delete_channel is not None:
-            out.append(" - " + translations.f_msg_delete_on(delete_channel.mention))
+            embed.add_field(name=translations.msg_delete, value=delete_channel.mention, inline=False)
         else:
-            out.append(" - " + translations.msg_delete_off)
+            embed.add_field(name=translations.msg_delete, value=translations.logging_disabled, inline=False)
+
         if changelog_channel is not None:
-            out.append(" - " + translations.f_changelog_on(changelog_channel.mention))
+            embed.add_field(name=translations.changelog, value=changelog_channel.mention, inline=False)
         else:
-            out.append(" - " + translations.changelog_off)
-        await ctx.send("\n".join(out))
+            embed.add_field(name=translations.changelog, value=translations.disabled, inline=False)
 
-    @logging.group(name="maxage", aliases=["ma"])
-    async def maxage(self, ctx: Context):
+        await ctx.send(embed=embed)
+
+    @logging.command(name="maxage", aliases=["ma"])
+    async def maxage(self, ctx: Context, days: int):
         """
-        manage period after which the log entries should be deleted
-        """
-
-        if ctx.invoked_subcommand is not None:
-            return
-
-        days: int = await run_in_thread(Settings.get, int, "logging_maxage", -1)
-        if days == -1:
-            await ctx.send(translations.maxage_disabled)
-        else:
-            await ctx.send(translations.f_maxage_enabled(days))
-
-    @maxage.command(name="set", aliases=["s", "="])
-    async def maxage_set(self, ctx: Context, days: int):
-        """
-        set max age for log entries
+        configure period after which old log entries should be deleted
+        set to -1 to disable
         """
 
-        if not 0 < days < (1 << 31):
+        if days != -1 and not 0 < days < (1 << 31):
             raise CommandError(translations.invalid_duration)
 
         await run_in_thread(Settings.set, int, "logging_maxage", days)
-        await ctx.send(translations.f_maxage_set(days))
-
-    @maxage.command(name="disable", aliases=["d", "off"])
-    async def maxage_disable(self, ctx: Context):
-        """
-        disable automatic deletion of old log entries
-        """
-
-        await run_in_thread(Settings.set, int, "logging_maxage", -1)
-        await ctx.send(translations.maxage_set_disabled)
+        if days == -1:
+            await ctx.send(translations.maxage_set_disabled)
+        else:
+            await ctx.send(translations.f_maxage_set(days))
 
     @logging.group(name="edit", aliases=["e"])
     async def edit(self, ctx: Context):

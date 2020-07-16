@@ -177,6 +177,14 @@ maxage_disabled: Automatic deletion of old log entries is disabled.
 maxage_enabled: Log entries older than {} days will be deleted automatically.
 maxage_set: Maximum age of log entries has been set to {} days.
 maxage_set_disabled: Automatic deletion of old log entries has been disabled.
+logging: Logging
+msg_edit: ":pencil: Message Edit Channel"
+msg_delete: ":wastebasket: Message Delete Channel"
+changelog: ":clipboard: Changelog Channel"
+logging_disabled: ":x: Logging disabled"
+mindiff: ":straight_ruler: Minimum Edit Distance"
+maxage: ":clock3: Maximum Age"
+x_days: "{} days"
 
 # mediaonly
 deleted_nomedia: >
@@ -589,4 +597,4 @@ verified: "Verified successfully :white_check_mark:"
 verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
 verification_reverse_role_not_assigned: Verification failed!
-disabled: Disabled
+disabled: ":x: Disabled"
