@@ -185,6 +185,12 @@ logging_disabled: ":x: Logging disabled"
 mindiff: ":straight_ruler: Minimum Edit Distance"
 maxage: ":clock3: Maximum Age"
 x_days: "{} days"
+already_excluded: Channel is already excluded from logging.
+excluded: Channel has been excluded from logging.
+not_excluded: Channel is not excluded from logging.
+unexcluded: Channel has been removed from logging exclude list.
+excluded_channels: Logging - Excluded Channels
+no_channels_excluded: No Channels have been excluded from logging.
 
 # mediaonly
 deleted_nomedia: >

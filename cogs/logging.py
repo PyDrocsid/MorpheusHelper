@@ -11,6 +11,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread
+from models.log_exclude import LogExclude
 from models.settings import Settings
 from permission import Permission
 from translations import translations
@@ -80,6 +81,8 @@ class LoggingCog(Cog, name="Logging"):
             return True
         if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
+        if await run_in_thread(LogExclude.exists, after.channel.id):
+            return True
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=before.channel.mention)
@@ -96,6 +99,8 @@ class LoggingCog(Cog, name="Logging"):
             ignored_messages.remove(message.id)
             return True
         if (edit_channel := await self.get_logging_channel("edit")) is None:
+            return True
+        if await run_in_thread(LogExclude.exists, message.channel.id):
             return True
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
@@ -115,6 +120,8 @@ class LoggingCog(Cog, name="Logging"):
         if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
         if await self.is_logging_channel(message.channel):
+            return True
+        if await run_in_thread(LogExclude.exists, message.channel.id):
             return True
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=(datetime.utcnow()))
@@ -140,6 +147,8 @@ class LoggingCog(Cog, name="Logging"):
             ignored_messages.remove(event.message_id)
             return True
         if (delete_channel := await self.get_logging_channel("delete")) is None:
+            return True
+        if await run_in_thread(LogExclude.exists, event.channel_id):
             return True
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=datetime.utcnow())
@@ -315,3 +324,53 @@ class LoggingCog(Cog, name="Logging"):
 
         await run_in_thread(Settings.set, int, "logging_changelog", -1)
         await ctx.send(translations.log_changelog_disabled)
+
+    @logging.group(name="exclude", aliases=["x", "ignore", "i"])
+    async def exclude(self, ctx: Context):
+        """
+        manage excluded channels
+        """
+
+        if len(ctx.message.content.lstrip(ctx.prefix).split()) > 2:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
+            return
+
+        embed = Embed(title=translations.excluded_channels, colour=0x256BE6)
+        out = []
+        for channel_id in await run_in_thread(LogExclude.all):
+            channel: Optional[TextChannel] = self.bot.get_channel(channel_id)
+            if channel is None:
+                await run_in_thread(LogExclude.remove, channel_id)
+            else:
+                out.append(f":small_blue_diamond: {channel.mention}")
+        if not out:
+            embed.description = translations.no_channels_excluded
+            embed.colour = 0xCF0606
+        else:
+            embed.description = "\n".join(out)
+        await ctx.send(embed=embed)
+
+    @exclude.command(name="add", aliases=["a", "+"])
+    async def exclude_add(self, ctx: Context, channel: TextChannel):
+        """
+        exclude a channel from logging
+        """
+
+        if await run_in_thread(LogExclude.exists, channel.id):
+            raise CommandError(translations.already_excluded)
+
+        await run_in_thread(LogExclude.add, channel.id)
+        await ctx.send(translations.excluded)
+
+    @exclude.command(name="remove", aliases=["r", "del", "d", "-"])
+    async def exclude_remove(self, ctx: Context, channel: TextChannel):
+        """
+        remove a channel from exclude list
+        """
+
+        if not await run_in_thread(LogExclude.exists, channel.id):
+            raise CommandError(translations.not_excluded)
+
+        await run_in_thread(LogExclude.remove, channel.id)
+        await ctx.send(translations.unexcluded)
