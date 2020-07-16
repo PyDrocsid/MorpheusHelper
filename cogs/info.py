@@ -1,6 +1,7 @@
+import re
 from typing import Optional, List
 
-from discord import Embed, Guild, Status, Game, Member
+from discord import Embed, Guild, Status, Game, Member, Message
 from discord import Role
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, UserInputError
@@ -22,6 +23,16 @@ class InfoCog(Cog, name="Server Information"):
             self.status_loop.start()
         except RuntimeError:
             self.status_loop.restart()
+        return True
+
+    async def on_message(self, message: Message) -> bool:
+        if message.guild is None:
+            return True
+
+        for line in message.content.splitlines():
+            if re.match(r"^> .*<@&\d+>.*$", line):
+                await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
+                break
         return True
 
     @tasks.loop(seconds=20)
