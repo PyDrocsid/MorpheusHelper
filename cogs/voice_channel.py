@@ -495,7 +495,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=channel.id) is not None:
             raise CommandError(translations.link_already_exists)
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.f_link_not_created_too_high(role, ctx.me.top_role))
         if role.managed:
             raise CommandError(translations.f_link_not_created_managed_role(role))

@@ -134,7 +134,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
 
             if await run_in_thread(db.get, BTPRole, role.id) is not None:
                 raise CommandError(translations.f_topic_already_registered(topic))
-            if role > ctx.me.top_role:
+            if role >= ctx.me.top_role:
                 raise CommandError(translations.f_topic_not_registered_too_high(role, ctx.me.top_role))
             if role.managed:
                 raise CommandError(translations.f_topic_not_registered_managed_role(role))

@@ -138,7 +138,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         if await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji)) is not None:
             raise CommandError(translations.rr_link_already_exists)
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.f_link_not_created_too_high(role, ctx.me.top_role))
         if role.managed or role.is_default():
             raise CommandError(translations.f_link_not_created_managed_role(role))
