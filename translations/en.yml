@@ -321,8 +321,8 @@ log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
 dyn_voice_created: Channel has been created by {}.
 dyn_voice_joined: "{} joined this channel."
 dyn_voice_left: "{} left this channel."
-private_dyn_voice_help: |
-  Private voice channel commands:
+private_dyn_voice_help_title: Private Voice Channel Commands
+private_dyn_voice_help_content: |
   `{prefix}vc invite <member>` - add a member to this voice channel
   `{prefix}vc remove <member>` - kick and remove a member from this voice channel
   `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
@@ -346,6 +346,7 @@ private_voice_owner_changed_response: "Owner of this private voice channel has b
 link_on_dynamic_channel_not_created: >
   Link could not be created for dynamic voice channel.
   Specify the parent channel instead.
+voice_channel: Voice Channel
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
