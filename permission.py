@@ -44,8 +44,8 @@ class Permission(Enum):
     cb_manage = auto()
     cb_reset = auto()
 
-    invite_bypass = auto()
-    invite_manage = auto()
+    allowed_invite_bypass = auto()
+    allowed_invite_manage = auto()
 
     log_manage = auto()
 

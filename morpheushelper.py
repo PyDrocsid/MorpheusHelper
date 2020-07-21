@@ -38,7 +38,7 @@ from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
-from cogs.invites import InvitesCog
+from cogs.allowed_invites import AllowedInvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
@@ -428,7 +428,7 @@ register_cogs(
     LoggingCog,
     MediaOnlyCog,
     RulesCog,
-    InvitesCog,
+    AllowedInvitesCog,
     MetaQuestionCog,
     InfoCog,
     ReactionRoleCog,

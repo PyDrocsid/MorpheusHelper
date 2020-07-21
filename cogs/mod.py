@@ -8,7 +8,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Co
 from discord.utils import snowflake_time
 
 from database import run_in_thread, db
-from models.allowed_invite import InviteLog
+from models.allowed_invite import AllowedInviteLog
 from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate, ServerInvites
 from models.settings import Settings
 from permission import Permission
@@ -121,7 +121,7 @@ class ModCog(Cog, name="Mod Tools"):
             await member.add_roles(mute_role)
 
         invites_before_join = await run_in_thread(db.query, ServerInvites, is_expired=False)
-        for invite in await member.guild.invites():
+        for invite in await member.guild.allowed_invites():
             db_invite = utils.find(lambda i: i.code == invite.code, invites_before_join)
             if invite.uses > db_invite.uses:
                 await run_in_thread(Join.create, member.id, str(member), invite.code)
@@ -577,7 +577,7 @@ class ModCog(Cog, name="Mod Tools"):
                             translations.f_ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
                         )
                     )
-        for log in await run_in_thread(db.query, InviteLog, applicant=user_id):  # type: InviteLog
+        for log in await run_in_thread(db.query, AllowedInviteLog, applicant=user_id):  # type: AllowedInviteLog
             if log.approved:
                 out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
             else:
