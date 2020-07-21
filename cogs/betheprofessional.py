@@ -24,7 +24,7 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
             if role.name.lower() == topic.lower():
                 if role in all_topics:
                     break
-                if not role.managed and role > guild.me.top_role:
+                if not role.managed and role >= guild.me.top_role:
                     raise CommandError(translations.f_youre_not_the_first_one(topic, author.mention))
         else:
             if all_topics:

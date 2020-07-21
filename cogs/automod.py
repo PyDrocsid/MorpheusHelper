@@ -210,7 +210,7 @@ class AutoModCog(Cog, name="AutoMod"):
         configure instantkick role
         """
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.instantkick_cannot_kick)
 
         await run_in_thread(Settings.set, int, "instantkick_role", role.id)
