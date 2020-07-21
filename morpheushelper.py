@@ -34,11 +34,11 @@ from discord.ext.commands import (
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from cogs.allowed_invites import AllowedInvitesCog
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
-from cogs.allowed_invites import AllowedInvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
@@ -50,6 +50,7 @@ from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
+from cogs.server_invites import ServerInvitesCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db
@@ -440,5 +441,6 @@ register_cogs(
     RedditCog,
     AutoModCog,
     VerificationCog,
+    ServerInvitesCog,
 )
 bot.run(os.environ["TOKEN"])
