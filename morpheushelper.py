@@ -65,6 +65,7 @@ from util import (
     get_prefix,
     set_prefix,
     send_help,
+    send_long_embed,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -236,7 +237,7 @@ async def info(ctx: Context):
     show information about the bot
     """
 
-    await ctx.send(embed=await build_info_embed(False))
+    await send_long_embed(ctx, await build_info_embed(False))
 
 
 @bot.command(name="admininfo", aliases=["admininfos"])
@@ -246,7 +247,7 @@ async def admininfo(ctx: Context):
     show information about the bot (admin view)
     """
 
-    await ctx.send(embed=await build_info_embed(True))
+    await send_long_embed(ctx, await build_info_embed(True))
 
 
 @bot.event

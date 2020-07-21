@@ -4,6 +4,7 @@ import time
 from typing import Optional, Tuple, List, Union
 
 from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User, Attachment
+from discord.abc import Messageable
 from discord.ext.commands import (
     check,
     Context,
@@ -114,6 +115,68 @@ def measure_latency() -> Optional[float]:
         return None
 
     return time.time() - t
+
+
+def split_lines(text: str, max_size: int, *, first_max_size: Optional[int] = None) -> List[str]:
+    out = []
+    cur = ""
+    for line in text.splitlines():
+        ms = max_size if out or first_max_size is None else first_max_size
+        ext = "\n" * bool(cur) + line
+        if len(cur) + len(ext) > ms and cur:
+            out.append(cur)
+            cur = line
+        else:
+            cur += ext
+    if cur:
+        out.append(cur)
+    return out
+
+
+async def send_long_embed(channel: Messageable, embed: Embed, *, repeat_title: bool = False, repeat_name: bool = False):
+    fields = embed.fields.copy()
+    cur = embed.copy()
+    cur.clear_fields()
+    *parts, last = split_lines(embed.description or "", 2048) or [""]
+    for part in parts:
+        cur.description = part
+        await channel.send(embed=cur)
+        if not repeat_title:
+            cur.title = ""
+            cur.remove_author()
+    cur.description = last
+    for field in fields:
+        name: str = field.name
+        value: str = field.value
+        inline: bool = field.inline
+        first_max_size = min(1024 if name or cur.fields or cur.description else 2048, 6000 - len(cur))
+        *parts, last = split_lines(value, 2048, first_max_size=first_max_size)
+        if len(cur.fields) >= 25 or len(cur) + len(name or "** **") + len(parts[0] if parts else last) > 6000:
+            await channel.send(embed=cur)
+            if not repeat_title:
+                cur.title = ""
+                cur.remove_author()
+            cur.description = ""
+            cur.clear_fields()
+
+        for part in parts:
+            if name or cur.fields or cur.description:
+                cur.add_field(name=name or "** **", value=part, inline=False)
+            else:
+                cur.description = part
+            await channel.send(embed=cur)
+            if not repeat_title:
+                cur.title = ""
+                cur.remove_author()
+            if not repeat_name:
+                name = ""
+            cur.description = ""
+            cur.clear_fields()
+        if name or cur.fields or cur.description:
+            cur.add_field(name=name or "** **", value=last, inline=inline and not parts)
+        else:
+            cur.description = last
+    await channel.send(embed=cur)
 
 
 async def send_to_changelog(guild: Guild, message: str):
@@ -246,4 +309,4 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]) -
     if isinstance(command, Group):
         await add_commands(translations.subcommands, command.commands)
 
-    return await ctx.send(embed=embed)
+    await send_long_embed(ctx, embed)

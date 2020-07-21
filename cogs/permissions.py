@@ -6,7 +6,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadAr
 
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, get_permission_level, MODERATOR, SUPPORTER, PUBLIC
+from util import permission_level, ADMINISTRATOR, get_permission_level, MODERATOR, SUPPORTER, PUBLIC, send_long_embed
 
 
 async def list_permissions(ctx: Context, title: str, min_level: int):
@@ -26,7 +26,7 @@ async def list_permissions(ctx: Context, title: str, min_level: int):
     for level, lines in sorted(out.items(), reverse=True):
         embed.add_field(name=translations.permission_levels[level], value="\n".join(sorted(lines)), inline=False)
 
-    await ctx.send(embed=embed)
+    await send_long_embed(ctx, embed)
 
 
 class PermissionLevelConverter(Converter):

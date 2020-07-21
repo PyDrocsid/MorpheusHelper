@@ -13,7 +13,7 @@ from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdat
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions
+from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions, send_long_embed
 
 
 class DurationConverter(Converter):
@@ -542,28 +542,18 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
 
         out.sort()
-        embeds = [Embed(color=0x34B77E)]
-        embeds[0].title = translations.userlogs
+        embed = Embed(title=translations.userlogs, color=0x34B77E)
         if isinstance(user, int):
-            embeds[0].set_author(name=str(user))
+            embed.set_author(name=str(user))
         else:
-            embeds[0].set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
-        fields = 0
-        total = 0
+            embed.set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
         for row in out:
             name = row[0].strftime("%d.%m.%Y %H:%M:%S")
             value = row[1]
-            if fields == 25 or total + len(name) + len(value) >= 580:
-                embed = Embed(color=0x34B77E)
-                embeds.append(embed)
-                fields = total = 0
-            total += len(name) + len(value)
-            embeds[-1].add_field(name=name, value=value, inline=False)
-            fields += 1
+            embed.add_field(name=name, value=value, inline=False)
         if out:
-            embeds[-1].set_footer(text=translations.utc_note)
-            for embed in embeds:
-                await ctx.send(embed=embed)
+            embed.set_footer(text=translations.utc_note)
+            await send_long_embed(ctx, embed)
         else:
             await ctx.send(translations.ulog_empty)
 
