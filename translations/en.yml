@@ -500,8 +500,8 @@ permissions:
   cb_manage: manage cleverbot
   cb_reset: reset cleverbot sessions
 
-  invite_bypass: bypass invite checks
-  invite_manage: manage allowed invites
+  allowed_invite_bypass: bypass invite checks
+  allowed_invite_manage: manage allowed invites
 
   log_manage: manage logging
 
