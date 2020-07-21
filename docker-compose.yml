@@ -28,5 +28,6 @@ services:
       MYSQL_PASSWORD: "morpheushelper"
       MYSQL_DATABASE: "morpheushelper"
       MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      # MYSQL_INITDB_SKIP_TZINFO: "yes"
     volumes:
       - './mysql_data:/var/lib/mysql'
