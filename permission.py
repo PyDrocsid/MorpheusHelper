@@ -56,6 +56,9 @@ class Permission(Enum):
 
     manage_reddit = auto()
 
+    manage_server_invites = auto()
+    show_server_invites = auto()
+
     @property
     def description(self) -> str:
         return translations.permissions[self.name]

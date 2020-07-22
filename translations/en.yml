@@ -512,6 +512,9 @@ permissions:
 
   manage_reddit: manage reddit integration
 
+  manage_server_invites: manage server invites
+  show_server_invites: show server invites
+
 # reddit
 reddit: Reddit
 interval: Interval
