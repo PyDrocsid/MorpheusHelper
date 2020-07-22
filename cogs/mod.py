@@ -4,7 +4,7 @@ from typing import Optional, Union, List, Tuple
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Invite, utils
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
 from discord.utils import snowflake_time
 
 from database import run_in_thread, db
@@ -13,7 +13,7 @@ from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdat
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions, send_help
+from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions, send_long_embed
 
 
 class DurationConverter(Converter):
@@ -31,7 +31,7 @@ class DurationConverter(Converter):
 
 async def configure_role(ctx: Context, role_name: str, role: Role, check_assignable: bool = False):
     if check_assignable:
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.f_role_not_set_too_high(role, ctx.me.top_role))
         if role.managed:
             raise CommandError(translations.f_role_not_set_managed_role(role))
@@ -166,7 +166,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, ModCog.roles)
+                raise UserInputError
             return
 
         embed = Embed(title=translations.roles, color=0x256BE6)
@@ -589,28 +589,18 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((invite.created_at, translations.f_ulog_invite_created(invite.code)))
 
         out.sort()
-        embeds = [Embed(color=0x34B77E)]
-        embeds[0].title = translations.userlogs
+        embed = Embed(title=translations.userlogs, color=0x34B77E)
         if isinstance(user, int):
-            embeds[0].set_author(name=str(user))
+            embed.set_author(name=str(user))
         else:
-            embeds[0].set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
-        fields = 0
-        total = 0
+            embed.set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
         for row in out:
             name = row[0].strftime("%d.%m.%Y %H:%M:%S")
             value = row[1]
-            if fields == 25 or total + len(name) + len(value) >= 580:
-                embed = Embed(color=0x34B77E)
-                embeds.append(embed)
-                fields = total = 0
-            total += len(name) + len(value)
-            embeds[-1].add_field(name=name, value=value, inline=False)
-            fields += 1
+            embed.add_field(name=name, value=value, inline=False)
         if out:
-            embeds[-1].set_footer(text=translations.utc_note)
-            for embed in embeds:
-                await ctx.send(embed=embed)
+            embed.set_footer(text=translations.utc_note)
+            await send_long_embed(ctx, embed)
         else:
             await ctx.send(translations.ulog_empty)
 

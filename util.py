@@ -4,6 +4,7 @@ import time
 from typing import Optional, Tuple, List, Union
 
 from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User, Attachment
+from discord.abc import Messageable
 from discord.ext.commands import (
     check,
     Context,
@@ -116,6 +117,68 @@ def measure_latency() -> Optional[float]:
     return time.time() - t
 
 
+def split_lines(text: str, max_size: int, *, first_max_size: Optional[int] = None) -> List[str]:
+    out = []
+    cur = ""
+    for line in text.splitlines():
+        ms = max_size if out or first_max_size is None else first_max_size
+        ext = "\n" * bool(cur) + line
+        if len(cur) + len(ext) > ms and cur:
+            out.append(cur)
+            cur = line
+        else:
+            cur += ext
+    if cur:
+        out.append(cur)
+    return out
+
+
+async def send_long_embed(channel: Messageable, embed: Embed, *, repeat_title: bool = False, repeat_name: bool = False):
+    fields = embed.fields.copy()
+    cur = embed.copy()
+    cur.clear_fields()
+    *parts, last = split_lines(embed.description or "", 2048) or [""]
+    for part in parts:
+        cur.description = part
+        await channel.send(embed=cur)
+        if not repeat_title:
+            cur.title = ""
+            cur.remove_author()
+    cur.description = last
+    for field in fields:
+        name: str = field.name
+        value: str = field.value
+        inline: bool = field.inline
+        first_max_size = min(1024 if name or cur.fields or cur.description else 2048, 6000 - len(cur))
+        *parts, last = split_lines(value, 2048, first_max_size=first_max_size)
+        if len(cur.fields) >= 25 or len(cur) + len(name or "** **") + len(parts[0] if parts else last) > 6000:
+            await channel.send(embed=cur)
+            if not repeat_title:
+                cur.title = ""
+                cur.remove_author()
+            cur.description = ""
+            cur.clear_fields()
+
+        for part in parts:
+            if name or cur.fields or cur.description:
+                cur.add_field(name=name or "** **", value=part, inline=False)
+            else:
+                cur.description = part
+            await channel.send(embed=cur)
+            if not repeat_title:
+                cur.title = ""
+                cur.remove_author()
+            if not repeat_name:
+                name = ""
+            cur.description = ""
+            cur.clear_fields()
+        if name or cur.fields or cur.description:
+            cur.add_field(name=name or "** **", value=last, inline=inline and not parts)
+        else:
+            cur.description = last
+    await channel.send(embed=cur)
+
+
 async def send_to_changelog(guild: Guild, message: str):
     channel: Optional[TextChannel] = guild.get_channel(await run_in_thread(Settings.get, int, "logging_changelog", -1))
     if channel is not None:
@@ -192,7 +255,7 @@ async def read_complete_message(message: Message) -> Tuple[str, List[File], Opti
     return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed
 
 
-async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
+async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]) -> Message:
     def format_command(cmd: Command) -> str:
         doc = " - " + cmd.short_doc if cmd.short_doc else ""
         return f"`{cmd.name}`{doc}"
@@ -214,15 +277,13 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
 
         embed.add_field(name="** **", value=translations.f_help_usage(prefix), inline=False)
 
-        await ctx.send(embed=embed)
-        return
+        return await ctx.send(embed=embed)
 
     if isinstance(command_name, str):
         cog: Optional[Cog] = ctx.bot.get_cog(command_name)
         if cog is not None:
             await add_commands(cog.qualified_name, cog.get_commands())
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         command: Optional[Union[Command, Group]] = ctx.bot.get_command(command_name)
         if command is None:
@@ -248,4 +309,4 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]):
     if isinstance(command, Group):
         await add_commands(translations.subcommands, command.commands)
 
-    await ctx.send(embed=embed)
+    await send_long_embed(ctx, embed)

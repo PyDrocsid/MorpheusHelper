@@ -2,13 +2,13 @@ from typing import Optional, Tuple
 
 from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.reactionrole import ReactionRole
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, FixedEmojiConverter, send_help
+from util import permission_level, send_to_changelog, FixedEmojiConverter
 
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
@@ -67,7 +67,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, ReactionRoleCog.reactionrole)
+            raise UserInputError
 
     @reactionrole.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context, message: Optional[Message] = None):
@@ -137,8 +137,10 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         if await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji)) is not None:
             raise CommandError(translations.rr_link_already_exists)
+        if not message.channel.permissions_for(message.guild.me).add_reactions:
+            raise CommandError(translations.rr_link_not_created_no_permissions)
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.f_link_not_created_too_high(role, ctx.me.top_role))
         if role.managed or role.is_default():
             raise CommandError(translations.f_link_not_created_managed_role(role))

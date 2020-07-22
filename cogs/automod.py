@@ -4,14 +4,14 @@ from typing import Optional, Dict
 
 from discord import Role, Member, Guild, Forbidden, HTTPException, Embed
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread
 from models.mod import Kick
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, send_help
+from util import permission_level, send_to_changelog
 
 
 async def kick(member: Member) -> bool:
@@ -108,7 +108,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, self.autokick)
+                raise UserInputError
             return
 
         embed = Embed(title=translations.autokick, colour=0xCF0606)
@@ -139,8 +139,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         mode: Optional[int] = {"off": 0, "normal": 1, "reverse": 2}.get(mode.lower())
         if mode is None:
-            await send_help(ctx, self.autokick_mode)
-            return
+            raise UserInputError
 
         await run_in_thread(Settings.set, int, "autokick_mode", mode)
         await ctx.send(translations.autokick_mode_configured[mode])
@@ -179,7 +178,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         if ctx.subcommand_passed is not None:
             if ctx.invoked_subcommand is None:
-                await send_help(ctx, self.instantkick)
+                raise UserInputError
             return
 
         embed = Embed(title=translations.instantkick, colour=0xCF0606)
@@ -211,7 +210,7 @@ class AutoModCog(Cog, name="AutoMod"):
         configure instantkick role
         """
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.instantkick_cannot_kick)
 
         await run_in_thread(Settings.set, int, "instantkick_role", role.id)

@@ -4,13 +4,13 @@ from typing import Optional
 import requests
 from discord import Invite, Member, Guild, Embed, Message, NotFound, Forbidden, HTTPException
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite, AllowedInviteLog
 from permission import Permission
 from translations import translations
-from util import permission_level, check_permissions, send_to_changelog, get_prefix, send_help
+from util import permission_level, check_permissions, send_to_changelog, get_prefix
 
 
 class AllowedServerConverter(Converter):
@@ -136,7 +136,7 @@ class AllowedInvitesCog(Cog, name="Allowed Discord Invites"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, self.allowed_invites)
+            raise UserInputError
 
     @allowed_invites.command(name="list", aliases=["l", "?"])
     async def list_invites(self, ctx: Context):

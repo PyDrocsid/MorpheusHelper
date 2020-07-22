@@ -4,14 +4,14 @@ from typing import Optional
 import requests
 from discord import Guild, TextChannel, Message
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 from requests import RequestException
 
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from permission import Permission
 from translations import translations
-from util import permission_level, check_permissions, send_to_changelog, send_help
+from util import permission_level, check_permissions, send_to_changelog
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -55,7 +55,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         """
 
         if ctx.invoked_subcommand is None:
-            await send_help(ctx, self.mediaonly)
+            raise UserInputError
 
     @mediaonly.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):

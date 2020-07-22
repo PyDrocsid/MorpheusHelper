@@ -5,6 +5,11 @@ profile_status:
   - github.com/Defelo/MorpheusHelper
   - Developed by Defelo#2022
 
+# quote mentions
+quote_remove_mentions: >
+  :warning: Please remove all role mentions in a quote before sending the message,
+  otherwise the roles are notified again! {}
+
 # ping
 pong: Pong!
 pong_latency: Pong ({:.0f} ms)
@@ -157,14 +162,15 @@ message_deleted: Message Deleted
 attachments: Attachments
 message_id: Message ID
 logging_channels_header: "Logging channels:"
-msg_edit_on: "message edit: {} (minimum difference: {})"
+msg_edit_on: "message edit: {} (minimum distance: {})"
 msg_edit_off: "message edit: *disabled*"
 msg_delete_on: "message delete: {}"
 msg_delete_off: "message delete: *disabled*"
 changelog_on: "changelog: {}"
 changelog_off: "changelog: *disabled*"
-min_diff_gt_zero: Minimum difference must be greater than zero.
-edit_mindiff_updated: Message edit events will now only be logged if the difference is at least {}.
+min_diff_gt_zero: Minimum distance must be greater than zero.
+edit_mindiff_updated: Message edit events will now only be logged if the edit distance is at least {}.
+log_mindiff_updated: Minimum edit distance has been set to {}.
 log_not_changed_no_permissions: >
   Logging channel could not be changed because I don't have `send_messages` permission there.
 log_edit_updated: Logs for message edit events will now be sent to {}.
@@ -177,6 +183,22 @@ maxage_disabled: Automatic deletion of old log entries is disabled.
 maxage_enabled: Log entries older than {} days will be deleted automatically.
 maxage_set: Maximum age of log entries has been set to {} days.
 maxage_set_disabled: Automatic deletion of old log entries has been disabled.
+logging: Logging
+msg_edit: ":pencil: Message Edit Channel"
+msg_delete: ":wastebasket: Message Delete Channel"
+changelog: ":clipboard: Changelog Channel"
+logging_disabled: ":x: Logging disabled"
+mindiff: ":straight_ruler: Minimum Edit Distance"
+maxage: ":clock3: Maximum Age"
+x_days: "{} days"
+already_excluded: Channel is already excluded from logging.
+excluded: Channel has been excluded from logging.
+log_excluded: Channel {} has been excluded from logging.
+not_excluded: Channel is not excluded from logging.
+unexcluded: Channel has been removed from logging exclude list.
+log_unexcluded: Channel {} has been removed from logging exclude list.
+excluded_channels: Logging - Excluded Channels
+no_channels_excluded: No Channels have been excluded from logging.
 
 # mediaonly
 deleted_nomedia: >
@@ -251,6 +273,8 @@ no_reactionrole_links: No ReactionRole links have been created yet.
 no_reactionrole_links_for_msg: No ReactionRole links have been created yet for this message.
 rr_link_already_exists: A link already exists for this reaction on this message.
 rr_link_created: Link has been created successfully.
+rr_link_not_created_no_permissions: >
+  Link could not be created because I don't have `add_reactions` permission in this channel.
 log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: Link has been removed successfully.
@@ -299,8 +323,8 @@ log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
 dyn_voice_created: Channel has been created by {}.
 dyn_voice_joined: "{} joined this channel."
 dyn_voice_left: "{} left this channel."
-private_dyn_voice_help: |
-  Private voice channel commands:
+private_dyn_voice_help_title: Private Voice Channel Commands
+private_dyn_voice_help_content: |
   `{prefix}vc invite <member>` - add a member to this voice channel
   `{prefix}vc remove <member>` - kick and remove a member from this voice channel
   `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
@@ -324,6 +348,7 @@ private_voice_owner_changed_response: "Owner of this private voice channel has b
 link_on_dynamic_channel_not_created: >
   Link could not be created for dynamic voice channel.
   Specify the parent channel instead.
+voice_channel: Voice Channel
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
@@ -597,4 +622,4 @@ verified: "Verified successfully :white_check_mark:"
 verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
 verification_reverse_role_not_assigned: Verification failed!
-disabled: Disabled
+disabled: ":x: Disabled"
