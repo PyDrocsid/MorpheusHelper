@@ -6,13 +6,13 @@ from discord import Embed, TextChannel
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from database import run_in_thread, db
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 from info import VERSION
 from models.reddit import RedditPost, RedditChannel
-from models.settings import Settings
-from permission import Permission
-from translations import translations
-from util import permission_level, send_to_changelog
+from permissions import Permission
+from util import send_to_changelog
 
 
 def exists_subreddit(subreddit: str) -> bool:
@@ -77,9 +77,8 @@ class RedditCog(Cog, name="Reddit"):
         self.bot = bot
 
     async def on_ready(self):
-        interval = await run_in_thread(Settings.get, int, "reddit_interval", 4)
+        interval = await Settings.get(int, "reddit_interval", 4)
         await self.start_loop(interval)
-        return True
 
     @tasks.loop()
     async def reddit_loop(self):
@@ -87,18 +86,18 @@ class RedditCog(Cog, name="Reddit"):
 
     async def pull_hot_posts(self):
         print("pulling hot reddit posts")
-        limit = await run_in_thread(Settings.get, int, "reddit_limit", 4)
-        for reddit_channel in await run_in_thread(db.all, RedditChannel):  # type: RedditChannel
+        limit = await Settings.get(int, "reddit_limit", 4)
+        for reddit_channel in await db_thread(db.all, RedditChannel):  # type: RedditChannel
             text_channel: Optional[TextChannel] = self.bot.get_channel(reddit_channel.channel)
             if text_channel is None:
-                await run_in_thread(db.delete, reddit_channel)
+                await db_thread(db.delete, reddit_channel)
                 continue
 
             for post in fetch_reddit_posts(reddit_channel.subreddit, limit):
-                if await run_in_thread(RedditPost.post, post["id"]):
+                if await db_thread(RedditPost.post, post["id"]):
                     await text_channel.send(embed=create_embed(post))
 
-        await run_in_thread(RedditPost.clean)
+        await db_thread(RedditPost.clean)
 
     async def start_loop(self, interval):
         self.reddit_loop.cancel()
@@ -108,8 +107,8 @@ class RedditCog(Cog, name="Reddit"):
         except RuntimeError:
             self.reddit_loop.restart()
 
-    @commands.group(name="reddit")
-    @permission_level(Permission.manage_reddit)
+    @commands.group()
+    @Permission.manage_reddit.check
     @guild_only()
     async def reddit(self, ctx: Context):
         """
@@ -123,17 +122,17 @@ class RedditCog(Cog, name="Reddit"):
 
         embed = Embed(title=translations.reddit, colour=0xFF4500)
 
-        interval = await run_in_thread(Settings.get, int, "reddit_interval", 4)
+        interval = await Settings.get(int, "reddit_interval", 4)
         embed.add_field(name=translations.interval, value=translations.f_x_hours(interval))
 
-        limit = await run_in_thread(Settings.get, int, "reddit_limit", 4)
+        limit = await Settings.get(int, "reddit_limit", 4)
         embed.add_field(name=translations.limit, value=str(limit))
 
         out = []
-        for reddit_channel in await run_in_thread(db.all, RedditChannel):  # type: RedditChannel
+        for reddit_channel in await db_thread(db.all, RedditChannel):  # type: RedditChannel
             text_channel: Optional[TextChannel] = self.bot.get_channel(reddit_channel.channel)
             if text_channel is None:
-                await run_in_thread(db.delete, reddit_channel)
+                await db_thread(db.delete, reddit_channel)
             else:
                 sub = reddit_channel.subreddit
                 out.append(f"[r/{sub}](https://reddit.com/r/{sub}) -> {text_channel.mention}")
@@ -144,7 +143,7 @@ class RedditCog(Cog, name="Reddit"):
         await ctx.send(embed=embed)
 
     @reddit.command(name="add", aliases=["a", "+"])
-    async def add(self, ctx: Context, subreddit: str, channel: TextChannel):
+    async def reddit_add(self, ctx: Context, subreddit: str, channel: TextChannel):
         """
         create a link between a subreddit and a channel
         """
@@ -155,32 +154,32 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.reddit_link_not_created_permission)
 
         subreddit = get_subreddit_name(subreddit)
-        if await run_in_thread(db.first, RedditChannel, subreddit=subreddit, channel=channel.id) is not None:
+        if await db_thread(db.first, RedditChannel, subreddit=subreddit, channel=channel.id) is not None:
             raise CommandError(translations.reddit_link_already_exists)
 
-        await run_in_thread(RedditChannel.create, subreddit, channel.id)
+        await db_thread(RedditChannel.create, subreddit, channel.id)
         await ctx.send(translations.reddit_link_created)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_created(subreddit, channel.mention))
 
     @reddit.command(name="remove", aliases=["r", "del", "d", "-"])
-    async def remove(self, ctx: Context, subreddit: str, channel: TextChannel):
+    async def reddit_remove(self, ctx: Context, subreddit: str, channel: TextChannel):
         """
         remove a reddit link
         """
 
         subreddit = get_subreddit_name(subreddit)
-        link: Optional[RedditChannel] = await run_in_thread(
+        link: Optional[RedditChannel] = await db_thread(
             db.first, RedditChannel, subreddit=subreddit, channel=channel.id
         )
         if link is None:
             raise CommandError(translations.reddit_link_not_found)
 
-        await run_in_thread(db.delete, link)
+        await db_thread(db.delete, link)
         await ctx.send(translations.reddit_link_removed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_removed(subreddit, channel.mention))
 
     @reddit.command(name="interval", aliases=["int", "i"])
-    async def interval(self, ctx: Context, hours: int):
+    async def reddit_interval(self, ctx: Context, hours: int):
         """
         change lookup interval (in hours)
         """
@@ -188,13 +187,13 @@ class RedditCog(Cog, name="Reddit"):
         if not 0 < hours < (1 << 31):
             raise CommandError(translations.invalid_interval)
 
-        await run_in_thread(Settings.set, int, "reddit_interval", hours)
+        await Settings.set(int, "reddit_interval", hours)
         await self.start_loop(hours)
         await ctx.send(translations.reddit_interval_set)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_interval_set(hours))
 
     @reddit.command(name="limit", aliases=["lim"])
-    async def limit(self, ctx: Context, limit: int):
+    async def reddit_limit(self, ctx: Context, limit: int):
         """
         change limit of posts to be sent concurrently
         """
@@ -202,15 +201,15 @@ class RedditCog(Cog, name="Reddit"):
         if not 0 < limit < (1 << 31):
             raise CommandError(translations.invalid_limit)
 
-        await run_in_thread(Settings.set, int, "reddit_limit", limit)
+        await Settings.set(int, "reddit_limit", limit)
         await ctx.send(translations.reddit_limit_set)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_limit_set(limit))
 
     @reddit.command(name="trigger", aliases=["t"])
-    async def trigger(self, ctx: Context):
+    async def reddit_trigger(self, ctx: Context):
         """
         pull hot posts now and reset the timer
         """
 
-        await self.start_loop(await run_in_thread(Settings.get, int, "reddit_interval", 4))
+        await self.start_loop(await Settings.get(int, "reddit_interval", 4))
         await ctx.send(translations.done)

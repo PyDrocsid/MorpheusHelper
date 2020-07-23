@@ -1,20 +1,17 @@
 import asyncio
 import string
-from asyncio import Lock
 from typing import Optional, Dict
 
 from discord import TextChannel, Message, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError, UserInputError
 
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.translations import translations
 from cleverbot_api import CleverBot
-from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
-from permission import Permission
-from translations import translations
-from util import permission_level, send_to_changelog
-
-cleverbot_lock = Lock()
+from permissions import Permission
+from util import send_to_changelog
 
 
 class CleverBotCog(Cog, name="CleverBot"):
@@ -22,13 +19,13 @@ class CleverBotCog(Cog, name="CleverBot"):
         self.bot = bot
         self.states: Dict[TextChannel, CleverBot] = {}
 
-    async def on_message(self, message: Message) -> bool:
+    async def on_message(self, message: Message):
         if message.guild is None or message.author.bot:
-            return True
+            return
         if message.content[:1].lower() not in string.ascii_letters + "äöüß" + string.digits:
-            return True
-        if await run_in_thread(db.get, CleverBotChannel, message.channel.id) is None:
-            return True
+            return
+        if await db_thread(db.get, CleverBotChannel, message.channel.id) is None:
+            return
 
         async with message.channel.typing():
             if message.channel in self.states:
@@ -43,8 +40,6 @@ class CleverBotCog(Cog, name="CleverBot"):
 
             await message.channel.send(response)
 
-        return True
-
     @commands.group(aliases=["cb"])
     @guild_only()
     async def cleverbot(self, ctx: Context):
@@ -56,15 +51,15 @@ class CleverBotCog(Cog, name="CleverBot"):
             raise UserInputError
 
     @cleverbot.command(name="list", aliases=["l", "?"])
-    @permission_level(Permission.cb_list)
-    async def list_channels(self, ctx: Context):
+    @Permission.cb_list.check
+    async def cleverbot_list(self, ctx: Context):
         """
         list cleverbot channels
         """
 
         out = []
         guild: Guild = ctx.guild
-        for channel in await run_in_thread(db.query, CleverBotChannel):
+        for channel in await db_thread(db.query, CleverBotChannel):
             text_channel: Optional[TextChannel] = guild.get_channel(channel.channel)
             if text_channel is not None:
                 out.append(f"- {text_channel.mention}")
@@ -76,39 +71,39 @@ class CleverBotCog(Cog, name="CleverBot"):
             await ctx.send(translations.no_whitelisted_channels)
 
     @cleverbot.command(name="add", aliases=["a", "+"])
-    @permission_level(Permission.cb_manage)
-    async def add_channel(self, ctx: Context, channel: TextChannel):
+    @Permission.cb_manage.check
+    async def cleverbot_add(self, ctx: Context, channel: TextChannel):
         """
         add channel to whitelist
         """
 
-        if await run_in_thread(db.get, CleverBotChannel, channel.id) is not None:
+        if await db_thread(db.get, CleverBotChannel, channel.id) is not None:
             raise CommandError(translations.channel_already_whitelisted)
 
-        await run_in_thread(CleverBotChannel.create, channel.id)
+        await db_thread(CleverBotChannel.create, channel.id)
         await ctx.send(translations.channel_whitelisted)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 
     @cleverbot.command(name="remove", aliases=["del", "d", "-"])
-    @permission_level(Permission.cb_manage)
-    async def remove_channel(self, ctx: Context, channel: TextChannel):
+    @Permission.cb_manage.check
+    async def cleverbot_remove(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist
         """
 
-        if (row := await run_in_thread(db.get, CleverBotChannel, channel.id)) is None:
+        if (row := await db_thread(db.get, CleverBotChannel, channel.id)) is None:
             raise CommandError(translations.channel_not_whitelisted)
 
         if channel in self.states:
             self.states.pop(channel)
 
-        await run_in_thread(db.delete, row)
+        await db_thread(db.delete, row)
         await ctx.send(translations.channel_removed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
 
     @cleverbot.command(name="reset")
-    @permission_level(Permission.cb_reset)
-    async def reset_session(self, ctx: Context, channel: TextChannel):
+    @Permission.cb_reset.check
+    async def cleverbot_reset(self, ctx: Context, channel: TextChannel):
         """
         reset cleverbot session for a channel
         """

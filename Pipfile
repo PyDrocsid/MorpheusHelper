@@ -11,6 +11,7 @@ sentry-sdk = "*"
 pyyaml = "*"
 pycryptodome = "*"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py.git"}
+pydrocsid = "*"
 
 [dev-packages]
 flake8 = "*"

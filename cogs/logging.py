@@ -10,12 +10,13 @@ from discord import (
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from database import run_in_thread
+from PyDrocsid.database import db_thread
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
+from PyDrocsid.util import calculate_edit_distance
 from models.log_exclude import LogExclude
-from models.settings import Settings
-from permission import Permission
-from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog
+from permissions import Permission
+from util import send_to_changelog
 
 ignored_messages: Set[int] = set()
 
@@ -42,7 +43,7 @@ class LoggingCog(Cog, name="Logging"):
         self.bot = bot
 
     async def get_logging_channel(self, event: str) -> Optional[TextChannel]:
-        return self.bot.get_channel(await run_in_thread(Settings.get, int, "logging_" + event, -1))
+        return self.bot.get_channel(await Settings.get(int, "logging_" + event, -1))
 
     async def is_logging_channel(self, channel: TextChannel) -> bool:
         return channel.id in [(await self.get_logging_channel(event)).id for event in ["edit", "delete"]]
@@ -52,11 +53,10 @@ class LoggingCog(Cog, name="Logging"):
             self.cleanup_loop.start()
         except RuntimeError:
             self.cleanup_loop.restart()
-        return True
 
     @tasks.loop(minutes=30)
     async def cleanup_loop(self):
-        days: int = await run_in_thread(Settings.get, int, "logging_maxage", -1)
+        days: int = await Settings.get(int, "logging_maxage", -1)
         if days == -1:
             return
 
@@ -72,17 +72,19 @@ class LoggingCog(Cog, name="Logging"):
 
                 await message.delete()
 
-    async def on_message_edit(self, before: Message, after: Message) -> bool:
+    async def on_message_edit(self, before: Message, after: Message):
+        if before.guild is None:
+            return
         if before.id in ignored_messages:
             ignored_messages.remove(before.id)
-            return True
-        mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
+            return
+        mindiff: int = await Settings.get(int, "logging_edit_mindiff", 1)
         if calculate_edit_distance(before.content, after.content) < mindiff:
-            return True
+            return
         if (edit_channel := await self.get_logging_channel("edit")) is None:
-            return True
-        if await run_in_thread(LogExclude.exists, after.channel.id):
-            return True
+            return
+        if await db_thread(LogExclude.exists, after.channel.id):
+            return
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=before.channel.mention)
@@ -92,16 +94,16 @@ class LoggingCog(Cog, name="Logging"):
         add_field(embed, translations.new_content, after.content)
         await edit_channel.send(embed=embed)
 
-        return True
-
-    async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]) -> bool:
+    async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]):
+        if message.guild is None:
+            return
         if message.id in ignored_messages:
             ignored_messages.remove(message.id)
-            return True
+            return
         if (edit_channel := await self.get_logging_channel("edit")) is None:
-            return True
-        if await run_in_thread(LogExclude.exists, message.channel.id):
-            return True
+            return
+        if await db_thread(LogExclude.exists, message.channel.id):
+            return
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=channel.mention)
@@ -111,18 +113,18 @@ class LoggingCog(Cog, name="Logging"):
             add_field(embed, translations.new_content, message.content)
         await edit_channel.send(embed=embed)
 
-        return True
-
-    async def on_message_delete(self, message: Message) -> bool:
+    async def on_message_delete(self, message: Message):
+        if message.guild is None:
+            return
         if message.id in ignored_messages:
             ignored_messages.remove(message.id)
-            return True
+            return
         if (delete_channel := await self.get_logging_channel("delete")) is None:
-            return True
+            return
         if await self.is_logging_channel(message.channel):
-            return True
-        if await run_in_thread(LogExclude.exists, message.channel.id):
-            return True
+            return
+        if await db_thread(LogExclude.exists, message.channel.id):
+            return
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=(datetime.utcnow()))
         embed.add_field(name=translations.channel, value=message.channel.mention)
@@ -140,31 +142,29 @@ class LoggingCog(Cog, name="Logging"):
             embed.add_field(name=translations.attachments, value="\n".join(out), inline=False)
         await delete_channel.send(embed=embed)
 
-        return True
-
-    async def on_raw_message_delete(self, event: RawMessageDeleteEvent) -> bool:
+    async def on_raw_message_delete(self, event: RawMessageDeleteEvent):
+        if event.guild_id is None:
+            return
         if event.message_id in ignored_messages:
             ignored_messages.remove(event.message_id)
-            return True
+            return
         if (delete_channel := await self.get_logging_channel("delete")) is None:
-            return True
-        if await run_in_thread(LogExclude.exists, event.channel_id):
-            return True
+            return
+        if await db_thread(LogExclude.exists, event.channel_id):
+            return
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=datetime.utcnow())
         channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
         if channel is not None:
             if await self.is_logging_channel(channel):
-                return True
+                return
 
             embed.add_field(name=translations.channel, value=channel.mention)
             embed.add_field(name=translations.message_id, value=event.message_id, inline=False)
         await delete_channel.send(embed=embed)
 
-        return True
-
-    @commands.group(name="logging", aliases=["log"])
-    @permission_level(Permission.log_manage)
+    @commands.group(aliases=["log"])
+    @Permission.log_manage.check
     @guild_only()
     async def logging(self, ctx: Context):
         """
@@ -179,7 +179,7 @@ class LoggingCog(Cog, name="Logging"):
         edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
         changelog_channel: Optional[TextChannel] = await self.get_logging_channel("changelog")
-        maxage: int = await run_in_thread(Settings.get, int, "logging_maxage", -1)
+        maxage: int = await Settings.get(int, "logging_maxage", -1)
 
         embed = Embed(title=translations.logging, color=0x256BE6)
 
@@ -189,7 +189,7 @@ class LoggingCog(Cog, name="Logging"):
             embed.add_field(name=translations.maxage, value=translations.disabled, inline=False)
 
         if edit_channel is not None:
-            mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
+            mindiff: int = await Settings.get(int, "logging_edit_mindiff", 1)
             embed.add_field(name=translations.msg_edit, value=edit_channel.mention, inline=True)
             embed.add_field(name=translations.mindiff, value=str(mindiff), inline=True)
         else:
@@ -208,7 +208,7 @@ class LoggingCog(Cog, name="Logging"):
         await ctx.send(embed=embed)
 
     @logging.command(name="maxage", aliases=["ma"])
-    async def maxage(self, ctx: Context, days: int):
+    async def logging_maxage(self, ctx: Context, days: int):
         """
         configure period after which old log entries should be deleted
         set to -1 to disable
@@ -217,7 +217,7 @@ class LoggingCog(Cog, name="Logging"):
         if days != -1 and not 0 < days < (1 << 31):
             raise CommandError(translations.invalid_duration)
 
-        await run_in_thread(Settings.set, int, "logging_maxage", days)
+        await Settings.set(int, "logging_maxage", days)
         if days == -1:
             await ctx.send(translations.maxage_set_disabled)
             await send_to_changelog(ctx.guild, translations.maxage_set_disabled)
@@ -226,7 +226,7 @@ class LoggingCog(Cog, name="Logging"):
             await send_to_changelog(ctx.guild, translations.f_maxage_set(days))
 
     @logging.group(name="edit", aliases=["e"])
-    async def edit(self, ctx: Context):
+    async def logging_edit(self, ctx: Context):
         """
         change settings for edit event logging
         """
@@ -234,8 +234,8 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             raise UserInputError
 
-    @edit.command(name="mindist", aliases=["md"])
-    async def edit_mindist(self, ctx: Context, mindist: int):
+    @logging_edit.command(name="mindist", aliases=["md"])
+    async def logging_edit_mindist(self, ctx: Context, mindist: int):
         """
         change the minimum edit distance between the old and new content of the message to be logged
         """
@@ -243,12 +243,12 @@ class LoggingCog(Cog, name="Logging"):
         if mindist <= 0:
             raise CommandError(translations.min_diff_gt_zero)
 
-        await run_in_thread(Settings.set, int, "logging_edit_mindiff", mindist)
+        await Settings.set(int, "logging_edit_mindiff", mindist)
         await ctx.send(translations.f_edit_mindiff_updated(mindist))
         await ctx.send(translations.f_log_mindiff_updated(mindist))
 
-    @edit.command(name="channel", aliases=["ch", "c"])
-    async def edit_channel(self, ctx: Context, channel: TextChannel):
+    @logging_edit.command(name="channel", aliases=["ch", "c"])
+    async def logging_edit_channel(self, ctx: Context, channel: TextChannel):
         """
         change logging channel for edit events
         """
@@ -256,22 +256,22 @@ class LoggingCog(Cog, name="Logging"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.log_not_changed_no_permissions)
 
-        await run_in_thread(Settings.set, int, "logging_edit", channel.id)
+        await Settings.set(int, "logging_edit", channel.id)
         await ctx.send(translations.f_log_edit_updated(channel.mention))
         await send_to_changelog(ctx.guild, translations.f_log_edit_updated(channel.mention))
 
-    @edit.command(name="disable", aliases=["d"])
-    async def edit_disable(self, ctx: Context):
+    @logging_edit.command(name="disable", aliases=["d"])
+    async def logging_edit_disable(self, ctx: Context):
         """
         disable edit event logging
         """
 
-        await run_in_thread(Settings.set, int, "logging_edit", -1)
+        await Settings.set(int, "logging_edit", -1)
         await ctx.send(translations.log_edit_disabled)
         await send_to_changelog(ctx.guild, translations.log_edit_disabled)
 
     @logging.group(name="delete", aliases=["d"])
-    async def delete(self, ctx: Context):
+    async def logging_delete(self, ctx: Context):
         """
         change settings for delete event logging
         """
@@ -279,8 +279,8 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             raise UserInputError
 
-    @delete.command(name="channel", aliases=["ch", "c"])
-    async def delete_channel(self, ctx: Context, channel: TextChannel):
+    @logging_delete.command(name="channel", aliases=["ch", "c"])
+    async def logging_delete_channel(self, ctx: Context, channel: TextChannel):
         """
         change logging channel for delete events
         """
@@ -288,22 +288,22 @@ class LoggingCog(Cog, name="Logging"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.log_not_changed_no_permissions)
 
-        await run_in_thread(Settings.set, int, "logging_delete", channel.id)
+        await Settings.set(int, "logging_delete", channel.id)
         await ctx.send(translations.f_log_delete_updated(channel.mention))
         await send_to_changelog(ctx.guild, translations.f_log_delete_updated(channel.mention))
 
-    @delete.command(name="disable", aliases=["d"])
-    async def delete_disable(self, ctx: Context):
+    @logging_delete.command(name="disable", aliases=["d"])
+    async def logging_delete_disable(self, ctx: Context):
         """
         disable delete event logging
         """
 
-        await run_in_thread(Settings.set, int, "logging_delete", -1)
+        await Settings.set(int, "logging_delete", -1)
         await ctx.send(translations.log_delete_disabled)
         await send_to_changelog(ctx.guild, translations.log_delete_disabled)
 
     @logging.group(name="changelog", aliases=["cl", "c", "change"])
-    async def changelog(self, ctx: Context):
+    async def logging_changelog(self, ctx: Context):
         """
         change settings for internal changelog
         """
@@ -311,8 +311,8 @@ class LoggingCog(Cog, name="Logging"):
         if ctx.invoked_subcommand is None:
             raise UserInputError
 
-    @changelog.command(name="channel", aliases=["ch", "c"])
-    async def changelog_channel(self, ctx: Context, channel: TextChannel):
+    @logging_changelog.command(name="channel", aliases=["ch", "c"])
+    async def logging_changelog_channel(self, ctx: Context, channel: TextChannel):
         """
         change changelog channel
         """
@@ -320,22 +320,22 @@ class LoggingCog(Cog, name="Logging"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.log_not_changed_no_permissions)
 
-        await run_in_thread(Settings.set, int, "logging_changelog", channel.id)
+        await Settings.set(int, "logging_changelog", channel.id)
         await ctx.send(translations.f_log_changelog_updated(channel.mention))
         await send_to_changelog(ctx.guild, translations.f_log_changelog_updated(channel.mention))
 
-    @changelog.command(name="disable", aliases=["d"])
-    async def changelog_disable(self, ctx: Context):
+    @logging_changelog.command(name="disable", aliases=["d"])
+    async def logging_changelog_disable(self, ctx: Context):
         """
         disable changelog
         """
 
         await send_to_changelog(ctx.guild, translations.log_changelog_disabled)
-        await run_in_thread(Settings.set, int, "logging_changelog", -1)
+        await Settings.set(int, "logging_changelog", -1)
         await ctx.send(translations.log_changelog_disabled)
 
     @logging.group(name="exclude", aliases=["x", "ignore", "i"])
-    async def exclude(self, ctx: Context):
+    async def logging_exclude(self, ctx: Context):
         """
         manage excluded channels
         """
@@ -347,10 +347,10 @@ class LoggingCog(Cog, name="Logging"):
 
         embed = Embed(title=translations.excluded_channels, colour=0x256BE6)
         out = []
-        for channel_id in await run_in_thread(LogExclude.all):
+        for channel_id in await db_thread(LogExclude.all):
             channel: Optional[TextChannel] = self.bot.get_channel(channel_id)
             if channel is None:
-                await run_in_thread(LogExclude.remove, channel_id)
+                await db_thread(LogExclude.remove, channel_id)
             else:
                 out.append(f":small_blue_diamond: {channel.mention}")
         if not out:
@@ -360,28 +360,28 @@ class LoggingCog(Cog, name="Logging"):
             embed.description = "\n".join(out)
         await ctx.send(embed=embed)
 
-    @exclude.command(name="add", aliases=["a", "+"])
-    async def exclude_add(self, ctx: Context, channel: TextChannel):
+    @logging_exclude.command(name="add", aliases=["a", "+"])
+    async def logging_exclude_add(self, ctx: Context, channel: TextChannel):
         """
         exclude a channel from logging
         """
 
-        if await run_in_thread(LogExclude.exists, channel.id):
+        if await db_thread(LogExclude.exists, channel.id):
             raise CommandError(translations.already_excluded)
 
-        await run_in_thread(LogExclude.add, channel.id)
+        await db_thread(LogExclude.add, channel.id)
         await ctx.send(translations.excluded)
         await send_to_changelog(ctx.guild, translations.f_log_excluded(channel.mention))
 
-    @exclude.command(name="remove", aliases=["r", "del", "d", "-"])
-    async def exclude_remove(self, ctx: Context, channel: TextChannel):
+    @logging_exclude.command(name="remove", aliases=["r", "del", "d", "-"])
+    async def logging_exclude_remove(self, ctx: Context, channel: TextChannel):
         """
         remove a channel from exclude list
         """
 
-        if not await run_in_thread(LogExclude.exists, channel.id):
+        if not await db_thread(LogExclude.exists, channel.id):
             raise CommandError(translations.not_excluded)
 
-        await run_in_thread(LogExclude.remove, channel.id)
+        await db_thread(LogExclude.remove, channel.id)
         await ctx.send(translations.unexcluded)
         await send_to_changelog(ctx.guild, translations.f_log_unexcluded(channel.mention))
