@@ -8,8 +8,9 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Co
 from discord.utils import snowflake_time
 
 from database import run_in_thread, db
-from models.allowed_invite import InviteLog
+from models.allowed_invite import AllowedInviteLog
 from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate
+from models.server_invites import ServerInvites
 from models.settings import Settings
 from permission import Permission
 from translations import translations
@@ -99,7 +100,6 @@ class ModCog(Cog, name="Mod Tools"):
                 await run_in_thread(Mute.deactivate, mute.id)
 
     async def on_member_join(self, member: Member):
-        await run_in_thread(Join.create, member.id, str(member))
         mute_role: Optional[Role] = member.guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is None:
             return True
@@ -439,6 +439,11 @@ class ModCog(Cog, name="Mod Tools"):
         async def count(cls):
             if cls is Report:
                 active = await run_in_thread(db.count, cls, reporter=user_id)
+            elif cls is ServerInvites:
+                active = 0
+                for invites in await run_in_thread(db.query, cls, member=user_id):
+                    active += invites.uses
+                return translations.f_active(active)
             else:
                 active = await run_in_thread(db.count, cls, mod=user_id)
             passive = await run_in_thread(db.count, cls, member=user_id)
@@ -449,6 +454,7 @@ class ModCog(Cog, name="Mod Tools"):
         embed.add_field(name=translations.muted_cnt, value=await count(Mute))
         embed.add_field(name=translations.kicked_cnt, value=await count(Kick))
         embed.add_field(name=translations.banned_cnt, value=await count(Ban))
+        embed.add_field(name=translations.invitations_cnt, value=await count(ServerInvites))
 
         if (ban := await run_in_thread(db.first, Ban, member=user_id, active=True)) is not None:
             if ban.days != -1:
@@ -483,7 +489,11 @@ class ModCog(Cog, name="Mod Tools"):
 
         out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
         for join in await run_in_thread(db.query, Join, member=user_id):
-            out.append((join.timestamp, translations.ulog_joined))
+            if join.invite is None:
+                out.append((join.timestamp, translations.ulog_joined))
+            else:
+                invite = await run_in_thread(db.first, ServerInvites, code=join.invite)
+                out.append((join.timestamp, translations.f_ulog_joined_by_code(invite.member_name, join.invite)))
         for leave in await run_in_thread(db.query, Leave, member=user_id):
             out.append((leave.timestamp, translations.ulog_left))
         for username_update in await run_in_thread(db.query, UsernameUpdate, member=user_id):
@@ -535,11 +545,16 @@ class ModCog(Cog, name="Mod Tools"):
                             translations.f_ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
                         )
                     )
-        for log in await run_in_thread(db.query, InviteLog, applicant=user_id):  # type: InviteLog
+        for log in await run_in_thread(db.query, AllowedInviteLog, applicant=user_id):  # type: AllowedInviteLog
             if log.approved:
                 out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
             else:
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
+        for invite in await run_in_thread(db.query, ServerInvites, member=user_id):  # type: ServerInvites
+            if invite.is_expired is True:
+                out.append((invite.created_at, translations.f_ulog_invite_created_expired(invite.code)))
+            else:
+                out.append((invite.created_at, translations.f_ulog_invite_created(invite.code)))
 
         out.sort()
         embed = Embed(title=translations.userlogs, color=0x34B77E)

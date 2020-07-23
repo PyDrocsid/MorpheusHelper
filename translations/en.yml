@@ -435,7 +435,9 @@ warned_cnt: ":warning:  Warned"
 muted_cnt: ":mute:  Muted"
 kicked_cnt: ":x:  Kicked"
 banned_cnt: ":no_entry:  Banned"
+invitations_cnt: ":memo: Invitations"
 active_passive: "active: `{}`\npassive: `{}`"
+active: "active: `{}`"
 status: Status
 member_since: ":clock2:  Member since {} (UTC)"
 not_a_member: ":x:  User is not a member of this server."
@@ -446,7 +448,8 @@ status_muted_days: ":mute:  User is muted for {} days on this server ({} days le
 userlogs: User Logs
 ulog_empty: No entries for this user.
 ulog_created: ":sparkles:  **Created** this account."
-ulog_joined: ":tada:  **Joined** this server."
+ulog_joined: ":tada:  **Invited** to this server."
+ulog_joined_by_code: ":tada:  **Invited** by `{}` with `{}`"
 ulog_left: ":door:  **Left** this server."
 ulog_nick_set: ":label:  **Nickname set** to `{}`"
 ulog_nick_updated: ":label:  **Nickname changed** from `{}` to `{}`"
@@ -466,6 +469,8 @@ ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
 ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
 ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"
 ulog_invite_removed: ":-1:  **Invite removed** by {}: {}"
+ulog_invite_created: ":small_orange_diamond: **Created** server invite `{}`"
+ulog_invite_created_expired: ":small_blue_diamond: **Created** server invite `{}`"
 utc_note: Timestamps in UTC
 
 # permissions
@@ -520,8 +525,8 @@ permissions:
   cb_manage: manage cleverbot
   cb_reset: reset cleverbot sessions
 
-  invite_bypass: bypass invite checks
-  invite_manage: manage allowed invites
+  allowed_invite_bypass: bypass invite checks
+  allowed_invite_manage: manage allowed invites
 
   log_manage: manage logging
 
@@ -531,6 +536,9 @@ permissions:
   view_all_permissions: view all permissions
 
   manage_reddit: manage reddit integration
+
+  manage_server_invites: manage server invites
+  show_server_invites: show server invites
 
 # reddit
 reddit: Reddit

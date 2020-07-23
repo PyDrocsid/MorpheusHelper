@@ -44,8 +44,8 @@ class Permission(Enum):
     cb_manage = auto()
     cb_reset = auto()
 
-    invite_bypass = auto()
-    invite_manage = auto()
+    allowed_invite_bypass = auto()
+    allowed_invite_manage = auto()
 
     log_manage = auto()
 
@@ -55,6 +55,9 @@ class Permission(Enum):
     view_all_permissions = auto()
 
     manage_reddit = auto()
+
+    manage_server_invites = auto()
+    show_server_invites = auto()
 
     @property
     def description(self) -> str:

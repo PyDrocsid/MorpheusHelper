@@ -20,6 +20,7 @@ from discord import (
     NotFound,
     Forbidden,
     AllowedMentions,
+    Invite,
 )
 from discord.ext import tasks
 from discord.ext.commands import (
@@ -33,11 +34,11 @@ from discord.ext.commands import (
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from cogs.allowed_invites import AllowedInvitesCog
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
-from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
@@ -49,6 +50,7 @@ from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
+from cogs.server_invites import ServerInvitesCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db
@@ -400,6 +402,16 @@ async def on_member_remove(member: Member):
 
 
 @bot.event
+async def on_invite_create(invite: Invite):
+    await call_event_handlers("invite_create", invite)
+
+
+@bot.event
+async def on_invite_delete(invite: Invite):
+    await call_event_handlers("invite_delete", invite)
+
+
+@bot.event
 async def on_member_update(before: Member, after: Member):
     if before.nick != after.nick:
         await call_event_handlers("member_nick_update", before, after, identifier=before.id)
@@ -450,7 +462,7 @@ register_cogs(
     LoggingCog,
     MediaOnlyCog,
     RulesCog,
-    InvitesCog,
+    AllowedInvitesCog,
     MetaQuestionCog,
     InfoCog,
     ReactionRoleCog,
@@ -462,5 +474,6 @@ register_cogs(
     RedditCog,
     AutoModCog,
     VerificationCog,
+    ServerInvitesCog,
 )
 bot.run(os.environ["TOKEN"])
