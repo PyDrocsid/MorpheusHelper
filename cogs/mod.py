@@ -2,14 +2,15 @@ import re
 from datetime import datetime, timedelta
 from typing import Optional, Union, List, Tuple
 
-from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Invite, utils
+from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
 from discord.utils import snowflake_time
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInviteLog
-from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate, ServerInvites
+from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdate
+from models.server_invites import ServerInvites
 from models.settings import Settings
 from permission import Permission
 from translations import translations
@@ -66,20 +67,6 @@ class ModCog(Cog, name="Mod Tools"):
                 if member is not None:
                     await member.add_roles(mute_role)
 
-        for invite in await guild.invites():
-            db_invite = await run_in_thread(db.first, ServerInvites, code=invite.code, is_expired=False)
-            if db_invite is None:
-                await run_in_thread(
-                    ServerInvites.create,
-                    invite.inviter.id,
-                    str(invite.inviter),
-                    invite.code,
-                    invite.uses,
-                    invite.created_at,
-                )
-            elif invite.uses is not db_invite.uses:
-                await run_in_thread(ServerInvites.update, db_invite.id, invite.uses)
-
         try:
             self.mod_loop.start()
         except RuntimeError:
@@ -120,14 +107,6 @@ class ModCog(Cog, name="Mod Tools"):
         if await run_in_thread(db.first, Mute, active=True, member=member.id) is not None:
             await member.add_roles(mute_role)
 
-        invites_before_join = await run_in_thread(db.query, ServerInvites, is_expired=False)
-        for invite in await member.guild.allowed_invites():
-            db_invite = utils.find(lambda i: i.code == invite.code, invites_before_join)
-            if invite.uses > db_invite.uses:
-                await run_in_thread(Join.create, member.id, str(member), invite.code)
-                await run_in_thread(ServerInvites.update, db_invite.id, invite.uses)
-                return
-
         return True
 
     async def on_member_remove(self, member: Member):
@@ -143,17 +122,6 @@ class ModCog(Cog, name="Mod Tools"):
             return True
 
         await run_in_thread(UsernameUpdate.create, before.id, str(before), str(after), False)
-        return True
-
-    async def on_invite_create(self, invite: Invite):
-        await run_in_thread(
-            ServerInvites.create, invite.inviter.id, str(invite.inviter), invite.code, invite.uses, invite.created_at
-        )
-        return True
-
-    async def on_invite_delete(self, invite: Invite):
-        db_invite = await run_in_thread(db.first, ServerInvites, code=invite.code, is_expired=False)
-        await run_in_thread(ServerInvites.updateExpired, db_invite.id, True)
         return True
 
     @commands.group(name="roles")
