@@ -14,7 +14,7 @@ from PyDrocsid.util import send_long_embed
 from models.allowed_invite import InviteLog
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from permissions import Permission, PermissionLevel
-from util import send_to_changelog
+from util import send_to_changelog, get_prefix
 
 
 class DurationConverter(Converter):
@@ -410,9 +410,14 @@ class ModCog(Cog, name="Mod Tools"):
         await ctx.send(translations.unbanned_response)
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
 
-    async def get_stats_user(self, author: User, user: Optional[Union[User, int]]) -> Tuple[Union[User, int], int]:
+    async def get_stats_user(
+        self, ctx: Context, user: Optional[Union[User, int]]
+    ) -> Tuple[Union[User, int], int, bool]:
+        arg_passed = len(ctx.message.content.strip(await get_prefix()).split()) >= 2
         if user is None:
-            user = author
+            if arg_passed:
+                raise UserInputError
+            user = ctx.author
 
         if isinstance(user, int):
             try:
@@ -422,10 +427,10 @@ class ModCog(Cog, name="Mod Tools"):
 
         user_id = user if isinstance(user, int) else user.id
 
-        if user_id != author.id and not await Permission.view_stats.check_permissions(author):
+        if user_id != ctx.author.id and not await Permission.view_stats.check_permissions(ctx.author):
             raise CommandError(translations.stats_not_allowed)
 
-        return user, user_id
+        return user, user_id, arg_passed
 
     @commands.command()
     async def stats(self, ctx: Context, user: Optional[Union[User, int]] = None):
@@ -433,7 +438,7 @@ class ModCog(Cog, name="Mod Tools"):
         show statistics about a user
         """
 
-        user, user_id = await self.get_stats_user(ctx.author, user)
+        user, user_id, arg_passed = await self.get_stats_user(ctx, user)
         await update_join_date(self.bot.guilds[0], user_id)
 
         embed = Embed(title=translations.stats, color=0x35992C)
@@ -476,7 +481,14 @@ class ModCog(Cog, name="Mod Tools"):
             status = translations.not_a_member
         embed.add_field(name=translations.status, value=status, inline=False)
 
-        await ctx.send(embed=embed)
+        if arg_passed:
+            await ctx.send(embed=embed)
+        else:
+            try:
+                await ctx.author.send(embed=embed)
+            except (Forbidden, HTTPException):
+                raise CommandError(translations.could_not_send_dm)
+            await ctx.message.add_reaction("\u2705")
 
     @commands.command(aliases=["userlog", "ulog", "uinfo", "userinfo"])
     async def userlogs(self, ctx: Context, user: Optional[Union[User, int]] = None):
@@ -484,7 +496,7 @@ class ModCog(Cog, name="Mod Tools"):
         show moderation log of a user
         """
 
-        user, user_id = await self.get_stats_user(ctx.author, user)
+        user, user_id, arg_passed = await self.get_stats_user(ctx, user)
         await update_join_date(self.bot.guilds[0], user_id)
 
         out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
@@ -557,11 +569,16 @@ class ModCog(Cog, name="Mod Tools"):
             name = row[0].strftime("%d.%m.%Y %H:%M:%S")
             value = row[1]
             embed.add_field(name=name, value=value, inline=False)
-        if out:
-            embed.set_footer(text=translations.utc_note)
+
+        embed.set_footer(text=translations.utc_note)
+        if arg_passed:
             await send_long_embed(ctx, embed)
         else:
-            await ctx.send(translations.ulog_empty)
+            try:
+                await send_long_embed(ctx.author, embed)
+            except (Forbidden, HTTPException):
+                raise CommandError(translations.could_not_send_dm)
+            await ctx.message.add_reaction("\u2705")
 
     @commands.command()
     @Permission.init_join_log.check
