@@ -206,6 +206,9 @@ class ModCog(Cog, name="Mod Tools"):
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
+        if member == self.bot.user:
+            raise CommandError(translations.cannot_warn)
+
         try:
             await member.send(translations.f_warned(ctx.author.mention, ctx.guild.name, reason))
         except (Forbidden, HTTPException):
@@ -240,6 +243,9 @@ class ModCog(Cog, name="Mod Tools"):
 
         mute_role: Role = await get_mute_role(ctx.guild)
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
+
+        if user == self.bot.user:
+            raise CommandError(translations.cannot_mute)
 
         if await db_thread(db.first, Mute, active=True, member=user.id) is not None:
             raise CommandError(translations.already_muted)
@@ -307,6 +313,9 @@ class ModCog(Cog, name="Mod Tools"):
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
+        if member == self.bot.user:
+            raise CommandError(translations.cannot_kick)
+
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
 
@@ -343,6 +352,8 @@ class ModCog(Cog, name="Mod Tools"):
 
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
+        if user == self.bot.user:
+            raise CommandError(translations.cannot_ban)
         if isinstance(user, Member) and (user.top_role >= ctx.guild.me.top_role or user.id == ctx.guild.owner_id):
             raise CommandError(translations.cannot_ban)
 
