@@ -420,6 +420,8 @@ class ModCog(Cog, name="Mod Tools"):
             user = ctx.author
 
         if isinstance(user, int):
+            if not 0 <= user < (1 << 63):
+                raise UserInputError
             try:
                 user = await self.bot.fetch_user(user)
             except NotFound:
