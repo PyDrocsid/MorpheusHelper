@@ -14,7 +14,7 @@ from PyDrocsid.util import send_long_embed
 from models.allowed_invite import InviteLog
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from permissions import Permission, PermissionLevel
-from util import send_to_changelog, get_prefix
+from util import send_to_changelog, get_prefix, is_teamler
 
 
 class DurationConverter(Converter):
@@ -244,7 +244,7 @@ class ModCog(Cog, name="Mod Tools"):
         mute_role: Role = await get_mute_role(ctx.guild)
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
-        if user == self.bot.user:
+        if user == self.bot.user or await is_teamler(user):
             raise CommandError(translations.cannot_mute)
 
         if await db_thread(db.first, Mute, active=True, member=user.id) is not None:
@@ -313,7 +313,7 @@ class ModCog(Cog, name="Mod Tools"):
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        if member == self.bot.user:
+        if member == self.bot.user or await is_teamler(member):
             raise CommandError(translations.cannot_kick)
 
         if not ctx.guild.me.guild_permissions.kick_members:
@@ -352,7 +352,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
-        if user == self.bot.user:
+        if user == self.bot.user or await is_teamler(user):
             raise CommandError(translations.cannot_ban)
         if isinstance(user, Member) and (user.top_role >= ctx.guild.me.top_role or user.id == ctx.guild.owner_id):
             raise CommandError(translations.cannot_ban)
