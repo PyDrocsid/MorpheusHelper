@@ -1,20 +1,15 @@
 import io
 from typing import Optional, Tuple, List
 
-from PyDrocsid.settings import Settings
-from PyDrocsid.translations import translations
 from discord import Member, TextChannel, Guild, Message, File, Embed, Attachment
 from discord.ext.commands import Bot, CommandError
 
-from permissions import PermissionLevel
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 
 
 def make_error(message) -> str:
     return f":x: Error: {message}"
-
-
-async def is_teamler(member: Member) -> bool:
-    return await PermissionLevel.SUPPORTER.check_permissions(member)
 
 
 async def send_to_changelog(guild: Guild, message: str):
