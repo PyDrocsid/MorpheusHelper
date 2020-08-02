@@ -40,7 +40,7 @@ class AllowedServerConverter(Converter):
 
 def get_discord_invite(url) -> Optional[str]:
     while True:
-        if match := re.match(r"(https?://)?(www\.)?(discord\.(gg|io|me|li)\.*|discordapp|\.com/invite)/.+[a-z]", url):
+        if match := re.match(r"^(https?://)?discord(.gg\.*|(app)?.com/invite)/([a-zA-Z0-9\-_/.]+)$", url):
             return match.group(4)
 
         if not re.match(r"^(https?://).*$", url):
