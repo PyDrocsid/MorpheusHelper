@@ -220,12 +220,15 @@ class ModCog(Cog, name="Mod Tools"):
         )
 
     async def get_user(self, guild: Guild, user: Union[Member, User, int]) -> Union[Member, User]:
-        if isinstance(user, int):
-            if (user := guild.get_member(user) or await self.bot.fetch_user(user)) is None:
-                raise CommandError(translations.user_not_found)
-        elif isinstance(user, User):
-            user = guild.get_member(user.id) or user
-        return user
+        try:
+            if isinstance(user, int):
+                if (user := guild.get_member(user) or await self.bot.fetch_user(user)) is None:
+                    raise CommandError(translations.user_not_found)
+            elif isinstance(user, User):
+                user = guild.get_member(user.id) or user
+            return user
+        except (HTTPException):
+             raise CommandError(translations.user_not_found)
 
     @commands.command()
     @Permission.mute.check
