@@ -10,10 +10,14 @@ pymysql = "*"
 requests = "*"
 sentry-sdk = "*"
 pyyaml = "*"
-pycryptodome = "*"
+pycryptodome = "==3.9.7"
+
+[dev-packages]
+flake8 = "*"
 
 [requires]
 python_version = "3.8"
 
 [scripts]
 bot = "python morpheushelper.py"
+flake8 = "flake8 . --count --max-line-length=120 --statistics --show-source"

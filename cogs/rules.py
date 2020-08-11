@@ -6,8 +6,9 @@ from discord import TextChannel, Message, Forbidden, Permissions, Color
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
+from permission import Permission
 from translations import translations
-from util import permission_level, read_normal_message, read_embed
+from util import permission_level, read_normal_message, read_embed, read_complete_message
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -15,7 +16,7 @@ class RulesCog(Cog, name="Rule Commands"):
         self.bot = bot
 
     @commands.group(name="send")
-    @permission_level(1)
+    @permission_level(Permission.send)
     @guild_only()
     async def send(self, ctx: Context):
         """
@@ -52,13 +53,12 @@ class RulesCog(Cog, name="Rule Commands"):
         if isinstance(color, str):
             if not re.match(r"^[0-9a-fA-F]{6}$", color):
                 raise CommandError(translations.invalid_color)
-            else:
-                color = int(color, 16)
+            color = int(color, 16)
 
         permissions: Permissions = channel.permissions_for(channel.guild.me)
         if not permissions.send_messages:
             raise CommandError(translations.could_not_send_message)
-        elif not permissions.embed_links:
+        if not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
         embed = await read_embed(self.bot, ctx.channel, ctx.author)
@@ -71,8 +71,22 @@ class RulesCog(Cog, name="Rule Commands"):
         else:
             await ctx.send(translations.msg_sent)
 
+    @send.command(name="copy", aliases=["c"])
+    async def send_copy(self, ctx: Context, channel: TextChannel, message: Message):
+        """
+        copy a message (specify message link)
+        """
+
+        content, files, embed = await read_complete_message(message)
+        try:
+            await channel.send(content=content, embed=embed, files=files)
+        except (HTTPException, Forbidden):
+            raise CommandError(translations.msg_could_not_be_sent)
+        else:
+            await ctx.send(translations.msg_sent)
+
     @commands.group(name="edit")
-    @permission_level(1)
+    @permission_level(Permission.edit)
     @guild_only()
     async def edit(self, ctx: Context):
         """
@@ -93,7 +107,9 @@ class RulesCog(Cog, name="Rule Commands"):
 
         await ctx.send(translations.send_new_message)
         content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
-        await message.edit(content=content, files=files, embed=None)
+        if files:
+            raise CommandError(translations.cannot_edit_files)
+        await message.edit(content=content, embed=None)
         await ctx.send(translations.msg_edited)
 
     @edit.command(name="embed", aliases=["e"])
@@ -108,8 +124,7 @@ class RulesCog(Cog, name="Rule Commands"):
         if isinstance(color, str):
             if not re.match(r"^[0-9a-fA-F]{6}$", color):
                 raise CommandError(translations.invalid_color)
-            else:
-                color = int(color, 16)
+            color = int(color, 16)
 
         embed = await read_embed(self.bot, ctx.channel, ctx.author)
         if color is not None:
@@ -117,8 +132,23 @@ class RulesCog(Cog, name="Rule Commands"):
         await message.edit(content=None, files=[], embed=embed)
         await ctx.send(translations.msg_edited)
 
+    @edit.command(name="copy", aliases=["c"])
+    async def edit_copy(self, ctx: Context, message: Message, source: Message):
+        """
+        copy a message into another message (specify message links)
+        """
+
+        if message.author != self.bot.user:
+            raise CommandError(translations.could_not_edit)
+
+        content, files, embed = await read_complete_message(source)
+        if files:
+            raise CommandError(translations.cannot_edit_files)
+        await message.edit(content=content, embed=embed)
+        await ctx.send(translations.msg_edited)
+
     @commands.command(name="delete")
-    @permission_level(1)
+    @permission_level(Permission.delete)
     @guild_only()
     async def delete(self, ctx: Context, message: Message):
         """

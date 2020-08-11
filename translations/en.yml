@@ -37,11 +37,16 @@ features:
   - Cleverbot integration
   - Server information command
   - ReactionRoles
+  - Dynamic voice channels
+  - Reddit integration
 admin_features:
   - Logging of message edit and delete events
   - Send/Edit/Delete text and embed messages as the bot
   - Media only channels
   - News command
+  - Mod commands
+  - Member logging
+  - Permission system
 features_title: Features
 author_title: Author
 contributors_title: Contributors
@@ -88,7 +93,7 @@ creation_date: Creation Date
 cnt_members: "{} Members"
 cnt_online: "{} online"
 owner: Owner
-cnt_admins: "{} Admins"
+cnt_admins: "{} Administrators"
 cnt_mods: "{} Moderators"
 cnt_supps: "{} Supporters"
 cnt_bots: "{} Bots"
@@ -153,6 +158,10 @@ log_delete_updated: Logs for message delete events will now be sent to {}.
 log_delete_disabled: Logging for message delete events has been disabled.
 log_changelog_updated: Changelog channel is now {}.
 log_changelog_disabled: Changelog channel has been disabled.
+maxage_disabled: Automatic deletion of old log entries is disabled.
+maxage_enabled: Log entries older than {} days will be deleted automatically.
+maxage_set: Maximum age of log entries has been set to {} days.
+maxage_set_disabled: Automatic deletion of old log entries has been disabled.
 
 # mediaonly
 deleted_nomedia: >
@@ -183,6 +192,7 @@ metaquestion_description: >
   ignoriert oder der Fragende wird rüde darauf hingewiesen, dass ihm niemand bei seinem Problem
   helfen könne, ohne dies zu kennen. Grundsätzlich folgt auf eine Meta-Frage eine weitere Frage.
 requested_by: Requested by @{} ({})
+metaquestion_description_reduced: "http://metafrage.de/ (Requested by {})"
 mq_advantages_title: Vorteile von Metafragen
 mq_advantages:
   - als höfliche Floskel um Aufmerksamkeit zu gewinnen
@@ -246,6 +256,8 @@ msg_edited: Message has been edited successfully.
 cannot_delete_dm: Private messages cannot be deleted.
 could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
 msg_deleted: Message has been deleted successfully.
+title_too_long: Title is too long.
+cannot_edit_files: Files cannot be edited.
 
 # voice channel
 updating_voice_roles: Updating voice channel roles
@@ -258,6 +270,43 @@ link_created: Link has been created between voice channel `{}` and role `@{}`.
 link_not_found: Link does not exist.
 link_deleted: Link has been deleted.
 log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
+
+dyn_group_already_exists: This channel is already part of an existing voice channel group.
+dyn_group_created: Dynamic voice channel group has been created successfully.
+log_dyn_group_created: Dynamic voice channel group `{}` has been created.
+dyn_group_not_found: This channel is not part of any voice channel group.
+group_list_entry: "{} ({} active channels)"
+no_dyn_group: No dynamic voice channel groups have been created yet.
+dyn_group_removed: Dynamic voice channel group has been removed successfully.
+log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
+dyn_voice_created: Channel has been created by {}.
+dyn_voice_joined: "{} joined this channel."
+dyn_voice_left: "{} left this channel."
+private_dyn_voice_help: |
+  Private voice channel commands:
+  `{prefix}vc invite <member>` - add a member to this voice channel
+  `{prefix}vc remove <member>` - kick and remove a member from this voice channel
+  `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
+  `{prefix}vc close` - manually close this voice channel
+  Note that these commands can be used in any text channel.
+error_visibility: "`visibility` must either be `public` or `private`."
+not_in_private_voice: You have to be in a private voice channel to use this command.
+private_voice_owner_required: You are not the owner of this voice channel.
+private_voice_closed: Private voice channel has been closed successfully.
+user_added_to_private_voice: "{} has been invited to join this private voice channel."
+user_added_to_private_voice_response: User has been added to this private voice channel.
+user_removed_from_private_voice: "{} has been removed from this private voice channel."
+user_removed_from_private_voice_response: User has been removed from this private voice channel.
+cannot_remove_member: This member could not be removed.
+member_could_not_be_kicked: You cannot remove a team member from this voice channel.
+user_not_in_this_channel: User is not in the same private voice channel.
+owner_of_private_voice: "Owner of this private voice channel: {}"
+bot_no_owner_transfer: You cannot transfer ownership to a bot.
+private_voice_owner_changed: "{} is now the owner of this private voice channel."
+private_voice_owner_changed_response: "Owner of this private voice channel has been changed."
+link_on_dynamic_channel_not_created: >
+  Link could not be created for dynamic voice channel.
+  Specify the parent channel instead.
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
@@ -275,3 +324,175 @@ no_news_authorizations: No user has been authorized to send news yet.
 news_not_added_no_permissions: >
   User could not be authorized because I don't have `send_messages` permission in this channel.
 news_you_are_not_authorized: You are not authorized to send news in this channel.
+
+# mod tools
+no_role_set: No role set.
+role_set: Role has been set successfully.
+log_role_set_admin: "Administrator role has been set to `@{}` ({})"
+log_role_set_mod: "Moderator role has been set to `@{}` ({})"
+log_role_set_supp: "Supporter role has been set to `@{}` ({})"
+log_role_set_team: "Team role has been set to `@{}` ({})"
+log_role_set_mute: "Mute role has been set to `@{}` ({})"
+role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
+role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.
+
+no_dm: User does not allow direct messages.
+reason_too_long: Reason is too long.
+cannot_report: This member cannot be reported.
+reported_response: User reported.
+log_reported: "{} reported {} (`{}`) because of `{}`."
+cannot_warn: This member cannot be warned.
+warned: "{} just warned you on {}:```\n{}\n```"
+warned_response: User warned.
+log_warned: "{} warned {} (`{}`) because of `{}`."
+invalid_duration: Invalid duration.
+invalid_duration_inf: Invalid duration. Try `inf` instead.
+mute_role_not_set: User could not be muted because no mute role is configured.
+cannot_mute: This member cannot be muted.
+already_muted: User is already muted.
+muted: "{} just muted you on {} for {} days:```\n{}\n```"
+muted_inf: "{} just muted you on {}:```\n{}\n```"
+muted_response: User muted.
+log_muted: "{} muted {} (`{}`) for {} days because of `{}`."
+log_muted_inf: "{} muted {} (`{}`) because of `{}`."
+log_unmuted_expired: "Unmuted {} (`{}`) because the mute time for this user has expired."
+unmuted_response: User unmuted.
+log_unmuted: "{} unmuted {} (`{}`) because of `{}`."
+not_muted: User is not muted.
+kicked: "{} just kicked you from {}:```\n{}\n```"
+kicked_response: User kicked.
+log_kicked: "{} kicked {} (`{}`) because of `{}`."
+cannot_kick: This member cannot be kicked.
+cannot_kick_permissions: User could not be kicked because I don't have `kick_members` permission on this server.
+cannot_ban: This member cannot be banned.
+cannot_ban_permissions: User could not be banned because I don't have `ban_members` permission on this server.
+banned: "{} just banned you from {} for {} days:```\n{}\n```"
+banned_inf: "{} just banned you from {}:```\n{}\n```"
+banned_response: User banned.
+log_banned: "{} banned {} (`{}`) for {} days because of `{}`."
+log_banned_inf: "{} banned {} (`{}`) because of `{}`."
+log_unbanned_expired: "Unbanned {} (`{}`) because the ban time for this user has expired."
+not_banned: This member is not banned.
+unbanned_response: User unbanned.
+log_unbanned: "{} unbanned {} (`{}`) because of `{}`."
+cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
+user_not_found: User not found.
+filling_join_log: Creating join log entries for {} members. This may take a while.
+join_log_filled: Join log has been initialized successfully.
+
+stats_not_allowed: You are not allowed to access this information.
+stats: User Statistics
+reported_cnt: ":speech_balloon:  Reported"
+warned_cnt: ":warning:  Warned"
+muted_cnt: ":mute:  Muted"
+kicked_cnt: ":x:  Kicked"
+banned_cnt: ":no_entry:  Banned"
+active_passive: "active: `{}`\npassive: `{}`"
+status: Status
+member_since: ":clock2:  Member since {} (UTC)"
+not_a_member: ":x:  User is not a member of this server."
+status_banned: ":no_entry:  User is banned from this server."
+status_banned_days: ":no_entry:  User is banned for {} days from this server ({} days left)."
+status_muted: ":mute:  User is muted on this server."
+status_muted_days: ":mute:  User is muted for {} days on this server ({} days left)."
+userlogs: User Logs
+ulog_empty: No entries for this user.
+ulog_created: ":sparkles:  **Created** this account."
+ulog_joined: ":tada:  **Joined** this server."
+ulog_left: ":door:  **Left** this server."
+ulog_nick_set: ":label:  **Nickname set** to `{}`"
+ulog_nick_updated: ":label:  **Nickname changed** from `{}` to `{}`"
+ulog_nick_cleared: ":label:  **Nickname** `{}` **cleared**"
+ulog_username_updated: ":label:  **Username changed** from `{}` to `{}`"
+ulog_reported: ":speech_balloon:  **Reported** by {} because of `{}`"
+ulog_warned: ":warning:  **Warned** by {} because of `{}`"
+ulog_muted: ":mute:  **Muted** by {} for {} days because of `{}`"
+ulog_muted_inf: ":mute:  **Muted** by {} because of `{}`"
+ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
+ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
+ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
+ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
+ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
+ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
+ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
+ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"
+ulog_invite_removed: ":-1:  **Invite removed** by {}: {}"
+utc_note: Timestamps in UTC
+
+# permissions
+permission_levels:
+  - public
+  - supporter
+  - moderator
+  - administrator
+no_permissions: No priviliges granted.
+invalid_permission_level: Invalid permission level.
+invalid_permission: Invalid permission.
+permission_set: Permission `{}` has been granted to `>= {}`
+
+permissions:
+  vc_private_owner: pretend to be the owner of a private voice channel
+  vc_manage_dyn: manage dynamic voice channels
+  vc_manage_link: manage voice channel links
+
+  send: send a message as the bot
+  edit: edit messages sent by the bot
+  delete: delete a message
+
+  rr_manage: manage reactionrole
+
+  rp_pin: pin other user's messages
+  rp_manage: manage reactionpin
+
+  news_manage: manage news
+
+  warn: warn a user
+  mute: mute a user
+  kick: kick a user
+  ban: ban a user
+  view_stats: view other user's statistics
+  init_join_log: initialize join log
+
+  mq_reduce: reduce metaquestion embeds
+
+  mo_bypass: bypass mediaonly checks
+  mo_manage: manage mediaonly
+
+  btp_manage: manage betheprofessional roles
+
+  cb_list: list cleverbot channels
+  cb_manage: manage cleverbot
+  cb_reset: reset cleverbot sessions
+
+  invite_bypass: bypass invite checks
+  invite_manage: manage allowed invites
+
+  log_manage: manage logging
+
+  change_prefix: change bot prefix
+  admininfo: view admininfo
+  view_own_permissions: view own permissions
+  view_all_permissions: view all permissions
+
+  manage_reddit: manage reddit integration
+
+# reddit
+no_reddit_channels: No reddit links have been created yet.
+subreddit_not_found: Subreddit does not exist.
+reddit_link_not_created_permission: >
+  Reddit link could not be created because I don't have `send_messages` permission in this channel.
+reddit_link_already_exists: Reddit link already exists.
+reddit_link_created: Reddit link has been created.
+log_reddit_link_created: Reddit link `r/{}` -> {} has been created.
+reddit_link_not_found: Reddit link does not exist.
+reddit_link_removed: Reddit link has been removed.
+log_reddit_link_removed: Reddit link `r/{}` -> {} has been removed.
+done: "Done :white_check_mark:"
+reddit_interval: "Reddit lookup interval: {} hours"
+invalid_interval: Invalid interval.
+reddit_interval_set: Reddit lookup interval has been updated.
+log_reddit_interval_set: Reddit lookup interval has been set to {} hours.
+invalid_limit: Invalid limit.
+reddit_limit: "Reddit limit: {}"
+reddit_limit_set: Reddit limit has been updated.
+log_reddit_limit_set: Reddit limit has been set to {}.

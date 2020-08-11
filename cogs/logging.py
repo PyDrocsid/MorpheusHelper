@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from discord import (
@@ -8,11 +8,12 @@ from discord import (
     Embed,
     RawMessageDeleteEvent,
 )
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
 
 from database import run_in_thread
 from models.settings import Settings
+from permission import Permission
 from translations import translations
 from util import permission_level, calculate_edit_distance
 
@@ -33,10 +34,39 @@ class LoggingCog(Cog, name="Logging"):
         channel_id = await run_in_thread(Settings.get, int, "logging_" + event, -1)
         return self.bot.get_channel(channel_id) if channel_id != -1 else None
 
+    async def is_logging_channel(self, channel: TextChannel) -> bool:
+        return channel.id in [(await self.get_logging_channel(event)).id for event in ["edit", "delete"]]
+
+    async def on_ready(self):
+        try:
+            self.cleanup_loop.start()
+        except RuntimeError:
+            self.cleanup_loop.restart()
+        return True
+
+    @tasks.loop(minutes=30)
+    async def cleanup_loop(self):
+        days: int = await run_in_thread(Settings.get, int, "logging_maxage", -1)
+        if days == -1:
+            return
+
+        timestamp = datetime.utcnow() - timedelta(days=days)
+        for event in ["edit", "delete"]:
+            channel: Optional[TextChannel] = await self.get_logging_channel(event)
+            if channel is None:
+                continue
+
+            async for message in channel.history(limit=None, oldest_first=True):  # type: Message
+                if message.created_at > timestamp:
+                    break
+
+                await message.delete()
+
     async def on_message_edit(self, before: Message, after: Message) -> bool:
-        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         mindiff: int = await run_in_thread(Settings.get, int, "logging_edit_mindiff", 1)
-        if edit_channel is None or calculate_edit_distance(before.content, after.content) < mindiff:
+        if calculate_edit_distance(before.content, after.content) < mindiff:
+            return True
+        if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
@@ -50,8 +80,7 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_raw_message_edit(self, channel: TextChannel, message: Optional[Message]) -> bool:
-        edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
-        if edit_channel is None:
+        if (edit_channel := await self.get_logging_channel("edit")) is None:
             return True
 
         embed = Embed(title=translations.message_edited, color=0xFFFF00, timestamp=datetime.utcnow())
@@ -65,8 +94,9 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_message_delete(self, message: Message) -> bool:
-        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
-        if delete_channel is None:
+        if (delete_channel := await self.get_logging_channel("delete")) is None:
+            return True
+        if await self.is_logging_channel(message.channel):
             return True
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=(datetime.utcnow()))
@@ -88,13 +118,15 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     async def on_raw_message_delete(self, event: RawMessageDeleteEvent) -> bool:
-        delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
-        if delete_channel is None:
+        if (delete_channel := await self.get_logging_channel("delete")) is None:
             return True
 
         embed = Embed(title=translations.message_deleted, color=0xFF0000, timestamp=datetime.utcnow())
         channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
         if channel is not None:
+            if await self.is_logging_channel(channel):
+                return True
+
             embed.add_field(name=translations.channel, value=channel.mention)
             embed.add_field(name=translations.message_id, value=event.message_id, inline=False)
         await delete_channel.send(embed=embed)
@@ -102,7 +134,7 @@ class LoggingCog(Cog, name="Logging"):
         return True
 
     @commands.group(name="logging", aliases=["log"])
-    @permission_level(1)
+    @permission_level(Permission.log_manage)
     @guild_only()
     async def logging(self, ctx: Context):
         """
@@ -136,6 +168,42 @@ class LoggingCog(Cog, name="Logging"):
         else:
             out.append(" - " + translations.changelog_off)
         await ctx.send("\n".join(out))
+
+    @logging.group(name="maxage", aliases=["ma"])
+    async def maxage(self, ctx: Context):
+        """
+        manage period after which the log entries should be deleted
+        """
+
+        if ctx.invoked_subcommand is not None:
+            return
+
+        days: int = await run_in_thread(Settings.get, int, "logging_maxage", -1)
+        if days == -1:
+            await ctx.send(translations.maxage_disabled)
+        else:
+            await ctx.send(translations.f_maxage_enabled(days))
+
+    @maxage.command(name="set", aliases=["s", "="])
+    async def maxage_set(self, ctx: Context, days: int):
+        """
+        set max age for log entries
+        """
+
+        if not 0 < days < (1 << 31):
+            raise CommandError(translations.invalid_duration)
+
+        await run_in_thread(Settings.set, int, "logging_maxage", days)
+        await ctx.send(translations.f_maxage_set(days))
+
+    @maxage.command(name="disable", aliases=["d", "off"])
+    async def maxage_disable(self, ctx: Context):
+        """
+        disable automatic deletion of old log entries
+        """
+
+        await run_in_thread(Settings.set, int, "logging_maxage", -1)
+        await ctx.send(translations.maxage_set_disabled)
 
     @logging.group(name="edit", aliases=["e"])
     async def edit(self, ctx: Context):

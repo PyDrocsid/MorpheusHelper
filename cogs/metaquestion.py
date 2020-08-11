@@ -1,13 +1,14 @@
 import re
 
-from discord import Embed, Member, Message, PartialEmoji
+from discord import Embed, Member, Message, PartialEmoji, Forbidden
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
 from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
+from permission import Permission
 from translations import translations
-from util import check_access
+from util import check_permissions
 
 WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
 
@@ -39,11 +40,14 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         if emoji.name == "metaquestion":
             media_only = (
-                not await check_access(member)
+                not await check_permissions(member, Permission.mo_bypass)
                 and await run_in_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
             )
             if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
-                await message.remove_reaction(emoji, member)
+                try:
+                    await message.remove_reaction(emoji, member)
+                except Forbidden:
+                    pass
                 return False
 
             for reaction in message.reactions:
@@ -55,20 +59,26 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
             await msg.add_reaction(WASTEBASKET)
             return False
-        elif emoji.name == WASTEBASKET:
+        if emoji.name == WASTEBASKET:
             for embed in message.embeds:
                 pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
                 if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
                     author_id = int(match.group(1))
-                    if not (author_id == member.id or await check_access(member)):
-                        await message.remove_reaction(emoji, member)
+                    if not (author_id == member.id or await check_permissions(member, Permission.mq_reduce)):
+                        try:
+                            await message.remove_reaction(emoji, member)
+                        except Forbidden:
+                            pass
                         return False
                     break
             else:
                 return True
 
             await message.clear_reactions()
-            await message.edit(content=message.content + " http://metafrage.de/", embed=None)
+            await message.edit(
+                content=message.content + " " + translations.f_metaquestion_description_reduced(f"<@{author_id}>"),
+                embed=None,
+            )
             return False
 
         return True

@@ -17,6 +17,8 @@ from discord import (
     VoiceState,
     TextChannel,
     User,
+    NotFound,
+    Forbidden,
 )
 from discord.ext import tasks
 from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
@@ -30,15 +32,18 @@ from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
+from cogs.mod import ModCog
 from cogs.news import NewsCog
+from cogs.permissions import PermissionsCog
 from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.rules import RulesCog
 from cogs.voice_channel import VoiceChannelCog
-from database import db, run_in_thread
+from cogs.reddit import RedditCog
+from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
-from models.authorized_role import AuthorizedRole
+from permission import Permission
 from translations import translations
 from util import (
     permission_level,
@@ -75,18 +80,22 @@ bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=transl
 
 def get_owner() -> Optional[User]:
     owner_id = os.getenv("OWNER_ID")
-    if owner_id:
+    if owner_id and owner_id.isnumeric():
         return bot.get_user(int(owner_id))
+    return None
 
 
 @bot.event
 async def on_ready():
     if (owner := get_owner()) is not None:
-        await owner.send("logged in")
+        try:
+            await owner.send("logged in")
+        except Forbidden:
+            pass
 
     print(f"Logged in as {bot.user}")
 
-    if get_owner() is not None:
+    if owner is not None:
         try:
             status_loop.start()
         except RuntimeError:
@@ -97,12 +106,17 @@ async def on_ready():
 
 @tasks.loop(seconds=20)
 async def status_loop():
-    messages = await get_owner().history(limit=1).flatten()
+    if (owner := get_owner()) is None:
+        return
+    messages = await owner.history(limit=1).flatten()
     content = "heartbeat: " + time.ctime()
     if messages and messages[0].content.startswith("heartbeat: "):
         await messages[0].edit(content=content)
     else:
-        await get_owner().send(content)
+        try:
+            await owner.send(content)
+        except Forbidden:
+            pass
 
 
 @bot.command()
@@ -120,17 +134,19 @@ async def ping(ctx: Context):
 
 @bot.command(aliases=["yn"])
 @guild_only()
-async def yesno(ctx: Context):
+async def yesno(ctx: Context, message: Optional[Message] = None):
     """
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    await ctx.message.add_reaction(chr(0x1F44D))
-    await ctx.message.add_reaction(chr(0x1F44E))
+    if message is None:
+        message = ctx.message
+    await message.add_reaction(chr(0x1F44D))
+    await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
-@permission_level(1)
+@permission_level(Permission.change_prefix)
 @guild_only()
 async def change_prefix(ctx: Context, new_prefix: str):
     """
@@ -147,66 +163,6 @@ async def change_prefix(ctx: Context, new_prefix: str):
     await set_prefix(new_prefix)
     await ctx.send(translations.prefix_updated)
     await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))
-
-
-@bot.group()
-@permission_level(2)
-@guild_only()
-async def auth(ctx: Context):
-    """
-    manage roles authorized to control this bot
-    """
-
-    if ctx.invoked_subcommand is None:
-        await ctx.send_help(auth)
-
-
-@auth.command(name="list", aliases=["l", "?"])
-async def auth_list(ctx: Context):
-    """
-    list authorized roles
-    """
-
-    roles = []
-    for auth_role in await run_in_thread(db.all, AuthorizedRole):
-        if (role := ctx.guild.get_role(auth_role.role)) is not None:
-            roles.append(f" - `@{role}` (`{role.id}`)")
-        else:
-            await run_in_thread(db.delete, auth_role)
-    if roles:
-        await ctx.send(translations.authorized_roles_header + "\n" + "\n".join(roles))
-    else:
-        await ctx.send(translations.no_authorized_roles)
-
-
-@auth.command(name="add", aliases=["a", "+"])
-async def auth_add(ctx: Context, *, role: Role):
-    """
-    authorize role to control this bot
-    """
-
-    authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
-    if authorization is not None:
-        raise CommandError(translations.f_already_authorized(role))
-
-    await run_in_thread(AuthorizedRole.create, role.id)
-    await ctx.send(translations.f_role_authorized(role))
-    await send_to_changelog(ctx.guild, translations.f_log_role_authorized(role))
-
-
-@auth.command(name="remove", aliases=["del", "r", "d", "-"])
-async def auth_del(ctx: Context, *, role: Role):
-    """
-    unauthorize role to control this bot
-    """
-
-    authorization: Optional[AuthorizedRole] = await run_in_thread(db.get, AuthorizedRole, role.id)
-    if authorization is None:
-        raise CommandError(translations.f_not_authorized(role))
-
-    await run_in_thread(db.delete, authorization)
-    await ctx.send(translations.f_role_unauthorized(role))
-    await send_to_changelog(ctx.guild, translations.f_log_role_unauthorized(role))
 
 
 async def build_info_embed(authorized: bool) -> Embed:
@@ -233,6 +189,15 @@ async def build_info_embed(authorized: bool) -> Embed:
     return embed
 
 
+@bot.command(name="github", aliases=["gh"])
+async def github(ctx: Context):
+    """
+    return the github link
+    """
+
+    await ctx.send(GITHUB_LINK)
+
+
 @bot.command(name="info", aliases=["infos", "about"])
 async def info(ctx: Context):
     """
@@ -243,7 +208,7 @@ async def info(ctx: Context):
 
 
 @bot.command(name="admininfo", aliases=["admininfos"])
-@permission_level(1)
+@permission_level(Permission.admininfo)
 async def admininfo(ctx: Context):
     """
     show information about the bot (admin view)
@@ -257,7 +222,7 @@ async def on_error(*_, **__):
     if sentry_dsn:
         sentry_sdk.capture_exception()
     else:
-        raise
+        raise  # skipcq: PYL-E0704
 
 
 @bot.event
@@ -273,7 +238,11 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+        try:
+            message = await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
+        return message, event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
@@ -284,7 +253,11 @@ async def on_raw_reaction_remove(event: RawReactionActionEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return await channel.fetch_message(event.message_id), event.emoji, channel.guild.get_member(event.user_id)
+        try:
+            message = await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
+        return message, event.emoji, channel.guild.get_member(event.user_id)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
@@ -295,13 +268,18 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return [await channel.fetch_message(event.message_id)]
+        try:
+            return [await channel.fetch_message(event.message_id)]
+        except NotFound:
+            return
 
     await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
+    if before.guild is None:
+        return
     await call_event_handlers("message_edit", before, after, identifier=after.id)
 
 
@@ -314,19 +292,24 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
-        return channel, await channel.fetch_message(event.message_id)
+        try:
+            return channel, await channel.fetch_message(event.message_id)
+        except NotFound:
+            return
 
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
 
 
 @bot.event
 async def on_message_delete(message: Message):
+    if message.guild is None:
+        return
     await call_event_handlers("message_delete", message, identifier=message.id)
 
 
 @bot.event
 async def on_raw_message_delete(event: RawMessageDeleteEvent):
-    if event.cached_message is not None:
+    if event.cached_message is not None or event.guild_id is None:
         return
 
     await call_event_handlers("raw_message_delete", event, identifier=event.message_id)
@@ -335,6 +318,26 @@ async def on_raw_message_delete(event: RawMessageDeleteEvent):
 @bot.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
     await call_event_handlers("voice_state_update", member, before, after, identifier=member.id)
+
+
+@bot.event
+async def on_member_join(member: Member):
+    await call_event_handlers("member_join", member, identifier=member.id)
+
+
+@bot.event
+async def on_member_remove(member: Member):
+    await call_event_handlers("member_remove", member, identifier=member.id)
+
+
+@bot.event
+async def on_member_update(before: Member, after: Member):
+    await call_event_handlers("member_update", before, after, identifier=before.id)
+
+
+@bot.event
+async def on_user_update(before: User, after: User):
+    await call_event_handlers("user_update", before, after, identifier=before.id)
 
 
 @bot.event
@@ -375,5 +378,8 @@ register_cogs(
     CleverBotCog,
     NewsCog,
     RandomStuffCog,
+    ModCog,
+    PermissionsCog,
+    RedditCog,
 )
 bot.run(os.environ["TOKEN"])

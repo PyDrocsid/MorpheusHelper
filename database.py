@@ -1,4 +1,3 @@
-import asyncio
 from asyncio import BoundedSemaphore
 from os import environ as env
 from typing import TypeVar, Optional, Union, Iterable, Type, List
@@ -8,14 +7,17 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session, Query, Session
 
+import async_thread
+
 T = TypeVar("T")
 
 
 class DB:
     def __init__(self, hostname, port, database, username, password):
         self.engine: Engine = create_engine(
-            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}",
+            f"mysql+pymysql://{username}:{password}@{hostname}:{port}/{database}?charset=utf8mb4",
             pool_pre_ping=True,
+            pool_recycle=300,
             pool_size=10,
             max_overflow=20,
         )
@@ -45,6 +47,9 @@ class DB:
     def first(self, model: Type[T], **kwargs) -> Optional[T]:
         return self.query(model, **kwargs).first()
 
+    def count(self, model: Type[T], **kwargs) -> int:
+        return self.query(model, **kwargs).count()
+
     def get(self, model: Type[T], primary_key) -> Optional[T]:
         return self.session.query(model).get(primary_key)
 
@@ -60,13 +65,14 @@ async def run_in_thread(function, *args, **kwargs):
     async with thread_semaphore:
 
         def inner():
-            out = function(*args, **kwargs)
-            db.session.commit()
-            db.close()
+            try:
+                out = function(*args, **kwargs)
+                db.session.commit()
+            finally:
+                db.close()
             return out
 
-        result = await asyncio.get_running_loop().run_in_executor(None, inner)
-        return result
+        return await async_thread.run_in_thread(inner)
 
 
 db: DB = DB(
