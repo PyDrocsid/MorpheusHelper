@@ -185,7 +185,7 @@ metaquestion_description: >
   Eine Metafrage ist eine Frage über eine Frage, wie beispielsweise „Darf ich etwas fragen?“
   oder „Kennt sich jemand mit Computern aus?“.
 
-  In der Regel wird der Begriff Metafrage aber verallgemeinert und damit alle Fragen bezeichnet,
+  In der Regel wird der Begriff Metafrage aber verallgemeinert und für alle Fragen verwendet,
   die keine direkte Frage zum Problem des Hilfesuchenden sind. Der Hilfesuchende fragt also zunächst
   allgemein, ob jemand helfen kann. Gerade Neulinge oder unerfahrene Benutzer lassen sich zu Metafragen
   hinreißen, um einen kompetenten und hilfsbereiten Ansprechpartner zu finden. Meistens werden Metafragen
@@ -210,7 +210,7 @@ mq_disadvantages:
     spezielle Frage zu diesem beantworten kann – niemand ist allwissend,
   - >-
     wenn keine Reaktion auf die Metafrage erfolgt, beläßt es der Fragende meist dabei. So
-    kann eine Antwort auf das Problem von später aufmerksam Werdenden nicht erfolgen.
+    kann eine Antwort auf das Problem von später Aufmerksamwerdenden nicht erfolgen.
 
 # reactionpin
 msg_not_pinned_system: Message could not be pinned, because it is a system message.
