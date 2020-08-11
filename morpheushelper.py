@@ -174,7 +174,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         inline=False,
     )
     embed.add_field(name=translations.author_title, value="<@370876111992913922>", inline=True)
-    embed.add_field(name=translations.contributors_title, value=", ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
+    embed.add_field(name=translations.contributors_title, value=" ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
     embed.add_field(name=translations.version_title, value=VERSION, inline=True)
     embed.add_field(name=translations.github_title, value=GITHUB_LINK, inline=False)
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
