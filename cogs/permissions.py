@@ -6,7 +6,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadAr
 
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from permissions import Permission, PermissionLevel
+from permissions import Permission, PermissionLevel  # skipcq: PYL-W0406
 
 
 async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel):
