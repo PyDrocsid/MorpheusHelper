@@ -563,12 +563,12 @@ log_reddit_limit_set: Reddit limit has been set to {}.
 # autokick
 autokick: AutoKick
 autokick_mode_configured:
-  - AutoKick has been disabled.
-  - AutoKick mode has been set to normal.
-  - AutoKick mode has been set to reverse.
-autokick_delay_configured: AutoKick delay has been configured.
+  - ":white_check_mark: AutoKick has been disabled."
+  - ":white_check_mark: AutoKick mode has been set to normal."
+  - ":white_check_mark: AutoKick mode has been set to reverse."
+autokick_delay_configured: ":white_check_mark: AutoKick delay has been configured."
 log_autokick_delay_configured: AutoKick delay has been set to {} seconds.
-autokick_role_configured: AutoKick role has been configured.
+autokick_role_configured: ":white_check_mark: AutoKick role has been configured."
 log_autokick_role_configured: "AutoKick role has been set to `@{}` ({})"
 autokick_disabled: AutoKick is disabled.
 autokick_mode:
@@ -582,11 +582,11 @@ log_autokicked: "Kicked automatically."
 
 # instantkick
 instantkick: InstantKick
-instantkick_disabled: InstantKick is disabled.
-instantkick_enabled: InstantKick is enabled.
-instantkick_set_disabled: InstantKick has been disabled.
-instantkick_role_configured: InstantKick role has been configured.
-log_instantkick_role_configured: "InstantKick role has been set to `@{}` ({})"
+instantkick_disabled: ":x: InstantKick is disabled."
+instantkick_enabled: ":white_check_mark: InstantKick is enabled."
+instantkick_set_disabled: ":white_check_mark: InstantKick has been disabled."
+instantkick_role_configured: ":white_check_mark: InstantKick role has been configured."
+log_instantkick_role_configured: ":white_check_mark: InstantKick role has been set to `@{}` ({})"
 instantkick_cannot_kick: Members with this role cannot be kicked.
 
 # verification

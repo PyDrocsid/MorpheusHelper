@@ -22,7 +22,9 @@ async def kick(member: Member) -> bool:
         return False
 
     try:
-        await member.send(translations.f_autokicked(member.guild.name))
+        embed = Embed(title=translations.autokick, description=translations.f_autokicked(member.guild.name),
+                      colour=0x256BE6)
+        await member.send(embed=embed)
     except (Forbidden, HTTPException):
         pass
     await member.kick(reason=translations.log_autokicked)
@@ -142,7 +144,9 @@ class AutoModCog(Cog, name="AutoMod"):
             raise UserInputError
 
         await run_in_thread(Settings.set, int, "autokick_mode", mode)
-        await ctx.send(translations.autokick_mode_configured[mode])
+        embed = Embed(title=translations.autokick, description=translations.autokick_mode_configured[mode],
+                      colour=0x256BE6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.autokick_mode_configured[mode])
 
     @autokick.command(name="delay", aliases=["d"])
@@ -155,7 +159,8 @@ class AutoModCog(Cog, name="AutoMod"):
             raise CommandError(translations.invalid_duration)
 
         await run_in_thread(Settings.set, int, "autokick_delay", seconds)
-        await ctx.send(translations.autokick_delay_configured)
+        embed = Embed(title=translations.autokick, description=translations.autokick_delay_configured, colour=0x256BE6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_autokick_delay_configured(seconds))
 
     @autokick.command(name="role", aliases=["r"])
@@ -165,7 +170,8 @@ class AutoModCog(Cog, name="AutoMod"):
         """
 
         await run_in_thread(Settings.set, int, "autokick_role", role.id)
-        await ctx.send(translations.autokick_role_configured)
+        embed = Embed(title=translations.autokick, description=translations.autokick_role_configured, colour=0x256BE6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.name, role.id))
 
     @commands.group(name="instantkick", aliases=["ik"])
@@ -201,7 +207,9 @@ class AutoModCog(Cog, name="AutoMod"):
         """
 
         await run_in_thread(Settings.set, int, "instantkick_role", -1)
-        await ctx.send(translations.instantkick_set_disabled)
+        embed = Embed(title=translations.instantkick, description=translations.instantkick_set_disabled,
+                      colour=0x256BE6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.instantkick_set_disabled)
 
     @instantkick.command(name="role", aliases=["r"])
@@ -214,5 +222,7 @@ class AutoModCog(Cog, name="AutoMod"):
             raise CommandError(translations.instantkick_cannot_kick)
 
         await run_in_thread(Settings.set, int, "instantkick_role", role.id)
-        await ctx.send(translations.instantkick_role_configured)
+        embed = Embed(title=translations.instantkick, description=translations.instantkick_role_configured,
+                      colour=0x256BE6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_instantkick_role_configured(role.name, role.id))
