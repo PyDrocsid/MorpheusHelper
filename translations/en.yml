@@ -124,15 +124,15 @@ offline: Offline
 
 # invites
 illegal_invite_link: >
-  {} Illegal discord invite link!
+  :x: Illegal discord invite link!
   Please contact a team member to submit a request for whitelisting the invitation.
   Use the command `{}` to get a list of all allowed discord servers.
 log_illegal_invite: "Deleted a message of {} in {} because it contained one or more illegal discord invite links: {}"
 log_illegal_invite_not_deleted: |
   {} sent a message in {} which contained one or more illegal discord invite links: {}
   The message could not be deleted because I don't have `manage_messages` permission in this channel.
-allowed_servers_header: "Allowed discord servers (any link to these servers is allowed):"
-no_server_allowed: No discord servers allowed.
+allowed_servers_title: "Allowed discord servers (any link to these servers is allowed to post)"
+no_server_allowed: ":x: No discord servers allowed."
 invalid_invite: Invalid invite.
 allowed_server_not_found: Allowed discord server not found.
 allowed_server: Allowed Discord Server
@@ -144,13 +144,14 @@ applicant: Applicant
 approver: Approver
 date: Date
 server_already_whitelisted: This server has already been whitelisted.
-server_whitelisted: Server has been whitelisted successfully.
-log_server_whitelisted: Discord Server `{}` has been added to the whitelist.
+server_whitelisted: ":white_check_mark: Server has been whitelisted successfully."
+log_server_whitelisted: ":white_check_mark: Discord Server `{}` has been added to the whitelist."
 server_not_whitelisted: Server is not whitelisted.
-server_removed: Server has been removed from the whitelist successfully.
+server_removed: ":white_check_mark: Server has been removed from the whitelist successfully."
 log_server_removed: Discord Server `{}` has been removed from the whitelist.
-invite_updated: Invite link for `{}` has been updated.
+invite_updated: ":white_check_mark: Invite link for `{}` has been updated."
 log_invite_updated: "{} just updated the invite link for `{}`."
+invites: Invites
 
 # logging
 message_edited: Message Edited
