@@ -3,7 +3,7 @@ import string
 from asyncio import Lock
 from typing import Optional, Dict
 
-from discord import TextChannel, Message, Guild
+from discord import TextChannel, Message, Guild, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError, UserInputError
 
@@ -12,7 +12,7 @@ from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, send_long_embed
 
 cleverbot_lock = Lock()
 
@@ -67,13 +67,16 @@ class CleverBotCog(Cog, name="CleverBot"):
         for channel in await run_in_thread(db.query, CleverBotChannel):
             text_channel: Optional[TextChannel] = guild.get_channel(channel.channel)
             if text_channel is not None:
-                out.append(f"- {text_channel.mention}")
+                out.append(f":small_orange_diamond: {text_channel.mention}")
                 if text_channel in self.states:
                     out[-1] += f" ({self.states[text_channel].cnt})"
+        embed = Embed(title=translations.whitelisted_channels_header, colour=0x8ebbf6)
+        embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/de/1/15/Cleverbot_Logo.jpg")
         if out:
-            await ctx.send(translations.whitelisted_channels_header + "\n" + "\n".join(out))
+            embed.description = "\n".join(out)
         else:
-            await ctx.send(translations.no_whitelisted_channels)
+            embed.description = translations.no_whitelisted_channels
+        await send_long_embed(ctx, embed)
 
     @cleverbot.command(name="add", aliases=["a", "+"])
     @permission_level(Permission.cb_manage)
@@ -86,7 +89,8 @@ class CleverBotCog(Cog, name="CleverBot"):
             raise CommandError(translations.channel_already_whitelisted)
 
         await run_in_thread(CleverBotChannel.create, channel.id)
-        await ctx.send(translations.channel_whitelisted)
+        embed = Embed(title=translations.cleverbot, description=translations.channel_whitelisted, colour=0x8ebbf6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 
     @cleverbot.command(name="remove", aliases=["del", "d", "-"])
@@ -103,16 +107,23 @@ class CleverBotCog(Cog, name="CleverBot"):
             self.states.pop(channel)
 
         await run_in_thread(db.delete, row)
-        await ctx.send(translations.channel_removed)
+        embed = Embed(title=translations.cleverbot, description=translations.channel_removed, colour=0x8ebbf6)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
 
-    @cleverbot.command(name="reset")
+    @cleverbot.command(name="reset", aliases=["r"])
     @permission_level(Permission.cb_reset)
     async def reset_session(self, ctx: Context, channel: TextChannel):
         """
         reset cleverbot session for a channel
         """
 
-        if channel in self.states:
-            self.states.pop(channel)
-        await ctx.send(translations.f_session_reset(channel.mention))
+        embed = Embed(title=translations.cleverbot, colour=0x8ebbf6)
+
+        if channel in self.states or await run_in_thread(db.get, CleverBotChannel, channel.id) is not None:
+            embed.description = translations.f_session_reset(channel.mention)
+            if channel in self.states:
+                self.states.pop(channel)
+        else:
+            embed.description = translations.channel_not_whitelisted
+        await ctx.send(embed=embed)
