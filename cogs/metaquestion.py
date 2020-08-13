@@ -8,13 +8,13 @@ from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from permission import Permission
 from translations import translations
-from util import check_permissions
+from util import check_permissions, get_colour
 
 WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
 
 
 def make_embed(requested_by: Member) -> Embed:
-    embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/")
+    embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/", colour=get_colour("Metafragen"))
     embed.description = translations.metaquestion_description
     embed.set_footer(text=translations.f_requested_by(requested_by, requested_by.id), icon_url=requested_by.avatar_url)
     embed.add_field(
