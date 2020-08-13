@@ -259,8 +259,7 @@ def get_colour(self):
     try:
         if isinstance(self, Cog):
             return translations.colours[self.qualified_name]
-        elif isinstance(self, str):
-            return translations.colours[self]
+        return translations.colours[self]
     except KeyError:
         return translations.colours["default"]
 
