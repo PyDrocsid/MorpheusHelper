@@ -10,7 +10,7 @@ from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite, InviteLog
 from permission import Permission
 from translations import translations
-from util import permission_level, check_permissions, send_to_changelog, get_prefix, send_long_embed
+from util import permission_level, check_permissions, send_to_changelog, get_prefix, send_long_embed, get_colour
 
 
 class AllowedServerConverter(Converter):
@@ -93,7 +93,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 await message.delete()
             prefix = await get_prefix()
             embed = Embed(title=translations.invites,
-                          description=translations.f_illegal_invite_link(prefix + "invites list"), color=0xCF0606)
+                          description=translations.f_illegal_invite_link(prefix + "invites list"),
+                          color=get_colour("red"))
             await message.channel.send(content=message.author.mention, embed=embed, delete_after=30)
             if can_delete:
                 await send_to_changelog(
@@ -145,9 +146,9 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         out = []
         for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
             out.append(f":small_orange_diamond: {row.guild_name} ({row.guild_id})")
-        embed = Embed(title=translations.allowed_servers_title, colour=0xCF0606)
+        embed = Embed(title=translations.allowed_servers_title, colour=get_colour("red"))
         if out:
-            embed.colour = 0x00a300
+            embed.colour = get_colour(self)
             embed.description = "\n".join(out)
             await send_long_embed(ctx, embed)
         else:
@@ -162,7 +163,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         invite: AllowedInvite
         date = invite.created_at
-        embed = Embed(title=translations.allowed_server, color=0x00a300)
+        embed = Embed(title=translations.allowed_server, color=get_colour(self))
         invite_guild = await self.check_invite(invite.code)
         if invite_guild is not None:
             invite_title = translations.invite_link
@@ -195,7 +196,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await run_in_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
         await run_in_thread(InviteLog.create, guild.id, guild.name, applicant.id, ctx.author.id, True)
-        embed = Embed(title=translations.invites, description=translations.server_whitelisted, color=0x00a300)
+        embed = Embed(title=translations.invites, description=translations.server_whitelisted, color=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_server_whitelisted(guild.name))
 
@@ -218,7 +219,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await run_in_thread(AllowedInvite.update, guild.id, invite.code)
         embed = Embed(title=translations.invites, description=translations.f_invite_updated(row.guild_name),
-                      color=0x00a300)
+                      color=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, row.guild_name))
 
@@ -234,6 +235,6 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await run_in_thread(
             InviteLog.create, server.guild_id, server.guild_name, server.applicant, ctx.author.id, False
         )
-        embed = Embed(title=translations.invites, description=translations.server_removed, color=0x00a300)
+        embed = Embed(title=translations.invites, description=translations.server_removed, color=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_server_removed(server.guild_name))

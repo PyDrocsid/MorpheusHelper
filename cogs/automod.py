@@ -11,7 +11,7 @@ from models.mod import Kick
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog
+from util import permission_level, send_to_changelog, get_colour
 
 
 async def kick(member: Member) -> bool:
@@ -23,7 +23,7 @@ async def kick(member: Member) -> bool:
 
     try:
         embed = Embed(title=translations.autokick, description=translations.f_autokicked(member.guild.name),
-                      colour=0x256BE6)
+                      colour=get_colour("AutoMod"))
         await member.send(embed=embed)
     except (Forbidden, HTTPException):
         pass
@@ -113,7 +113,7 @@ class AutoModCog(Cog, name="AutoMod"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.autokick, colour=0xCF0606)
+        embed = Embed(title=translations.autokick, colour=get_colour("red"))
         mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
         role: Optional[Role] = await self.get_autokick_role()
         if mode == 0 or role is None:
@@ -122,7 +122,7 @@ class AutoModCog(Cog, name="AutoMod"):
             return
 
         embed.add_field(name=translations.status, value=translations.autokick_mode[mode - 1], inline=False)
-        embed.colour = [0x256BE6, 0x03AD28][mode - 1]
+        embed.colour = get_colour(self)
         delay: int = await run_in_thread(Settings.get, int, "autokick_delay", 30)
         embed.add_field(name=translations.delay, value=translations.f_x_seconds(delay), inline=False)
         embed.add_field(name=translations.role, value=role.mention, inline=False)
@@ -145,7 +145,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         await run_in_thread(Settings.set, int, "autokick_mode", mode)
         embed = Embed(title=translations.autokick, description=translations.autokick_mode_configured[mode],
-                      colour=0x256BE6)
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.autokick_mode_configured[mode])
 
@@ -159,7 +159,8 @@ class AutoModCog(Cog, name="AutoMod"):
             raise CommandError(translations.invalid_duration)
 
         await run_in_thread(Settings.set, int, "autokick_delay", seconds)
-        embed = Embed(title=translations.autokick, description=translations.autokick_delay_configured, colour=0x256BE6)
+        embed = Embed(title=translations.autokick, description=translations.autokick_delay_configured,
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_autokick_delay_configured(seconds))
 
@@ -170,7 +171,8 @@ class AutoModCog(Cog, name="AutoMod"):
         """
 
         await run_in_thread(Settings.set, int, "autokick_role", role.id)
-        embed = Embed(title=translations.autokick, description=translations.autokick_role_configured, colour=0x256BE6)
+        embed = Embed(title=translations.autokick, description=translations.autokick_role_configured,
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.name, role.id))
 
@@ -187,7 +189,7 @@ class AutoModCog(Cog, name="AutoMod"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.instantkick, colour=0xCF0606)
+        embed = Embed(title=translations.instantkick, colour=get_colour("red"))
         role: Optional[Role] = await self.get_instantkick_role()
         if role is None:
             embed.add_field(name=translations.status, value=translations.instantkick_disabled)
@@ -195,7 +197,7 @@ class AutoModCog(Cog, name="AutoMod"):
             return
 
         embed.add_field(name=translations.status, value=translations.instantkick_enabled, inline=False)
-        embed.colour = 0x256BE6
+        embed.colour = get_colour(self)
         embed.add_field(name=translations.role, value=role.mention, inline=False)
 
         await ctx.send(embed=embed)
@@ -208,7 +210,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         await run_in_thread(Settings.set, int, "instantkick_role", -1)
         embed = Embed(title=translations.instantkick, description=translations.instantkick_set_disabled,
-                      colour=0x256BE6)
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.instantkick_set_disabled)
 
@@ -223,6 +225,6 @@ class AutoModCog(Cog, name="AutoMod"):
 
         await run_in_thread(Settings.set, int, "instantkick_role", role.id)
         embed = Embed(title=translations.instantkick, description=translations.instantkick_role_configured,
-                      colour=0x256BE6)
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_instantkick_role_configured(role.name, role.id))

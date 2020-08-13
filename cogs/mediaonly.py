@@ -11,7 +11,7 @@ from database import run_in_thread, db
 from models.mediaonly_channel import MediaOnlyChannel
 from permission import Permission
 from translations import translations
-from util import permission_level, check_permissions, send_to_changelog, send_long_embed
+from util import permission_level, check_permissions, send_to_changelog, send_long_embed, get_colour
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -40,7 +40,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         channel: TextChannel = message.channel
         await message.delete()
         embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia,
-                      colour=0xCF0606)
+                      colour=get_colour("red"))
         await channel.send(content=message.author.mention, embed=embed, delete_after=30)
         await send_to_changelog(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
@@ -73,9 +73,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
                 out.append(f":small_orange_diamond: {text_channel.mention}")
             else:
                 await run_in_thread(db.delete, channel)
-        embed = Embed(title=translations.media_only_channels_header, colour=0xCF0606)
+        embed = Embed(title=translations.media_only_channels_header, colour=get_colour("red"))
         if out:
-            embed.colour = 0xe4e800
+            embed.colour = get_colour(self)
             embed.description = "\n".join(out)
             await send_long_embed(ctx, embed)
         else:
@@ -95,7 +95,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         await run_in_thread(MediaOnlyChannel.create, channel.id)
         embed = Embed(title=translations.media_only_channels_header, description=translations.channel_now_media_only,
-                      colour=0xe4e800)
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_now_media_only(channel.mention))
 
@@ -111,6 +111,6 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         await run_in_thread(db.delete, row)
         embed = Embed(title=translations.media_only_channels_header,
                       description=translations.channel_not_media_only_anymore,
-                      colour=0xe4e800)
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_not_media_only_anymore(channel.mention))

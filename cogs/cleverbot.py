@@ -12,7 +12,7 @@ from database import run_in_thread, db
 from models.cleverbot_channel import CleverBotChannel
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, send_long_embed
+from util import permission_level, send_to_changelog, send_long_embed, get_colour
 
 cleverbot_lock = Lock()
 
@@ -70,7 +70,7 @@ class CleverBotCog(Cog, name="CleverBot"):
                 out.append(f":small_orange_diamond: {text_channel.mention}")
                 if text_channel in self.states:
                     out[-1] += f" ({self.states[text_channel].cnt})"
-        embed = Embed(title=translations.whitelisted_channels_header, colour=0x8ebbf6)
+        embed = Embed(title=translations.whitelisted_channels_header, colour=get_colour(self))
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/de/1/15/Cleverbot_Logo.jpg")
         if out:
             embed.description = "\n".join(out)
@@ -89,7 +89,8 @@ class CleverBotCog(Cog, name="CleverBot"):
             raise CommandError(translations.channel_already_whitelisted)
 
         await run_in_thread(CleverBotChannel.create, channel.id)
-        embed = Embed(title=translations.cleverbot, description=translations.channel_whitelisted, colour=0x8ebbf6)
+        embed = Embed(title=translations.cleverbot, description=translations.channel_whitelisted,
+                      colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 
@@ -107,7 +108,7 @@ class CleverBotCog(Cog, name="CleverBot"):
             self.states.pop(channel)
 
         await run_in_thread(db.delete, row)
-        embed = Embed(title=translations.cleverbot, description=translations.channel_removed, colour=0x8ebbf6)
+        embed = Embed(title=translations.cleverbot, description=translations.channel_removed, colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
 
@@ -118,7 +119,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         reset cleverbot session for a channel
         """
 
-        embed = Embed(title=translations.cleverbot, colour=0x8ebbf6)
+        embed = Embed(title=translations.cleverbot, colour=get_colour(self))
 
         if channel in self.states or await run_in_thread(db.get, CleverBotChannel, channel.id) is not None:
             embed.description = translations.f_session_reset(channel.mention)

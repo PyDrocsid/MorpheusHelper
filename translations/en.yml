@@ -618,3 +618,13 @@ verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
 verification_reverse_role_not_assigned: Verification failed!
 disabled: ":x: Disabled"
+
+# colours
+colours:
+  default: 0x008080
+  red: 0xCF0606
+  # Cogs
+  AutoMod: 0x256BE6
+  Allowed Discord Invites: 0x00a300
+  CleverBot: 0x8ebbf6
+  MediaOnly: 0xe4e800

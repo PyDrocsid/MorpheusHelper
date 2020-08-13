@@ -255,6 +255,16 @@ async def read_complete_message(message: Message) -> Tuple[str, List[File], Opti
     return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed
 
 
+def get_colour(self):
+    try:
+        if isinstance(self, Cog):
+            return translations.colours[self.qualified_name]
+        elif isinstance(self, str):
+            return translations.colours[self]
+    except KeyError:
+        return translations.colours["default"]
+
+
 async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]) -> Message:
     def format_command(cmd: Command) -> str:
         doc = " - " + cmd.short_doc if cmd.short_doc else ""
