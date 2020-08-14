@@ -12,12 +12,17 @@ quote_remove_mentions: >
 
 # ping
 pong: Pong!
-pong_latency: Pong ({:.0f} ms)
+pong_latency: ":hourglass: ({:.0f} ms)"
+
+# error
+error: Error
+error_string: ":x: {}"
 
 # prefix
+prefix: Prefix
 invalid_prefix_length: Length of prefix must be between 1 and 16
 prefix_invalid_chars: Prefix contains invalid characters.
-prefix_updated: Prefix has been updated.
+prefix_updated: ":white_check_mark: Prefix has been updated."
 log_prefix_updated: Bot prefix has been changed to `{}`
 
 # auth
@@ -644,3 +649,5 @@ colours:
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
+  ping: 0x00f000
+  info: 0x007700

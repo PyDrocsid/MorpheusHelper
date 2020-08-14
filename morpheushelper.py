@@ -57,7 +57,6 @@ from permission import Permission
 from translations import translations
 from util import (
     permission_level,
-    make_error,
     measure_latency,
     send_to_changelog,
     call_event_handlers,
@@ -66,6 +65,7 @@ from util import (
     set_prefix,
     send_help,
     send_long_embed,
+    get_colour,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -139,10 +139,10 @@ async def ping(ctx: Context):
     """
 
     latency: Optional[float] = measure_latency()
+    embed = Embed(title=translations.pong, colour=get_colour("ping"))
     if latency is not None:
-        await ctx.send(translations.f_pong_latency(latency * 1000))
-    else:
-        await ctx.send(translations.pong)
+        embed.description = translations.f_pong_latency(latency * 1000)
+    await ctx.send(embed=embed)
 
 
 @bot.command(aliases=["yn"])
@@ -176,12 +176,13 @@ async def change_prefix(ctx: Context, new_prefix: str):
         raise CommandError(translations.prefix_invalid_chars)
 
     await set_prefix(new_prefix)
-    await ctx.send(translations.prefix_updated)
+    embed = Embed(title=translations.prefix, description=translations.prefix_updated, colour=get_colour())
+    await ctx.send(embed=embed)
     await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.bot_description)
+    embed = Embed(title="MorpheusHelper", color=get_colour("info"), description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -228,7 +229,8 @@ async def version(ctx: Context):
     show version
     """
 
-    await ctx.send(f"MorpheusHelper v{VERSION}")
+    embed = Embed(title=f"MorpheusHelper v{VERSION}", color=get_colour())
+    await ctx.send(embed=embed)
 
 
 @bot.command(name="info", aliases=["infos", "about"])
@@ -269,9 +271,8 @@ async def on_command_error(ctx: Context, error: CommandError):
     elif isinstance(error, UserInputError):
         msg = await send_help(ctx, ctx.command)
     else:
-        msg = await ctx.send(
-            make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
-        )
+        embed = Embed(title=translations.error, color=get_colour("red"), description=translations.f_error_string(error))
+        msg = await ctx.send(embed=embed, allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
     error_cache[ctx.message] = msg
     error_queue.append(ctx.message)
     while len(error_queue) > 1000:

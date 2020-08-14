@@ -255,7 +255,7 @@ async def read_complete_message(message: Message) -> Tuple[str, List[File], Opti
     return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed
 
 
-def get_colour(self):
+def get_colour(self: Optional[Union[str, Cog]] = "default"):
     try:
         if isinstance(self, Cog):
             return translations.colours[self.qualified_name]
