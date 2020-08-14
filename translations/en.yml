@@ -170,20 +170,21 @@ msg_delete_off: "message delete: *disabled*"
 changelog_on: "changelog: {}"
 changelog_off: "changelog: *disabled*"
 min_diff_gt_zero: Minimum distance must be greater than zero.
-edit_mindiff_updated: Message edit events will now only be logged if the edit distance is at least {}.
+edit_mindiff_updated: >
+  :white_check_mark: Message edit events will now only be logged if the edit distance is at least {}.
 log_mindiff_updated: Minimum edit distance has been set to {}.
 log_not_changed_no_permissions: >
   Logging channel could not be changed because I don't have `send_messages` permission there.
-log_edit_updated: Logs for message edit events will now be sent to {}.
-log_edit_disabled: Logging for message edit events has been disabled.
-log_delete_updated: Logs for message delete events will now be sent to {}.
-log_delete_disabled: Logging for message delete events has been disabled.
-log_changelog_updated: Changelog channel is now {}.
-log_changelog_disabled: Changelog channel has been disabled.
+log_edit_updated: ":white_check_mark: Logs for message edit events will now be sent to {}."
+log_edit_disabled: ":white_check_mark: Logging for message edit events has been disabled."
+log_delete_updated: ":white_check_mark: Logs for message delete events will now be sent to {}."
+log_delete_disabled: ":white_check_mark: Logging for message delete events has been disabled."
+log_changelog_updated: ":white_check_mark: Changelog channel is now {}."
+log_changelog_disabled: ":white_check_mark: Changelog channel has been disabled."
 maxage_disabled: Automatic deletion of old log entries is disabled.
 maxage_enabled: Log entries older than {} days will be deleted automatically.
-maxage_set: Maximum age of log entries has been set to {} days.
-maxage_set_disabled: Automatic deletion of old log entries has been disabled.
+maxage_set: ":white_check_mark: Maximum age of log entries has been set to {} days."
+maxage_set_disabled: ":white_check_mark: Automatic deletion of old log entries has been disabled."
 logging: Logging
 msg_edit: ":pencil: Message Edit Channel"
 msg_delete: ":wastebasket: Message Delete Channel"
@@ -193,10 +194,10 @@ mindiff: ":straight_ruler: Minimum Edit Distance"
 maxage: ":clock3: Maximum Age"
 x_days: "{} days"
 already_excluded: Channel is already excluded from logging.
-excluded: Channel has been excluded from logging.
+excluded: ":white_check_mark: Channel has been excluded from logging."
 log_excluded: Channel {} has been excluded from logging.
 not_excluded: Channel is not excluded from logging.
-unexcluded: Channel has been removed from logging exclude list.
+unexcluded: ":white_check_mark: Channel has been removed from logging exclude list."
 log_unexcluded: Channel {} has been removed from logging exclude list.
 excluded_channels: Logging - Excluded Channels
 no_channels_excluded: No Channels have been excluded from logging.
@@ -636,6 +637,10 @@ colours:
   MediaOnly: 0xe4e800
   Metafragen: 0xc619ff
   Mod Tools: 0x256BE6
+  Logging:
+    commands: 0x256BE6
+    edit: 0xFFFF00
+    delete: 0xFF0000
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
