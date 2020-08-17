@@ -167,7 +167,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         invite_guild = await self.check_invite(invite.code)
         if invite_guild is not None:
             invite_title = translations.invite_link
-            embed.set_thumbnail(url=re.sub(r"size=[0-9]+", "size=128", str(invite_guild.guild.icon_url)))
+            embed.set_thumbnail(url=invite_guild.guild.icon_url_as(size=128))
         else:
             invite_title = translations.invite_link_expired
 
