@@ -86,31 +86,32 @@ help_usage: |
   Type `{0}help <cog>` for more info on a cog.
 
 # betheprofessional
+betheprofessional: BeTheProfessional
 youre_not_the_first_one: "Topic `{}` not found.\nYou're not the first one to try this, {}"
 topic_not_found: Topic `{}` not found.
 topic_not_found_did_you_mean: Topic `{}` not found. Did you mean `{}`?
-available_topics_header: "Available Topics:"
+available_topics_header: "Available Topics"
 no_topics_registered: No topics have been registered yet.
 
-cnt_topics_added: "{} topics have been added successfully."
-topic_added: Topic has been added successfully.
+cnt_topics_added: ":white_check_mark: {} topics have been added successfully."
+topic_added: ":white_check_mark: Topic has been added successfully."
 no_topic_added: No topic has been added.
-cnt_topics_removed: "{} topics have been removed successfully."
-topic_removed: Topic has been removed successfully.
+cnt_topics_removed: ":white_check_mark: {} topics have been removed successfully."
+topic_removed: ":white_check_mark: Topic has been removed successfully."
 no_topic_removed: No topic has been removed.
 
 topic_invalid_chars: Topic name `{}` contains invalid characters.
 topic_already_registered: Topic `{}` has already been registered.
 topic_not_registered_too_high: Topic could not be registered because `@{}` is higher than `@{}`.
 topic_not_registered_managed_role: Topic could not be registered because `@{}` cannot be assigned manually.
-cnt_topics_registered: "{} topics have been registered successfully."
+cnt_topics_registered: ":white_check_mark: {} topics have been registered successfully."
 log_these_topics_registered: "These topics have been registered:"
-topic_registered: Topic has been registered successfully.
+topic_registered: ":white_check_mark: Topic has been registered successfully."
 log_topic_registered: The new topic `{}` has been registered.
 topic_not_registered: Topic `{}` has not been registered.
-cnt_topics_unregistered: "{} topics have been deleted successfully."
+cnt_topics_unregistered: ":white_check_mark: {} topics have been deleted successfully."
 log_these_topics_unregistered: "These topics have been removed:"
-topic_unregistered: Topic has been deleted successfully.
+topic_unregistered: ":white_check_mark: Topic has been deleted successfully."
 log_topic_unregistered: The topic `{}` has been removed.
 
 # server info
@@ -659,6 +660,7 @@ colours:
     commands: 0x256BE6
     public: 0x03AD28
     private: 0x256BE6
+  Self Assignable Topic Roles: 0xFCCC01
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E

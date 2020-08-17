@@ -1,7 +1,7 @@
 import string
 from typing import List
 
-from discord import Role, Guild, Member
+from discord import Role, Guild, Member, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
@@ -9,7 +9,7 @@ from database import run_in_thread, db
 from models.btp_role import BTPRole
 from permission import Permission
 from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog
+from util import permission_level, calculate_edit_distance, send_to_changelog, get_colour, send_long_embed
 
 
 def split_topics(topics: str) -> List[str]:
@@ -58,12 +58,14 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         list all registered topics
         """
 
-        out = [role.name for role in await list_topics(ctx.guild)]
-        out.sort(key=str.lower)
+        out = [str(role.id) for role in sorted(await list_topics(ctx.guild), key=lambda x: x.name.lower())]
+        embed = Embed(title=translations.available_topics_header, colour=get_colour(self))
         if out:
-            await ctx.send(translations.available_topics_header + "\n```\n" + ", ".join(out) + "```")
+            embed.description = "<@&" + ">, <@&".join(out) + ">"
         else:
-            await ctx.send(translations.no_topics_registered)
+            embed.colour = get_colour("red")
+            embed.description = translations.no_topics_registered
+        await send_long_embed(ctx, embed)
 
     @commands.command(name="+")
     @guild_only()
@@ -76,12 +78,15 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
 
         await member.add_roles(*roles)
+        embed = Embed(title=translations.betheprofessional, colour=get_colour(self))
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_added(len(roles)))
+            embed.description = translations.f_cnt_topics_added(len(roles))
         elif len(roles) == 1:
-            await ctx.send(translations.topic_added)
+            embed.description = translations.topic_added
         else:
-            await ctx.send(translations.no_topic_added)
+            embed.colour = get_colour("red")
+            embed.description = translations.no_topic_added
+        await ctx.send(embed=embed)
 
     @commands.command(name="-")
     @guild_only()
@@ -98,12 +103,14 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         roles = [r for r in roles if r in member.roles]
 
         await member.remove_roles(*roles)
+        embed = Embed(title=translations.betheprofessional, colour=get_colour(self))
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_removed(len(roles)))
+            embed.description = translations.f_cnt_topics_removed(len(roles))
         elif len(roles) == 1:
-            await ctx.send(translations.topic_removed)
+            embed.description = translations.topic_removed
         else:
-            await ctx.send(translations.no_topic_removed)
+            embed.description = translations.no_topic_removed
+        await ctx.send(embed=embed)
 
     @commands.command(name="*")
     @permission_level(Permission.btp_manage)
@@ -146,14 +153,16 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         for role in roles:
             await run_in_thread(BTPRole.create, role.id)
 
+        embed = Embed(title=translations.betheprofessional, colour=get_colour(self))
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_registered(len(roles)))
+            embed.description = translations.f_cnt_topics_registered(len(roles))
             await send_to_changelog(
                 ctx.guild, translations.log_these_topics_registered + " " + ", ".join(f"`{r}`" for r in roles)
             )
         elif len(roles) == 1:
-            await ctx.send(translations.topic_registered)
+            embed.description = translations.topic_registered
             await send_to_changelog(ctx.guild, translations.f_log_topic_registered(roles[0]))
+        await ctx.send(embed=embed)
 
     @commands.command(name="/")
     @permission_level(Permission.btp_manage)
@@ -185,11 +194,13 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         for role, btp_role in zip(roles, btp_roles):
             await run_in_thread(db.delete, btp_role)
             await role.delete()
+        embed = Embed(title=translations.betheprofessional, colour=get_colour(self))
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_unregistered(len(roles)))
+            embed.description = translations.f_cnt_topics_unregistered(len(roles))
             await send_to_changelog(
                 ctx.guild, translations.log_these_topics_unregistered + " " + ", ".join(f"`{r}`" for r in roles)
             )
         elif len(roles) == 1:
-            await ctx.send(translations.topic_unregistered)
+            embed.description = translations.topic_unregistered
             await send_to_changelog(ctx.guild, translations.f_log_topic_unregistered(roles[0]))
+        await ctx.send(embed=embed)
