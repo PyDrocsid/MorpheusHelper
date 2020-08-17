@@ -10,7 +10,7 @@ from models.settings import Settings
 from models.verification_role import VerificationRole
 from permission import Permission
 from translations import translations
-from util import send_to_changelog, permission_level
+from util import send_to_changelog, permission_level, get_colour
 
 
 @check
@@ -64,7 +64,8 @@ class VerificationCog(Cog, name="Verification"):
 
         await member.add_roles(*add)
         await member.remove_roles(*remove)
-        await ctx.send(translations.verified)
+        embed = Embed(title=translations.verification, description=translations.verified, colour=get_colour(self))
+        await ctx.send(embed=embed)
 
     @commands.group(name="verification", aliases=["vf"])
     @permission_level(Permission.manage_verification)
@@ -90,13 +91,13 @@ class VerificationCog(Cog, name="Verification"):
             else:
                 [normal, reverse][vrole.reverse].append(role)
 
-        embed = Embed(title=translations.verification, colour=0xCF0606)
+        embed = Embed(title=translations.verification, colour=get_colour("red"))
         if password is None or not normal + reverse:
             embed.add_field(name=translations.status, value=translations.verification_disabled, inline=False)
             await ctx.send(embed=embed)
             return
 
-        embed.colour = 0x256BE6
+        embed.colour = get_colour(self)
         embed.add_field(name=translations.status, value=translations.verification_enabled, inline=False)
         embed.add_field(name=translations.password, value=f"`{password}`", inline=False)
 
@@ -132,7 +133,9 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.verification_role_already_set)
 
         await run_in_thread(VerificationRole.create, role.id, reverse)
-        await ctx.send(translations.verification_role_added)
+        embed = Embed(title=translations.verification, description=translations.verification_role_added,
+                      colour=get_colour(self))
+        await ctx.send(embed=embed)
         if reverse:
             await send_to_changelog(ctx.guild, translations.f_log_verification_role_added_reverse(role.name, role.id))
         else:
@@ -148,7 +151,9 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.verification_role_not_set)
 
         await run_in_thread(db.delete, row)
-        await ctx.send(translations.verification_role_removed)
+        embed = Embed(title=translations.verification, description=translations.verification_role_removed,
+                      colour=get_colour(self))
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_verification_role_removed(role.name, role.id))
 
     @verification.command(name="password", aliases=["p"])
@@ -161,7 +166,9 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.password_too_long)
 
         await run_in_thread(Settings.set, str, "verification_password", password)
-        await ctx.send(translations.verification_password_configured)
+        embed = Embed(title=translations.verification, description=translations.verification_password_configured,
+                      colour=get_colour(self))
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_verification_password_configured(password))
 
     @verification.command(name="delay", aliases=["d"])
@@ -175,9 +182,11 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.invalid_duration)
 
         await run_in_thread(Settings.set, int, "verification_delay", seconds)
+        embed = Embed(title=translations.verification, colour=get_colour(self))
         if seconds == -1:
-            await ctx.send(translations.verification_delay_disabled)
+            embed.description = translations.verification_delay_disabled
             await send_to_changelog(ctx.guild, translations.verification_delay_disabled)
         else:
-            await ctx.send(translations.verification_delay_configured)
+            embed.description = translations.verification_delay_configured
             await send_to_changelog(ctx.guild, translations.f_log_verification_delay_configured(seconds))
+        await ctx.send(embed=embed)

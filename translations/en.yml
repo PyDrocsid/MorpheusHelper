@@ -609,16 +609,16 @@ instantkick_cannot_kick: Members with this role cannot be kicked.
 
 # verification
 verification: Verification
-verification_role_added: Verification role has been added.
+verification_role_added: ":white_check_mark: Verification role has been added."
 log_verification_role_added: "Verification role has been added: `@{}` ({}) (normal)"
 log_verification_role_added_reverse: "Verification role has been added: `@{}` ({}) (reverse)"
-verification_role_removed: Verification role has been removed.
+verification_role_removed: ":white_check_mark:  Verification role has been removed."
 log_verification_role_removed: "Verification role has been removed: `@{}` ({})"
 password_too_long: Password is too long, sorry.
-verification_password_configured: Verification password has been configured.
+verification_password_configured: ":white_check_mark: Verification password has been configured."
 log_verification_password_configured: Verification password has been set to `{}`
-verification_delay_configured: Verification delay has been configured.
-verification_delay_disabled: Verification delay has been disabled.
+verification_delay_configured: ":white_check_mark: Verification delay has been configured."
+verification_delay_disabled: ":white_check_mark: Verification delay has been disabled."
 log_verification_delay_configured: Verification delay has been set to {} seconds.
 verification_disabled: Verification command is disabled.
 verification_enabled: Verification command is enabled.
@@ -630,7 +630,7 @@ verification_role_reverse: " - `@{}` ({}) (reverse)"
 private_only: This command can only be used in direct messages.
 already_verified: You are already verified.
 password_incorrect: Password is incorrect!
-verified: "Verified successfully :white_check_mark:"
+verified: ":white_check_mark: Verified successfully"
 verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
 verification_reverse_role_not_assigned: Verification failed!
@@ -653,6 +653,7 @@ colours:
     edit: 0xFFFF00
     delete: 0xFF0000
   Server Information: 0x005180
+  Verification: 0xA0F7C3
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
