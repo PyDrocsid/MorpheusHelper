@@ -230,8 +230,11 @@ async def attachment_to_file(attachment: Attachment) -> File:
     return File(file, filename=attachment.filename, spoiler=attachment.is_spoiler())
 
 
-async def read_normal_message(bot: Bot, channel: TextChannel, author: Member) -> Tuple[str, List[File]]:
+async def read_normal_message(bot: Bot, channel: TextChannel, author: Member, delete: Optional[bool] = False) -> Tuple[
+    str, List[File]]:
     msg: Message = await bot.wait_for("message", check=lambda m: m.channel == channel and m.author == author)
+    if delete:
+        await msg.delete()
     return msg.content, [await attachment_to_file(attachment) for attachment in msg.attachments]
 
 

@@ -2,13 +2,13 @@ import re
 from http.client import HTTPException
 from typing import Optional, Union
 
-from discord import TextChannel, Message, Forbidden, Permissions, Color
+from discord import TextChannel, Message, Forbidden, Permissions, Color, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from permission import Permission
 from translations import translations
-from util import permission_level, read_normal_message, read_embed, read_complete_message
+from util import permission_level, read_normal_message, read_complete_message, get_colour
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -35,14 +35,16 @@ class RulesCog(Cog, name="Rule Commands"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.could_not_send_message)
 
-        await ctx.send(translations.send_message)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.send_message)
+        msg: Message = await ctx.send(embed=embed)
+        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author, True)
         try:
             await channel.send(content=content, files=files)
         except (HTTPException, Forbidden):
             raise CommandError(translations.msg_could_not_be_sent)
         else:
-            await ctx.send(translations.msg_sent)
+            embed.description += "\n\n" + translations.msg_sent
+            await msg.edit(embed=embed)
 
     @send.command(name="embed", aliases=["e"])
     async def send_embed(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None):
@@ -61,15 +63,26 @@ class RulesCog(Cog, name="Rule Commands"):
         if not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
-        embed = await read_embed(self.bot, ctx.channel, ctx.author)
+        embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.send_embed_title)
+        msg: Message = await ctx.send(embed=embed)
+        title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author, True)
+        if len(title) > 256:
+            raise CommandError(translations.title_too_long)
+        embed.description += "\n\n" + translations.send_embed_content
+        await msg.edit(embed=embed)
+        content, _ = await read_normal_message(self.bot, ctx.channel, ctx.author, True)
+
+        send_embed = Embed(title=title, description=content)
+
         if color is not None:
-            embed.colour = color
+            send_embed.colour = color
         try:
-            await channel.send(embed=embed)
+            await channel.send(embed=send_embed)
         except (HTTPException, Forbidden):
             raise CommandError(translations.msg_could_not_be_sent)
         else:
-            await ctx.send(translations.msg_sent)
+            embed.description += "\n\n" + translations.msg_sent
+            await msg.edit(embed=embed)
 
     @send.command(name="copy", aliases=["c"])
     async def send_copy(self, ctx: Context, channel: TextChannel, message: Message):
@@ -83,7 +96,8 @@ class RulesCog(Cog, name="Rule Commands"):
         except (HTTPException, Forbidden):
             raise CommandError(translations.msg_could_not_be_sent)
         else:
-            await ctx.send(translations.msg_sent)
+            embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.msg_sent)
+            await ctx.send(embed=embed)
 
     @commands.group(name="edit")
     @permission_level(Permission.edit)
@@ -105,12 +119,14 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        await ctx.send(translations.send_new_message)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.send_new_message)
+        msg: Message = await ctx.send(embed=embed)
+        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author, True)
         if files:
             raise CommandError(translations.cannot_edit_files)
         await message.edit(content=content, embed=None)
-        await ctx.send(translations.msg_edited)
+        embed.description += "\n\n" + translations.msg_edited
+        await msg.edit(embed=embed)
 
     @edit.command(name="embed", aliases=["e"])
     async def edit_embed(self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None):
@@ -126,11 +142,22 @@ class RulesCog(Cog, name="Rule Commands"):
                 raise CommandError(translations.invalid_color)
             color = int(color, 16)
 
-        embed = await read_embed(self.bot, ctx.channel, ctx.author)
+        embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.send_embed_title)
+        msg: Message = await ctx.send(embed=embed)
+        title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author, True)
+        if len(title) > 256:
+            raise CommandError(translations.title_too_long)
+        embed.description += "\n\n" + translations.send_embed_content
+        await msg.edit(embed=embed)
+        content, _ = await read_normal_message(self.bot, ctx.channel, ctx.author, True)
+
+        send_embed = Embed(title=title, description=content)
+
         if color is not None:
-            embed.colour = color
-        await message.edit(content=None, files=[], embed=embed)
-        await ctx.send(translations.msg_edited)
+            send_embed.colour = color
+        await message.edit(content=None, files=[], embed=send_embed)
+        embed.description += "\n\n" + translations.msg_edited
+        await msg.edit(embed=embed)
 
     @edit.command(name="copy", aliases=["c"])
     async def edit_copy(self, ctx: Context, message: Message, source: Message):
@@ -145,7 +172,8 @@ class RulesCog(Cog, name="Rule Commands"):
         if files:
             raise CommandError(translations.cannot_edit_files)
         await message.edit(content=content, embed=embed)
-        await ctx.send(translations.msg_edited)
+        embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.msg_edited)
+        await ctx.send(embed=embed)
 
     @commands.command(name="delete")
     @permission_level(Permission.delete)
@@ -164,4 +192,5 @@ class RulesCog(Cog, name="Rule Commands"):
             raise CommandError(translations.could_not_delete)
 
         await message.delete()
-        await ctx.send(translations.msg_deleted)
+        embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.msg_deleted)
+        await ctx.send(embed=embed)
