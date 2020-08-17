@@ -652,6 +652,7 @@ colours:
     commands: 0x256BE6
     edit: 0xFFFF00
     delete: 0xFF0000
+  Server Information: 0x005180
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E

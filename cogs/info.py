@@ -11,6 +11,7 @@ from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
 from models.settings import Settings
 from translations import translations
+from util import get_colour
 
 
 class InfoCog(Cog, name="Server Information"):
@@ -55,7 +56,7 @@ class InfoCog(Cog, name="Server Information"):
             return
 
         guild: Guild = ctx.guild
-        embed = Embed(title=guild.name, description=translations.info_description, color=0x005180)
+        embed = Embed(title=guild.name, description=translations.info_description, color=get_colour(self))
         embed.set_thumbnail(url=guild.icon_url)
         created = guild.created_at.date()
         embed.add_field(name=translations.creation_date, value=f"{created.day}.{created.month}.{created.year}")
@@ -105,7 +106,7 @@ class InfoCog(Cog, name="Server Information"):
         """
 
         guild: Guild = ctx.guild
-        embed = Embed(title=translations.bots, color=0x005180)
+        embed = Embed(title=translations.bots, color=get_colour(self))
         online: List[Member] = []
         offline: List[Member] = []
         for member in guild.members:  # type: Member
@@ -113,7 +114,7 @@ class InfoCog(Cog, name="Server Information"):
                 [offline, online][member.status != Status.offline].append(member)
 
         if not online + offline:
-            embed.colour = 0xCF0606
+            embed.colour = get_colour("red")
             embed.description = translations.no_bots
             await ctx.send(embed=embed)
             return
