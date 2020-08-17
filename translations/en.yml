@@ -14,6 +14,11 @@ quote_remove_mentions: >
 pong: Pong!
 pong_latency: ":hourglass: ({:.0f} ms)"
 
+# status
+online_status: Online Status
+logged_in: ":green_circle:"
+heartbeat: ":heartbeat:"
+
 # error
 error: Error
 error_string: ":x: {}"
@@ -635,6 +640,7 @@ disabled: ":x: Disabled"
 colours:
   default: 0x008080
   red: 0xCF0606
+  github: 0x000000
   # Cogs
   AutoMod: 0x256BE6
   Allowed Discord Invites: 0x00a300

@@ -52,7 +52,7 @@ from cogs.rules import RulesCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
 from database import db
-from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
+from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL
 from permission import Permission
 from translations import translations
 from util import (
@@ -66,6 +66,7 @@ from util import (
     send_help,
     send_long_embed,
     get_colour,
+    send_editable_log,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -89,6 +90,7 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
 
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description)
 bot.remove_command("help")
+bot.initial = True
 
 
 def get_owner() -> Optional[User]:
@@ -102,7 +104,8 @@ def get_owner() -> Optional[User]:
 async def on_ready():
     if (owner := get_owner()) is not None:
         try:
-            await owner.send("logged in")
+            await send_editable_log(owner, translations.online_status, translations.logged_in, time.ctime(),
+                                    force_resend=True, force_new_embed=bot.initial)
         except Forbidden:
             pass
 
@@ -115,21 +118,17 @@ async def on_ready():
             status_loop.restart()
 
     await call_event_handlers("ready")
+    bot.initial = False
 
 
 @tasks.loop(seconds=20)
 async def status_loop():
     if (owner := get_owner()) is None:
         return
-    messages = await owner.history(limit=1).flatten()
-    content = "heartbeat: " + time.ctime()
-    if messages and messages[0].content.startswith("heartbeat: "):
-        await messages[0].edit(content=content)
-    else:
-        try:
-            await owner.send(content)
-        except Forbidden:
-            pass
+    try:
+        await send_editable_log(owner, translations.online_status, translations.heartbeat, time.ctime())
+    except Forbidden:
+        pass
 
 
 @bot.command()
@@ -182,7 +181,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=get_colour("info"), description=translations.bot_description)
+    embed = Embed(title="MorpheusHelper", colour=get_colour("info"), description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -220,7 +219,12 @@ async def github(ctx: Context):
     return the github link
     """
 
-    await ctx.send(GITHUB_LINK)
+    embed = Embed(title="Defelo/MorpheusHelper",
+                  description="Bot for the Discord Server of The Morpheus Tutorials - Defelo/MorpheusHelper",
+                  colour=get_colour("github"),
+                  url=GITHUB_LINK)
+    embed.set_thumbnail(url=AVATAR_URL)
+    await ctx.send(embed=embed)
 
 
 @bot.command(name="version")
@@ -229,7 +233,7 @@ async def version(ctx: Context):
     show version
     """
 
-    embed = Embed(title=f"MorpheusHelper v{VERSION}", color=get_colour())
+    embed = Embed(title=f"MorpheusHelper v{VERSION}", colour=get_colour())
     await ctx.send(embed=embed)
 
 
@@ -271,7 +275,8 @@ async def on_command_error(ctx: Context, error: CommandError):
     elif isinstance(error, UserInputError):
         msg = await send_help(ctx, ctx.command)
     else:
-        embed = Embed(title=translations.error, color=get_colour("red"), description=translations.f_error_string(error))
+        embed = Embed(title=translations.error, colour=get_colour("red"),
+                      description=translations.f_error_string(error))
         msg = await ctx.send(embed=embed, allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
     error_cache[ctx.message] = msg
     error_queue.append(ctx.message)

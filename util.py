@@ -319,3 +319,28 @@ async def send_help(ctx: Context, command_name: Optional[Union[str, Command]]) -
         await add_commands(translations.subcommands, command.commands)
 
     await send_long_embed(ctx, embed)
+
+
+async def send_editable_log(channel: Messageable, title: str, name: str, value: str,
+                            colour: Optional[int] = get_colour(), inline: Optional[bool] = False,
+                            force_resend: Optional[bool] = False, force_new_embed: Optional[bool] = False):
+    messages = await channel.history(limit=1).flatten()
+    if messages and messages[0].embeds and force_new_embed is False:
+        embed = messages[0].embeds[0]
+        if embed.title == title:
+            if embed.fields and embed.fields[-1].name == name:
+                embed.set_field_at(index=-1, name=name, value=value, inline=inline)
+            elif len(embed.fields) < 25:
+                embed.add_field(name=name, value=value, inline=inline)
+            else:
+                return
+            if force_resend:
+                await messages[0].delete()
+                await channel.send(embed=embed)
+                return
+            await messages[0].edit(embed=embed)
+            return
+
+    embed = Embed(title=title, colour=colour)
+    embed.add_field(name=name, value=value, inline=inline)
+    await channel.send(embed=embed)
