@@ -318,20 +318,21 @@ updating_voice_roles: Updating voice channel roles
 voice_init_done: Initialization complete
 no_links_created: No links have been created yet.
 link_already_exists: Link already exists.
-link_not_created_too_high: Link could not be created because `@{}` is higher than `@{}`.
-link_not_created_managed_role: Link could not be created because `@{}` cannot be assigned manually.
-link_created: Link has been created between voice channel `{}` and role `@{}`.
+link_not_created_too_high: Link could not be created because <@&{}> is higher than <@&{}>.
+link_not_created_managed_role: Link could not be created because <@&{}> cannot be assigned manually.
+link_created: ":white_check_mark: Link has been created between voice channel `{}` and role <@&{}>."
+log_link_created: Link has been created between voice channel `{}` and role `@{}`.
 link_not_found: Link does not exist.
-link_deleted: Link has been deleted.
+link_deleted: ":white_check_mark: Link has been deleted."
 log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
 
 dyn_group_already_exists: This channel is already part of an existing voice channel group.
-dyn_group_created: Dynamic voice channel group has been created successfully.
+dyn_group_created: ":white_check_mark: Dynamic voice channel group has been created successfully."
 log_dyn_group_created: Dynamic voice channel group `{}` has been created.
 dyn_group_not_found: This channel is not part of any voice channel group.
-group_list_entry: "{} ({} active channels)"
+group_list_entry: "{} [{}] {} ({} active channels)"
 no_dyn_group: No dynamic voice channel groups have been created yet.
-dyn_group_removed: Dynamic voice channel group has been removed successfully.
+dyn_group_removed: ":white_check_mark: Dynamic voice channel group has been removed successfully."
 log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
 dyn_voice_created: Channel has been created by {}.
 dyn_voice_joined: "{} joined this channel."
@@ -346,18 +347,18 @@ private_dyn_voice_help_content: |
 error_visibility: "`visibility` must either be `public` or `private`."
 not_in_private_voice: You have to be in a private voice channel to use this command.
 private_voice_owner_required: You are not the owner of this voice channel.
-private_voice_closed: Private voice channel has been closed successfully.
+private_voice_closed: ":white_check_mark: Private voice channel has been closed successfully."
 user_added_to_private_voice: "{} has been invited to join this private voice channel."
-user_added_to_private_voice_response: User has been added to this private voice channel.
+user_added_to_private_voice_response: ":white_check_mark: User has been added to this private voice channel."
 user_removed_from_private_voice: "{} has been removed from this private voice channel."
-user_removed_from_private_voice_response: User has been removed from this private voice channel.
+user_removed_from_private_voice_response: ":white_check_mark: User has been removed from this private voice channel."
 cannot_remove_member: This member could not be removed.
 member_could_not_be_kicked: You cannot remove a team member from this voice channel.
 user_not_in_this_channel: User is not in the same private voice channel.
 owner_of_private_voice: "Owner of this private voice channel: {}"
 bot_no_owner_transfer: You cannot transfer ownership to a bot.
-private_voice_owner_changed: "{} is now the owner of this private voice channel."
-private_voice_owner_changed_response: "Owner of this private voice channel has been changed."
+private_voice_owner_changed: ":white_check_mark: {} is now the owner of this private voice channel."
+private_voice_owner_changed_response: ":white_check_mark: Owner of this private voice channel has been changed."
 link_on_dynamic_channel_not_created: >
   Link could not be created for dynamic voice channel.
   Specify the parent channel instead.
@@ -654,6 +655,10 @@ colours:
     delete: 0xFF0000
   Server Information: 0x005180
   Verification: 0xA0F7C3
+  Voice Channels:
+    commands: 0x256BE6
+    public: 0x03AD28
+    private: 0x256BE6
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
