@@ -570,19 +570,19 @@ subreddit_not_found: Subreddit does not exist.
 reddit_link_not_created_permission: >
   Reddit link could not be created because I don't have `send_messages` permission in this channel.
 reddit_link_already_exists: Reddit link already exists.
-reddit_link_created: Reddit link has been created.
+reddit_link_created: ":white_check_mark: Reddit link has been created."
 log_reddit_link_created: Reddit link `r/{}` -> {} has been created.
 reddit_link_not_found: Reddit link does not exist.
-reddit_link_removed: Reddit link has been removed.
+reddit_link_removed: ":white_check_mark: Reddit link has been removed."
 log_reddit_link_removed: Reddit link `r/{}` -> {} has been removed.
-done: "Done :white_check_mark:"
+done: ":white_check_mark: Done"
 reddit_interval: "Reddit lookup interval: {} hours"
 invalid_interval: Invalid interval.
-reddit_interval_set: Reddit lookup interval has been updated.
+reddit_interval_set: ":white_check_mark: Reddit lookup interval has been updated."
 log_reddit_interval_set: Reddit lookup interval has been set to {} hours.
 invalid_limit: Invalid limit.
 reddit_limit: "Reddit limit: {}"
-reddit_limit_set: Reddit limit has been updated.
+reddit_limit_set: ":white_check_mark: Reddit limit has been updated."
 log_reddit_limit_set: Reddit limit has been set to {}.
 
 # autokick
@@ -671,6 +671,7 @@ colours:
   Permissions: 0x256BE6
   ReactionPin: 0x256BE6
   ReactionRole: 0x256BE6
+  Reddit: 0xFF4500
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
