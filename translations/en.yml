@@ -502,7 +502,7 @@ permission_levels:
 no_permissions: No priviliges granted.
 invalid_permission_level: Invalid permission level.
 invalid_permission: Invalid permission.
-permission_set: Permission `{}` has been granted to `>= {}`
+permission_set: ":white_check_mark: Permission `{}` has been granted to `>= {}`"
 permissions_title: Permissions
 my_permissions_title: My Permissions
 
@@ -666,6 +666,7 @@ colours:
   Self Assignable Topic Roles: 0xFCCC01
   Rule Commands: 0x256BE6
   News: 0xff0000
+  Permissions: 0x256BE6
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
