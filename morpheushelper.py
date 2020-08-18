@@ -66,7 +66,7 @@ from util import (
     send_help,
     send_long_embed,
     get_colour,
-    send_editable_log,
+    send_editable_log, make_error,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -275,9 +275,8 @@ async def on_command_error(ctx: Context, error: CommandError):
     elif isinstance(error, UserInputError):
         msg = await send_help(ctx, ctx.command)
     else:
-        embed = Embed(title=translations.error, colour=get_colour("red"),
-                      description=translations.f_error_string(error))
-        msg = await ctx.send(embed=embed, allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
+        msg = await ctx.send(embed=make_error(error),
+                             allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
     error_cache[ctx.message] = msg
     error_queue.append(ctx.message)
     while len(error_queue) > 1000:

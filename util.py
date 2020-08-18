@@ -37,8 +37,8 @@ class FixedEmojiConverter(PartialEmojiConverter):
         return PartialEmoji.with_state(ctx.bot._connection, animated=False, name=argument, id=None)
 
 
-def make_error(message) -> str:
-    return f":x: Error: {message}"
+def make_error(message) -> Embed:
+    return Embed(title=translations.error, colour=get_colour("red"), description=translations.f_error_string(message))
 
 
 async def can_run_command(command: Command, ctx: Context) -> bool:
