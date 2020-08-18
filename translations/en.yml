@@ -284,18 +284,19 @@ blocked_role: "Blocked role: `@{}`"
 blocked_role_updated: Blocked role has been updated.
 
 # reactionrole
+reactionrole: Reactionrole
 no_reactionrole_links: No ReactionRole links have been created yet.
 no_reactionrole_links_for_msg: No ReactionRole links have been created yet for this message.
 rr_link_already_exists: A link already exists for this reaction on this message.
-rr_link_created: Link has been created successfully.
+rr_link_created: ":white_check_mark: Link has been created successfully."
 rr_link_not_created_no_permissions: >
   Link could not be created because I don't have `add_reactions` permission in this channel.
 log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
 rr_link_not_found: Such a link does not exist.
-rr_link_removed: Link has been removed successfully.
+rr_link_removed: ":white_check_mark: Link has been removed successfully."
 log_rr_link_removed: ReactionRole link for {} has been deleted on {}
-rr_link: "{} -> `@{}`"
-rr_link_auto_remove: "{} -> `@{}` (auto remove)"
+rr_link: "{} -> {}"
+rr_link_auto_remove: "{} -> {} (auto remove)"
 
 # rule commands
 rule: Send messages
@@ -669,6 +670,7 @@ colours:
   News: 0xff0000
   Permissions: 0x256BE6
   ReactionPin: 0x256BE6
+  ReactionRole: 0x256BE6
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E

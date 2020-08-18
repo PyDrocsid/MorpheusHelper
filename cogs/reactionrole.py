@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 
-from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound
+from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
@@ -8,7 +8,7 @@ from database import run_in_thread, db
 from models.reactionrole import ReactionRole
 from permission import Permission
 from translations import translations
-from util import permission_level, send_to_changelog, FixedEmojiConverter
+from util import permission_level, send_to_changelog, FixedEmojiConverter, get_colour
 
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
@@ -75,6 +75,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         list configured reactionrole links
         """
 
+        embed = Embed(title=translations.reactionrole, colour=get_colour(self))
         if message is None:
             channels = {}
             for link in await run_in_thread(db.all, ReactionRole):  # type: ReactionRole
@@ -94,19 +95,16 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 channels[channel][msg.jump_url].add(link.emoji)
 
             if not channels:
-                await ctx.send(translations.no_reactionrole_links)
+                embed.colour = get_colour("red")
+                embed.description = translations.no_reactionrole_links
             else:
-                await ctx.send(
-                    "\n\n".join(
-                        f"{channel.mention}:\n"
-                        + "\n".join(url + " " + " ".join(emojis) for url, emojis in messages.items())
-                        for channel, messages in channels.items()
-                    )
-                )
+                embed.description = "\n\n".join(f"{channel.mention}: " + "\n".join(
+                    f"[{' '.join(emojis)}]({url})" for url, emojis in messages.items()) for channel, messages in
+                                                channels.items())
         else:
             out = []
             for link in await run_in_thread(
-                db.all, ReactionRole, channel_id=message.channel.id, message_id=message.id
+                    db.all, ReactionRole, channel_id=message.channel.id, message_id=message.id
             ):  # type: ReactionRole
                 channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
                 if channel is None or await channel.fetch_message(link.message_id) is None:
@@ -119,15 +117,17 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 if link.auto_remove:
                     out.append(translations.f_rr_link_auto_remove(link.emoji, role.name))
                 else:
-                    out.append(translations.f_rr_link(link.emoji, role.name))
+                    out.append(translations.f_rr_link(link.emoji, role.mention))
             if not out:
-                await ctx.send(translations.no_reactionrole_links_for_msg)
+                embed.colour = get_colour("red")
+                embed.description = translations.no_reactionrole_links_for_msg
             else:
-                await ctx.send("\n".join(out))
+                embed.description = "\n".join(out)
+        await ctx.send(embed=embed)
 
     @reactionrole.command(name="add", aliases=["a", "+"])
     async def add(
-        self, ctx: Context, message: Message, emoji: FixedEmojiConverter, role: Role, auto_remove: bool = False
+            self, ctx: Context, message: Message, emoji: FixedEmojiConverter, role: Role, auto_remove: bool = False
     ):
         """
         add a new reactionrole link
@@ -147,7 +147,9 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         await run_in_thread(ReactionRole.create, message.channel.id, message.id, str(emoji), role.id, auto_remove)
         await message.add_reaction(emoji)
-        await ctx.send(translations.rr_link_created)
+        embed = Embed(title=translations.reactionrole, colour=get_colour(self),
+                      description=translations.rr_link_created)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role, message.jump_url))
 
     @reactionrole.command(name="remove", aliases=["r", "del", "d", "-"])
@@ -165,5 +167,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         for reaction in message.reactions:
             if str(emoji) == str(reaction.emoji):
                 await reaction.clear()
-        await ctx.send(translations.rr_link_removed)
+        embed = Embed(title=translations.reactionrole, colour=get_colour(self),
+                      description=translations.rr_link_removed)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_rr_link_removed(emoji, message.jump_url))
