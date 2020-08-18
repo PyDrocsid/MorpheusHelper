@@ -150,7 +150,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         embed = Embed(title=translations.reactionrole, colour=get_colour(self),
                       description=translations.rr_link_created)
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role, message.jump_url))
+        await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role.id, message.jump_url))
 
     @reactionrole.command(name="remove", aliases=["r", "del", "d", "-"])
     async def remove(self, ctx: Context, message: Message, emoji: FixedEmojiConverter):

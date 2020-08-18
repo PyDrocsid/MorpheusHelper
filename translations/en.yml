@@ -291,10 +291,10 @@ rr_link_already_exists: A link already exists for this reaction on this message.
 rr_link_created: ":white_check_mark: Link has been created successfully."
 rr_link_not_created_no_permissions: >
   Link could not be created because I don't have `add_reactions` permission in this channel.
-log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
+log_rr_link_created: ReactionRole link for {} -> <@&{}> has been created on [message]({})
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: ":white_check_mark: Link has been removed successfully."
-log_rr_link_removed: ReactionRole link for {} has been deleted on {}
+log_rr_link_removed: ReactionRole link for {} has been deleted on [message]({})
 rr_link: "{} -> {}"
 rr_link_auto_remove: "{} -> {} (auto remove)"
 
@@ -648,6 +648,7 @@ colours:
   default: 0x008080
   red: 0xCF0606
   github: 0x000000
+  changelog: 0x008080
   # Cogs
   AutoMod: 0x256BE6
   Allowed Discord Invites: 0x00a300

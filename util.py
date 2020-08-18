@@ -182,7 +182,8 @@ async def send_long_embed(channel: Messageable, embed: Embed, *, repeat_title: b
 async def send_to_changelog(guild: Guild, message: str):
     channel: Optional[TextChannel] = guild.get_channel(await run_in_thread(Settings.get, int, "logging_changelog", -1))
     if channel is not None:
-        await channel.send(message)
+        embed = Embed(title=Embed.Empty, colour=get_colour("changelog"), description=message)
+        await channel.send(embed=embed)
 
 
 event_handlers = {}
