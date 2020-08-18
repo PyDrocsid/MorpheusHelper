@@ -373,16 +373,18 @@ log_channel_removed_cb: Channel {} has been removed from the CleverBot whitelist
 session_reset: Session for {} was successfully reset.
 
 # news
+news: News
 news_already_authorized: User is already authorized to send news in this channel.
-news_authorized: User has been authorized to send news in this channel.
+news_authorized: ":white_check_mark: User has been authorized to send news in this channel."
 log_news_authorized: User {} has been authorized to send news in {}.
 news_not_authorized: User is not authorized to send news in this channel.
-news_unauthorized: User has been unauthorized to send news in this channel.
+news_unauthorized: ":white_check_mark: User has been unauthorized to send news in this channel."
 log_news_unauthorized: User {} has been unauthorized to send news in {}.
 no_news_authorizations: No user has been authorized to send news yet.
 news_not_added_no_permissions: >
   User could not be authorized because I don't have `send_messages` permission in this channel.
 news_you_are_not_authorized: You are not authorized to send news in this channel.
+sent_by: Sent by @{} ({})
 
 # mod tools
 roles: Roles
@@ -663,6 +665,7 @@ colours:
     private: 0x256BE6
   Self Assignable Topic Roles: 0xFCCC01
   Rule Commands: 0x256BE6
+  News: 0xff0000
   # Commands
   stats: 0x35992C
   userlog: 0x34B77E
