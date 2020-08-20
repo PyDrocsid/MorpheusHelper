@@ -86,7 +86,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
 
         out = []
         guild: Guild = ctx.guild
-        for channel in await db_thread(db.query, ReactionPinChannel):
+        for channel in await db_thread(db.all, ReactionPinChannel):
             text_channel: Optional[TextChannel] = guild.get_channel(channel.channel)
             if text_channel is None:
                 continue

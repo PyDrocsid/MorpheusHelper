@@ -152,7 +152,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         """
 
         out = []
-        for row in sorted(await db_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
+        for row in sorted(await db_thread(db.all, AllowedInvite), key=lambda a: a.guild_name):
             out.append(f"- {row.guild_name} ({row.guild_id})")
         if out:
             await ctx.send(translations.allowed_servers_header + "\n```\n" + "\n".join(out) + "```")
