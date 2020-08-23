@@ -5,7 +5,7 @@ from typing import Optional, Dict
 
 from discord import TextChannel, Message, Guild
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
+from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError, UserInputError
 
 from cleverbot_api import CleverBot
 from database import run_in_thread, db
@@ -53,7 +53,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(CleverBotCog.cleverbot)
+            raise UserInputError
 
     @cleverbot.command(name="list", aliases=["l", "?"])
     @permission_level(Permission.cb_list)

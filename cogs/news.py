@@ -3,7 +3,7 @@ from typing import Optional
 
 from discord import Member, TextChannel, Role, Guild, File, HTTPException, Forbidden
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.news_authorization import NewsAuthorization
@@ -24,7 +24,7 @@ class NewsCog(Cog, name="News"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(NewsCog.news)
+            raise UserInputError
 
     @news.group(name="auth", aliases=["a"])
     @permission_level(Permission.news_manage)
@@ -34,7 +34,7 @@ class NewsCog(Cog, name="News"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(NewsCog.auth)
+            raise UserInputError
 
     @auth.command(name="list", aliases=["l", "?"])
     async def list_auth(self, ctx: Context):

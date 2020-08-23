@@ -2,7 +2,7 @@ import os
 import re
 import string
 import time
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Dict, List
 
 import sentry_sdk
 from discord import (
@@ -19,12 +19,21 @@ from discord import (
     User,
     NotFound,
     Forbidden,
+    AllowedMentions,
 )
 from discord.ext import tasks
-from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound
+from discord.ext.commands import (
+    Bot,
+    Context,
+    CommandError,
+    guild_only,
+    CommandNotFound,
+    UserInputError,
+)
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.info import InfoCog
@@ -38,9 +47,10 @@ from cogs.permissions import PermissionsCog
 from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
-from cogs.rules import RulesCog
-from cogs.voice_channel import VoiceChannelCog
 from cogs.reddit import RedditCog
+from cogs.rules import RulesCog
+from cogs.verification import VerificationCog
+from cogs.voice_channel import VoiceChannelCog
 from database import db
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permission import Permission
@@ -54,6 +64,8 @@ from util import (
     register_cogs,
     get_prefix,
     set_prefix,
+    send_help,
+    send_long_embed,
 )
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -75,7 +87,8 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.description)
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description)
+bot.remove_command("help")
 
 
 def get_owner() -> Optional[User]:
@@ -139,10 +152,12 @@ async def yesno(ctx: Context, message: Optional[Message] = None):
     adds thumbsup and thumbsdown reactions to the message
     """
 
-    if message is None:
+    if message is None or message.guild is None:
         message = ctx.message
-    await message.add_reaction(chr(0x1F44D))
-    await message.add_reaction(chr(0x1F44E))
+
+    if message.channel.permissions_for(ctx.author).add_reactions:
+        await message.add_reaction(chr(0x1F44D))
+        await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
@@ -166,7 +181,7 @@ async def change_prefix(ctx: Context, new_prefix: str):
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.description)
+    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -189,6 +204,15 @@ async def build_info_embed(authorized: bool) -> Embed:
     return embed
 
 
+@bot.command(name="help")
+async def help_cmd(ctx: Context, *, cog_or_command: Optional[str]):
+    """
+    Shows this Message
+    """
+
+    await send_help(ctx, cog_or_command)
+
+
 @bot.command(name="github", aliases=["gh"])
 async def github(ctx: Context):
     """
@@ -198,13 +222,22 @@ async def github(ctx: Context):
     await ctx.send(GITHUB_LINK)
 
 
+@bot.command(name="version")
+async def version(ctx: Context):
+    """
+    show version
+    """
+
+    await ctx.send(f"MorpheusHelper v{VERSION}")
+
+
 @bot.command(name="info", aliases=["infos", "about"])
 async def info(ctx: Context):
     """
     show information about the bot
     """
 
-    await ctx.send(embed=await build_info_embed(False))
+    await send_long_embed(ctx, await build_info_embed(False))
 
 
 @bot.command(name="admininfo", aliases=["admininfos"])
@@ -214,7 +247,7 @@ async def admininfo(ctx: Context):
     show information about the bot (admin view)
     """
 
-    await ctx.send(embed=await build_info_embed(True))
+    await send_long_embed(ctx, await build_info_embed(True))
 
 
 @bot.event
@@ -225,24 +258,59 @@ async def on_error(*_, **__):
         raise  # skipcq: PYL-E0704
 
 
+error_cache: Dict[Message, Optional[Message]] = {}
+error_queue: List[Message] = []
+
+
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
+        msg = None
+    elif isinstance(error, UserInputError):
+        msg = await send_help(ctx, ctx.command)
+    else:
+        msg = await ctx.send(
+            make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
+        )
+    error_cache[ctx.message] = msg
+    error_queue.append(ctx.message)
+    while len(error_queue) > 1000:
+        msg = error_queue.pop(0)
+        if msg in error_cache:
+            error_cache.pop(msg)
+
+
+async def handle_command_edit(message: Message):
+    if message not in error_cache:
         return
-    await ctx.send(make_error(error))
+
+    msg = error_cache.pop(message)
+    if msg is not None:
+        try:
+            await msg.delete()
+        except NotFound:
+            pass
+    await bot.process_commands(message)
+
+
+async def extract_from_raw_reaction_event(event: RawReactionActionEvent):
+    channel: TextChannel = bot.get_channel(event.channel_id)
+    member: Member = channel.guild.get_member(event.user_id)
+    if not isinstance(channel, TextChannel) or member is None:
+        return None
+
+    try:
+        message = await channel.fetch_message(event.message_id)
+    except NotFound:
+        return None
+
+    return message, event.emoji, member
 
 
 @bot.event
 async def on_raw_reaction_add(event: RawReactionActionEvent):
     async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-        return message, event.emoji, channel.guild.get_member(event.user_id)
+        return await extract_from_raw_reaction_event(event)
 
     await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
 
@@ -250,14 +318,7 @@ async def on_raw_reaction_add(event: RawReactionActionEvent):
 @bot.event
 async def on_raw_reaction_remove(event: RawReactionActionEvent):
     async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-        return message, event.emoji, channel.guild.get_member(event.user_id)
+        return await extract_from_raw_reaction_event(event)
 
     await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
 
@@ -278,9 +339,9 @@ async def on_raw_reaction_clear(event: RawReactionClearEvent):
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
-    if before.guild is None:
-        return
-    await call_event_handlers("message_edit", before, after, identifier=after.id)
+    if after.guild is not None:
+        await call_event_handlers("message_edit", before, after, identifier=after.id)
+    await handle_command_edit(after)
 
 
 @bot.event
@@ -288,16 +349,24 @@ async def on_raw_message_edit(event: RawMessageUpdateEvent):
     if event.cached_message is not None:
         return
 
+    prepared = []
+
     async def prepare():
         channel: TextChannel = bot.get_channel(event.channel_id)
         if not isinstance(channel, TextChannel):
             return
         try:
-            return channel, await channel.fetch_message(event.message_id)
+            message = await channel.fetch_message(event.message_id)
         except NotFound:
             return
 
+        prepared.append(message)
+        return channel, message
+
     await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
+
+    if prepared:
+        await handle_command_edit(prepared[0])
 
 
 @bot.event
@@ -332,7 +401,17 @@ async def on_member_remove(member: Member):
 
 @bot.event
 async def on_member_update(before: Member, after: Member):
-    await call_event_handlers("member_update", before, after, identifier=before.id)
+    if before.nick != after.nick:
+        await call_event_handlers("member_nick_update", before, after, identifier=before.id)
+
+    roles_before = set(before.roles)
+    roles_after = set(after.roles)
+    for role in roles_before:
+        if role not in roles_after:
+            await call_event_handlers("member_role_remove", after, role, identifier=before.id)
+    for role in roles_after:
+        if role not in roles_before:
+            await call_event_handlers("member_role_add", after, role, identifier=before.id)
 
 
 @bot.event
@@ -381,5 +460,7 @@ register_cogs(
     ModCog,
     PermissionsCog,
     RedditCog,
+    AutoModCog,
+    VerificationCog,
 )
 bot.run(os.environ["TOKEN"])

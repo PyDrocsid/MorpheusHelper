@@ -28,6 +28,11 @@ class Permission(Enum):
     view_stats = auto()
     init_join_log = auto()
 
+    manage_autokick = auto()
+    manage_instantkick = auto()
+
+    manage_verification = auto()
+
     mq_reduce = auto()
 
     mo_bypass = auto()

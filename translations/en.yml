@@ -5,6 +5,11 @@ profile_status:
   - github.com/Defelo/MorpheusHelper
   - Developed by Defelo#2022
 
+# quote mentions
+quote_remove_mentions: >
+  :warning: Please remove all role mentions in a quote before sending the message,
+  otherwise the roles are notified again! {}
+
 # ping
 pong: Pong!
 pong_latency: Pong ({:.0f} ms)
@@ -26,7 +31,7 @@ role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 log_role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 
 # info
-description: Helper Bot for the Discord Server of The Morpheus Tutorials
+bot_description: Helper Bot for the Discord Server of The Morpheus Tutorials
 test:
 features:
   - Role system for topics you are interested in
@@ -45,6 +50,7 @@ admin_features:
   - Media only channels
   - News command
   - Mod commands
+  - AutoKick & InstantKick
   - Member logging
   - Permission system
 features_title: Features
@@ -58,6 +64,16 @@ bugs_features_title: Bug Reports / Feature Requests
 bugs_features: >
   Please [create an issue](https://github.com/Defelo/MorpheusHelper/issues/new) in the GitHub repository
   or contact me (<@370876111992913922>) via Discord.
+
+# help
+cog_or_command_not_found: This cog or command does not exist.
+description: Description
+subcommands: Subcommands
+no_category: No category
+help: Help
+help_usage: |
+  Type `{0}help <command>` for more info on a command.
+  Type `{0}help <cog>` for more info on a cog.
 
 # betheprofessional
 youre_not_the_first_one: "Topic `{}` not found.\nYou're not the first one to try this, {}"
@@ -101,6 +117,10 @@ topics: Topics
 cnt_topics: "{} Topics registered"
 allowed_discord_server: Allowed Discord Servers
 cnt_servers_whitelisted: "{} servers whitelisted"
+bots: Bots
+no_bots: No bots found.
+online: Online
+offline: Offline
 
 # invites
 illegal_invite_link: >
@@ -142,14 +162,15 @@ message_deleted: Message Deleted
 attachments: Attachments
 message_id: Message ID
 logging_channels_header: "Logging channels:"
-msg_edit_on: "message edit: {} (minimum difference: {})"
+msg_edit_on: "message edit: {} (minimum distance: {})"
 msg_edit_off: "message edit: *disabled*"
 msg_delete_on: "message delete: {}"
 msg_delete_off: "message delete: *disabled*"
 changelog_on: "changelog: {}"
 changelog_off: "changelog: *disabled*"
-min_diff_gt_zero: Minimum difference must be greater than zero.
-edit_mindiff_updated: Message edit events will now only be logged if the difference is at least {}.
+min_diff_gt_zero: Minimum distance must be greater than zero.
+edit_mindiff_updated: Message edit events will now only be logged if the edit distance is at least {}.
+log_mindiff_updated: Minimum edit distance has been set to {}.
 log_not_changed_no_permissions: >
   Logging channel could not be changed because I don't have `send_messages` permission there.
 log_edit_updated: Logs for message edit events will now be sent to {}.
@@ -162,6 +183,22 @@ maxage_disabled: Automatic deletion of old log entries is disabled.
 maxage_enabled: Log entries older than {} days will be deleted automatically.
 maxage_set: Maximum age of log entries has been set to {} days.
 maxage_set_disabled: Automatic deletion of old log entries has been disabled.
+logging: Logging
+msg_edit: ":pencil: Message Edit Channel"
+msg_delete: ":wastebasket: Message Delete Channel"
+changelog: ":clipboard: Changelog Channel"
+logging_disabled: ":x: Logging disabled"
+mindiff: ":straight_ruler: Minimum Edit Distance"
+maxage: ":clock3: Maximum Age"
+x_days: "{} days"
+already_excluded: Channel is already excluded from logging.
+excluded: Channel has been excluded from logging.
+log_excluded: Channel {} has been excluded from logging.
+not_excluded: Channel is not excluded from logging.
+unexcluded: Channel has been removed from logging exclude list.
+log_unexcluded: Channel {} has been removed from logging exclude list.
+excluded_channels: Logging - Excluded Channels
+no_channels_excluded: No Channels have been excluded from logging.
 
 # mediaonly
 deleted_nomedia: >
@@ -236,10 +273,14 @@ no_reactionrole_links: No ReactionRole links have been created yet.
 no_reactionrole_links_for_msg: No ReactionRole links have been created yet for this message.
 rr_link_already_exists: A link already exists for this reaction on this message.
 rr_link_created: Link has been created successfully.
+rr_link_not_created_no_permissions: >
+  Link could not be created because I don't have `add_reactions` permission in this channel.
 log_rr_link_created: ReactionRole link for {} -> `@{}` has been created on {}
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: Link has been removed successfully.
 log_rr_link_removed: ReactionRole link for {} has been deleted on {}
+rr_link: "{} -> `@{}`"
+rr_link_auto_remove: "{} -> `@{}` (auto remove)"
 
 # rule commands
 send_embed_title: Send me the title of the embed!
@@ -282,8 +323,8 @@ log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
 dyn_voice_created: Channel has been created by {}.
 dyn_voice_joined: "{} joined this channel."
 dyn_voice_left: "{} left this channel."
-private_dyn_voice_help: |
-  Private voice channel commands:
+private_dyn_voice_help_title: Private Voice Channel Commands
+private_dyn_voice_help_content: |
   `{prefix}vc invite <member>` - add a member to this voice channel
   `{prefix}vc remove <member>` - kick and remove a member from this voice channel
   `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
@@ -307,6 +348,7 @@ private_voice_owner_changed_response: "Owner of this private voice channel has b
 link_on_dynamic_channel_not_created: >
   Link could not be created for dynamic voice channel.
   Specify the parent channel instead.
+voice_channel: Voice Channel
 
 # cleverbot
 log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
@@ -326,7 +368,13 @@ news_not_added_no_permissions: >
 news_you_are_not_authorized: You are not authorized to send news in this channel.
 
 # mod tools
-no_role_set: No role set.
+roles: Roles
+role_admin: Administrator
+role_mod: Moderator
+role_supp: Supporter
+role_team: Team
+role_mute: Mute
+role_not_set: Role not set.
 role_set: Role has been set successfully.
 log_role_set_admin: "Administrator role has been set to `@{}` ({})"
 log_role_set_mod: "Moderator role has been set to `@{}` ({})"
@@ -411,6 +459,7 @@ ulog_muted_inf: ":mute:  **Muted** by {} because of `{}`"
 ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
 ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
 ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
+ulog_autokicked: ":hourglass:  **Kicked** automatically."
 ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
 ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
@@ -421,14 +470,16 @@ utc_note: Timestamps in UTC
 
 # permissions
 permission_levels:
-  - public
-  - supporter
-  - moderator
-  - administrator
+  - Public
+  - Supporter
+  - Moderator
+  - Administrator
 no_permissions: No priviliges granted.
 invalid_permission_level: Invalid permission level.
 invalid_permission: Invalid permission.
 permission_set: Permission `{}` has been granted to `>= {}`
+permissions_title: Permissions
+my_permissions_title: My Permissions
 
 permissions:
   vc_private_owner: pretend to be the owner of a private voice channel
@@ -452,6 +503,11 @@ permissions:
   ban: ban a user
   view_stats: view other user's statistics
   init_join_log: initialize join log
+
+  manage_autokick: manage autokick
+  manage_instantkick: manage instantkick
+
+  manage_verification: manage verification command
 
   mq_reduce: reduce metaquestion embeds
 
@@ -477,7 +533,12 @@ permissions:
   manage_reddit: manage reddit integration
 
 # reddit
-no_reddit_channels: No reddit links have been created yet.
+reddit: Reddit
+interval: Interval
+x_hours: "{} hours"
+limit: Limit
+reddit_links: Reddit links
+no_reddit_links: No reddit links have been created yet.
 subreddit_not_found: Subreddit does not exist.
 reddit_link_not_created_permission: >
   Reddit link could not be created because I don't have `send_messages` permission in this channel.
@@ -496,3 +557,61 @@ invalid_limit: Invalid limit.
 reddit_limit: "Reddit limit: {}"
 reddit_limit_set: Reddit limit has been updated.
 log_reddit_limit_set: Reddit limit has been set to {}.
+
+# autokick
+autokick: AutoKick
+autokick_mode_configured:
+  - AutoKick has been disabled.
+  - AutoKick mode has been set to normal.
+  - AutoKick mode has been set to reverse.
+autokick_delay_configured: AutoKick delay has been configured.
+log_autokick_delay_configured: AutoKick delay has been set to {} seconds.
+autokick_role_configured: AutoKick role has been configured.
+log_autokick_role_configured: "AutoKick role has been set to `@{}` ({})"
+autokick_disabled: AutoKick is disabled.
+autokick_mode:
+ - Mode is set to normal.
+ - Mode is set to reverse.
+delay: Delay
+x_seconds: "{} seconds"
+role: Role
+autokicked: "You have been automatically kicked from {}."
+log_autokicked: "Kicked automatically."
+
+# instantkick
+instantkick: InstantKick
+instantkick_disabled: InstantKick is disabled.
+instantkick_enabled: InstantKick is enabled.
+instantkick_set_disabled: InstantKick has been disabled.
+instantkick_role_configured: InstantKick role has been configured.
+log_instantkick_role_configured: "InstantKick role has been set to `@{}` ({})"
+instantkick_cannot_kick: Members with this role cannot be kicked.
+
+# verification
+verification: Verification
+verification_role_added: Verification role has been added.
+log_verification_role_added: "Verification role has been added: `@{}` ({}) (normal)"
+log_verification_role_added_reverse: "Verification role has been added: `@{}` ({}) (reverse)"
+verification_role_removed: Verification role has been removed.
+log_verification_role_removed: "Verification role has been removed: `@{}` ({})"
+password_too_long: Password is too long, sorry.
+verification_password_configured: Verification password has been configured.
+log_verification_password_configured: Verification password has been set to `{}`
+verification_delay_configured: Verification delay has been configured.
+verification_delay_disabled: Verification delay has been disabled.
+log_verification_delay_configured: Verification delay has been set to {} seconds.
+verification_disabled: Verification command is disabled.
+verification_enabled: Verification command is enabled.
+password: Password
+roles_normal: Roles (normal)
+roles_reverse: Roles (reverse)
+verification_role: " - `@{}` ({}) (normal)"
+verification_role_reverse: " - `@{}` ({}) (reverse)"
+private_only: This command can only be used in direct messages.
+already_verified: You are already verified.
+password_incorrect: Password is incorrect!
+verified: "Verified successfully :white_check_mark:"
+verification_role_already_set: Role already set.
+verification_role_not_set: Role not set.
+verification_reverse_role_not_assigned: Verification failed!
+disabled: ":x: Disabled"

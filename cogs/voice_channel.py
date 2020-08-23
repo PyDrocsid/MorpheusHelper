@@ -2,10 +2,10 @@ import random
 import re
 from typing import Optional, Union, Tuple, List
 
-from discord import CategoryChannel, PermissionOverwrite, NotFound
+from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
@@ -40,6 +40,19 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         self.bot = bot
         self.channel_lock = MultiLock()
         self.group_lock = MultiLock()
+
+    async def send_voice_msg(self, channel: TextChannel, public: bool, title: str, msg: str):
+        messages: List[Message] = await channel.history(limit=1).flatten()
+        if messages and messages[0].author == self.bot.user:
+            embeds: List[Embed] = messages[0].embeds
+            if len(embeds) == 1 and embeds[0].title == title and len(embeds[0].description + msg) <= 2000:
+                embed = embeds[0]
+                embed.description += "\n" + msg
+                await messages[0].edit(embed=embed)
+                return
+
+        embed = Embed(title=title, color=[0x256BE6, 0x03AD28][public], description=msg)
+        await channel.send(embed=embed)
 
     async def on_ready(self) -> bool:
         guild: Guild = self.bot.guilds[0]
@@ -130,7 +143,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
             if text_chat is not None:
                 await text_chat.set_permissions(member, read_messages=True)
-                await text_chat.send(translations.f_dyn_voice_joined(member.mention))
+                await self.send_voice_msg(
+                    text_chat, group.public, translations.voice_channel, translations.f_dyn_voice_joined(member.mention)
+                )
             return
 
         if group is None:
@@ -163,9 +178,16 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         else:
             await run_in_thread(DynamicVoiceChannel.create, chan.id, group.id, text_chat.id, member.id)
         await self.update_dynamic_voice_group(group)
-        await text_chat.send(translations.f_dyn_voice_created(member.mention))
         if not group.public:
-            await text_chat.send(translations.f_private_dyn_voice_help(prefix=await get_prefix()))
+            await self.send_voice_msg(
+                text_chat,
+                group.public,
+                translations.private_dyn_voice_help_title,
+                translations.f_private_dyn_voice_help_content(prefix=await get_prefix()),
+            )
+        await self.send_voice_msg(
+            text_chat, group.public, translations.voice_channel, translations.f_dyn_voice_created(member.mention)
+        )
 
     async def member_leave(
         self,
@@ -190,14 +212,21 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
         if text_chat is not None:
             await text_chat.set_permissions(member, overwrite=None)
-            await text_chat.send(translations.f_dyn_voice_left(member.mention))
+            await self.send_voice_msg(
+                text_chat, group.public, translations.voice_channel, translations.f_dyn_voice_left(member.mention)
+            )
 
         members: List[Member] = [member for member in channel.members if not member.bot]
         if not group.public and member.id == dyn_channel.owner and len(members) > 0:
             new_owner: Member = random.choice(members)
             await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, new_owner.id)
             if text_chat is not None:
-                await text_chat.send(translations.f_private_voice_owner_changed(new_owner.mention))
+                await self.send_voice_msg(
+                    text_chat,
+                    group.public,
+                    translations.voice_channel,
+                    translations.f_private_voice_owner_changed(new_owner.mention),
+                )
 
         if len(members) > 0:
             return
@@ -255,7 +284,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(VoiceChannelCog.voice)
+            raise UserInputError
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
     @permission_level(Permission.vc_manage_dyn)
@@ -265,7 +294,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(VoiceChannelCog.dynamic)
+            raise UserInputError
 
     @dynamic.command(name="list", aliases=["l", "?"])
     async def list_dyn(self, ctx: Context):
@@ -359,10 +388,15 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         invite a member into a private voice channel
         """
 
-        _, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
         if text_channel is not None:
-            await text_channel.send(translations.f_user_added_to_private_voice(member.mention))
+            await self.send_voice_msg(
+                text_channel,
+                group.public,
+                translations.voice_channel,
+                translations.f_user_added_to_private_voice(member.mention),
+            )
         if text_channel != ctx.channel:
             await ctx.send(translations.user_added_to_private_voice_response)
 
@@ -372,7 +406,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         remove a member from a private voice channel
         """
 
-        _, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         if member in (ctx.author, self.bot.user):
             raise CommandError(translations.cannot_remove_member)
 
@@ -384,7 +418,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if member.voice is not None and member.voice.channel == voice_channel:
             await member.move_to(None)
         if text_channel is not None:
-            await text_channel.send(translations.f_user_removed_from_private_voice(member.mention))
+            await self.send_voice_msg(
+                text_channel,
+                group.public,
+                translations.voice_channel,
+                translations.f_user_removed_from_private_voice(member.mention),
+            )
         if text_channel != ctx.channel:
             await ctx.send(translations.user_removed_from_private_voice_response)
 
@@ -395,7 +434,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         change = member is not None
-        _, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, change)
+        group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, change)
 
         if not change:
             await ctx.send(translations.f_owner_of_private_voice(f"<@{dyn_channel.owner}>"))
@@ -408,7 +447,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         await run_in_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, member.id)
         if text_channel is not None:
-            await text_channel.send(translations.f_private_voice_owner_changed(member.mention))
+            await self.send_voice_msg(
+                text_channel,
+                group.public,
+                translations.voice_channel,
+                translations.f_private_voice_owner_changed(member.mention),
+            )
         if text_channel != ctx.channel:
             await ctx.send(translations.private_voice_owner_changed_response)
 
@@ -420,7 +464,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(VoiceChannelCog.link)
+            raise UserInputError
 
     @link.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context):
@@ -451,7 +495,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if await run_in_thread(db.first, RoleVoiceLink, role=role.id, voice_channel=channel.id) is not None:
             raise CommandError(translations.link_already_exists)
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.f_link_not_created_too_high(role, ctx.me.top_role))
         if role.managed:
             raise CommandError(translations.f_link_not_created_managed_role(role))

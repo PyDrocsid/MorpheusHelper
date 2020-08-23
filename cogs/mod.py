@@ -1,10 +1,11 @@
+import re
 from datetime import datetime, timedelta
 from typing import Optional, Union, List, Tuple
-import re
 
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
+from discord.utils import snowflake_time
 
 from database import run_in_thread, db
 from models.allowed_invite import InviteLog
@@ -12,14 +13,14 @@ from models.mod import Warn, Report, Mute, Kick, Ban, Join, Leave, UsernameUpdat
 from models.settings import Settings
 from permission import Permission
 from translations import translations
-from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions
+from util import permission_level, ADMINISTRATOR, send_to_changelog, check_permissions, send_long_embed
 
 
 class DurationConverter(Converter):
     async def convert(self, ctx, argument: str) -> Optional[int]:
         if argument.lower() in ("inf", "perm", "permanent", "-1", "∞"):
             return None
-        if (match := re.match(r"^(\d+)d$", argument)) is None:
+        if (match := re.match(r"^(\d+)d?$", argument)) is None:
             raise BadArgument(translations.invalid_duration)
         if (days := int(match.group(1))) <= 0:
             raise BadArgument(translations.invalid_duration)
@@ -28,23 +29,15 @@ class DurationConverter(Converter):
         return days
 
 
-async def configure_role(ctx: Context, role_name: str, role: Optional[Role], check_assignable: bool = False):
-    guild: Guild = ctx.guild
-    if role is None:
-        role = guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
-        if role is None:
-            await ctx.send(translations.no_role_set)
-        else:
-            await ctx.send(f"`@{role}` ({role.id})")
-    else:
-        if check_assignable:
-            if role > ctx.me.top_role:
-                raise CommandError(translations.f_role_not_set_too_high(role, ctx.me.top_role))
-            if role.managed:
-                raise CommandError(translations.f_role_not_set_managed_role(role))
-        await run_in_thread(Settings.set, int, role_name + "_role", role.id)
-        await ctx.send(translations.role_set)
-        await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
+async def configure_role(ctx: Context, role_name: str, role: Role, check_assignable: bool = False):
+    if check_assignable:
+        if role >= ctx.me.top_role:
+            raise CommandError(translations.f_role_not_set_too_high(role, ctx.me.top_role))
+        if role.managed:
+            raise CommandError(translations.f_role_not_set_managed_role(role))
+    await run_in_thread(Settings.set, int, role_name + "_role", role.id)
+    await ctx.send(translations.role_set)
+    await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
 
 
 async def get_mute_role(guild: Guild) -> Role:
@@ -52,6 +45,12 @@ async def get_mute_role(guild: Guild) -> Role:
     if mute_role is None:
         raise CommandError(translations.mute_role_not_set)
     return mute_role
+
+
+async def update_join_date(guild: Guild, user_id: int):
+    member: Optional[Member] = guild.get_member(user_id)
+    if member is not None:
+        await run_in_thread(Join.update, member.id, str(member), member.joined_at)
 
 
 class ModCog(Cog, name="Mod Tools"):
@@ -114,10 +113,7 @@ class ModCog(Cog, name="Mod Tools"):
         await run_in_thread(Leave.create, member.id, str(member))
         return True
 
-    async def on_member_update(self, before: Member, after: Member):
-        if before.nick == after.nick:
-            return True
-
+    async def on_member_nick_update(self, before: Member, after: Member):
         await run_in_thread(UsernameUpdate.create, before.id, before.nick, after.nick, True)
         return True
 
@@ -136,11 +132,20 @@ class ModCog(Cog, name="Mod Tools"):
         configure roles
         """
 
-        if ctx.invoked_subcommand is None:
-            await ctx.send_help(ModCog.roles)
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
+            return
+
+        embed = Embed(title=translations.roles, color=0x256BE6)
+        for role_name in ["admin", "mod", "supp", "team", "mute"]:
+            role = ctx.guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
+            val = role.mention if role is not None else translations.role_not_set
+            embed.add_field(name=getattr(translations, f"role_{role_name}"), value=val, inline=False)
+        await ctx.send(embed=embed)
 
     @roles.command(name="administrator", aliases=["admin"])
-    async def set_admin(self, ctx: Context, role: Optional[Role]):
+    async def set_admin(self, ctx: Context, role: Role):
         """
         set administrator role
         """
@@ -148,7 +153,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "admin", role)
 
     @roles.command(name="moderator", aliases=["mod"])
-    async def set_mod(self, ctx: Context, role: Optional[Role]):
+    async def set_mod(self, ctx: Context, role: Role):
         """
         set moderator role
         """
@@ -156,7 +161,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "mod", role)
 
     @roles.command(name="supporter", aliases=["supp"])
-    async def set_supp(self, ctx: Context, role: Optional[Role]):
+    async def set_supp(self, ctx: Context, role: Role):
         """
         set supporter role
         """
@@ -164,7 +169,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "supp", role)
 
     @roles.command(name="team")
-    async def set_team(self, ctx: Context, role: Optional[Role]):
+    async def set_team(self, ctx: Context, role: Role):
         """
         set team role
         """
@@ -172,7 +177,7 @@ class ModCog(Cog, name="Mod Tools"):
         await configure_role(ctx, "team", role)
 
     @roles.command(name="mute")
-    async def set_mute(self, ctx: Context, role: Optional[Role]):
+    async def set_mute(self, ctx: Context, role: Role):
         """
         set mute role
         """
@@ -423,6 +428,8 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         user, user_id = await self.get_stats_user(ctx.author, user)
+        await update_join_date(self.bot.guilds[0], user_id)
+
         embed = Embed(title=translations.stats, color=0x35992C)
         if isinstance(user, int):
             embed.set_author(name=str(user))
@@ -472,10 +479,9 @@ class ModCog(Cog, name="Mod Tools"):
         """
 
         user, user_id = await self.get_stats_user(ctx.author, user)
+        await update_join_date(self.bot.guilds[0], user_id)
 
-        out: List[Tuple[datetime, str]] = []
-        if isinstance(user, User):
-            out.append((user.created_at, translations.ulog_created))
+        out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
         for join in await run_in_thread(db.all, Join, member=user_id):
             out.append((join.timestamp, translations.ulog_joined))
         for leave in await run_in_thread(db.all, Leave, member=user_id):
@@ -510,7 +516,10 @@ class ModCog(Cog, name="Mod Tools"):
                         )
                     )
         for kick in await run_in_thread(db.all, Kick, member=user_id):
-            out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
+            if kick.mod is not None:
+                out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
+            else:
+                out.append((kick.timestamp, translations.ulog_autokicked))
         for ban in await run_in_thread(db.all, Ban, member=user_id):
             if ban.days == -1:
                 out.append((ban.timestamp, translations.f_ulog_banned_inf(f"<@{ban.mod}>", ban.reason)))
@@ -533,28 +542,18 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
 
         out.sort()
-        embeds = [Embed(color=0x34B77E)]
-        embeds[0].title = translations.userlogs
+        embed = Embed(title=translations.userlogs, color=0x34B77E)
         if isinstance(user, int):
-            embeds[0].set_author(name=str(user))
+            embed.set_author(name=str(user))
         else:
-            embeds[0].set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
-        fields = 0
-        total = 0
+            embed.set_author(name=f"{user} ({user_id})", icon_url=user.avatar_url)
         for row in out:
             name = row[0].strftime("%d.%m.%Y %H:%M:%S")
             value = row[1]
-            if fields == 25 or total + len(name) + len(value) >= 580:
-                embed = Embed(color=0x34B77E)
-                embeds.append(embed)
-                fields = total = 0
-            total += len(name) + len(value)
-            embeds[-1].add_field(name=name, value=value, inline=False)
-            fields += 1
+            embed.add_field(name=name, value=value, inline=False)
         if out:
-            embeds[-1].set_footer(text=translations.utc_note)
-            for embed in embeds:
-                await ctx.send(embed=embed)
+            embed.set_footer(text=translations.utc_note)
+            await send_long_embed(ctx, embed)
         else:
             await ctx.send(translations.ulog_empty)
 
@@ -570,11 +569,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         def init():
             for member in guild.members:  # type: Member
-                for join in db.all(Join, member=member.id):
-                    if join.timestamp >= member.joined_at - timedelta(minutes=1):
-                        break
-                else:
-                    Join.create(member.id, str(member), member.joined_at)
+                Join.update(member.id, str(member), member.joined_at)
 
         await ctx.send(translations.f_filling_join_log(len(guild.members)))
         await run_in_thread(init)

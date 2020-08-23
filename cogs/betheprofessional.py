@@ -3,7 +3,7 @@ from typing import List
 
 from discord import Role, Guild, Member
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.btp_role import BTPRole
@@ -24,12 +24,12 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
             if role.name.lower() == topic.lower():
                 if role in all_topics:
                     break
-                if not role.managed and role > guild.me.top_role:
+                if not role.managed and role >= guild.me.top_role:
                     raise CommandError(translations.f_youre_not_the_first_one(topic, author.mention))
         else:
             if all_topics:
                 best_match = min(
-                    (r.name for r in all_topics), key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
+                    [r.name for r in all_topics], key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
                 )
                 raise CommandError(translations.f_topic_not_found_did_you_mean(topic, best_match))
             raise CommandError(translations.f_topic_not_found(topic))
@@ -116,8 +116,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         guild: Guild = ctx.guild
         names = split_topics(topics)
         if not names:
-            await ctx.send_help(self.register_role)
-            return
+            raise UserInputError
 
         valid_chars = set(string.ascii_letters + string.digits + " !#$%&'()+-./:<=>?[\\]^_`{|}~")
         to_be_created: List[str] = []
@@ -135,7 +134,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
 
             if await run_in_thread(db.get, BTPRole, role.id) is not None:
                 raise CommandError(translations.f_topic_already_registered(topic))
-            if role > ctx.me.top_role:
+            if role >= ctx.me.top_role:
                 raise CommandError(translations.f_topic_not_registered_too_high(role, ctx.me.top_role))
             if role.managed:
                 raise CommandError(translations.f_topic_not_registered_managed_role(role))
@@ -169,8 +168,8 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         btp_roles: List[BTPRole] = []
         names = split_topics(topics)
         if not names:
-            await ctx.send_help(self.register_role)
-            return
+            raise UserInputError
+
         for topic in names:
             for role in guild.roles:
                 if role.name.lower() == topic.lower():

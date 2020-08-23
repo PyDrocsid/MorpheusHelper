@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 from discord import TextChannel, Message, Forbidden, Permissions, Color
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from permission import Permission
 from translations import translations
@@ -24,7 +24,7 @@ class RulesCog(Cog, name="Rule Commands"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.send)
+            raise UserInputError
 
     @send.command(name="text", aliases=["t"])
     async def send_text(self, ctx: Context, channel: TextChannel):
@@ -94,7 +94,7 @@ class RulesCog(Cog, name="Rule Commands"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(self.edit)
+            raise UserInputError
 
     @edit.command(name="text", aliases=["t"])
     async def edit_text(self, ctx: Context, message: Message):

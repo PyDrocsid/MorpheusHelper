@@ -10,7 +10,7 @@ from discord import (
     PartialEmoji,
 )
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
+from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.reactionpin_channel import ReactionPinChannel
@@ -87,7 +87,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ReactionPinCog.reactionpin)
+            raise UserInputError
 
     @reactionpin.command(name="list", aliases=["l", "?"])
     async def list_channels(self, ctx: Context):

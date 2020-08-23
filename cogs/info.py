@@ -1,9 +1,10 @@
-from typing import Optional
+import re
+from typing import Optional, List
 
-from discord import Embed, Guild, Status, Game
+from discord import Embed, Guild, Status, Game, Member, Message
 from discord import Role
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, guild_only, Context
+from discord.ext.commands import Cog, Bot, guild_only, Context, UserInputError
 
 from database import run_in_thread, db
 from models.allowed_invite import AllowedInvite
@@ -24,6 +25,16 @@ class InfoCog(Cog, name="Server Information"):
             self.status_loop.restart()
         return True
 
+    async def on_message(self, message: Message) -> bool:
+        if message.guild is None:
+            return True
+
+        for line in message.content.splitlines():
+            if re.match(r"^> .*<@&\d+>.*$", line):
+                await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
+                break
+        return True
+
     @tasks.loop(seconds=20)
     async def status_loop(self):
         await self.bot.change_presence(
@@ -38,7 +49,9 @@ class InfoCog(Cog, name="Server Information"):
         displays information about this discord server
         """
 
-        if ctx.invoked_subcommand is not None:
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
             return
 
         guild: Guild = ctx.guild
@@ -46,7 +59,7 @@ class InfoCog(Cog, name="Server Information"):
         embed.set_thumbnail(url=guild.icon_url)
         created = guild.created_at.date()
         embed.add_field(name=translations.creation_date, value=f"{created.day}.{created.month}.{created.year}")
-        online_count = sum(m.status != Status.offline for m in guild.members)
+        online_count = sum([m.status != Status.offline for m in guild.members])
         embed.add_field(
             name=translations.f_cnt_members(guild.member_count), value=translations.f_cnt_online(online_count)
         )
@@ -73,7 +86,7 @@ class InfoCog(Cog, name="Server Information"):
             )
 
         bots = [m for m in guild.members if m.bot]
-        bots_online = sum(m.status != Status.offline for m in bots)
+        bots_online = sum([m.status != Status.offline for m in bots])
         embed.add_field(name=translations.f_cnt_bots(len(bots)), value=translations.f_cnt_online(bots_online))
         embed.add_field(
             name=translations.topics, value=translations.f_cnt_topics(len(await run_in_thread(db.all, BTPRole)))
@@ -92,9 +105,25 @@ class InfoCog(Cog, name="Server Information"):
         """
 
         guild: Guild = ctx.guild
-        bots = [(str(m), m.status != Status.offline) for m in guild.members if m.bot]
-        bots.sort(key=lambda m: (-m[1], m[0]))
-        out = []
-        for (bot, online) in bots:
-            out.append(f"- `@{bot}` ({['offline', 'online'][online]})")
-        await ctx.send("\n".join(out))
+        embed = Embed(title=translations.bots, color=0x005180)
+        online: List[Member] = []
+        offline: List[Member] = []
+        for member in guild.members:  # type: Member
+            if member.bot:
+                [offline, online][member.status != Status.offline].append(member)
+
+        if not online + offline:
+            embed.colour = 0xCF0606
+            embed.description = translations.no_bots
+            await ctx.send(embed=embed)
+            return
+
+        if online:
+            embed.add_field(
+                name=translations.online, value="\n".join(":small_orange_diamond: " + m.mention for m in online)
+            )
+        if offline:
+            embed.add_field(
+                name=translations.offline, value="\n".join(":small_blue_diamond: " + m.mention for m in offline)
+            )
+        await ctx.send(embed=embed)

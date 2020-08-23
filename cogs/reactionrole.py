@@ -1,8 +1,8 @@
-from typing import Optional
+from typing import Optional, Tuple
 
 from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from database import run_in_thread, db
 from models.reactionrole import ReactionRole
@@ -11,15 +11,19 @@ from translations import translations
 from util import permission_level, send_to_changelog, FixedEmojiConverter
 
 
-async def get_role(message: Message, emoji: PartialEmoji) -> Optional[Role]:
+async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
     link: Optional[ReactionRole] = await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji))
-    if link is not None:
-        role: Optional[Role] = message.guild.get_role(link.role_id)
-        if role is None:
-            await run_in_thread(db.delete, link)
-            return None
+    if link is None:
+        return None
+    if link.auto_remove and not add:
+        return None
 
-        return role
+    role: Optional[Role] = message.guild.get_role(link.role_id)
+    if role is None:
+        await run_in_thread(db.delete, link)
+        return None
+
+    return role, link.auto_remove
 
 
 class ReactionRoleCog(Cog, name="ReactionRole"):
@@ -30,9 +34,14 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         if member.bot:
             return False
 
-        role: Optional[Role] = await get_role(message, emoji)
-        if role is not None:
-            await member.add_roles(role)
+        result = await get_role(message, emoji, True)
+        if result is not None:
+            try:
+                await member.add_roles(result[0])
+            except NotFound:
+                pass
+            if result[1]:
+                await message.remove_reaction(emoji, member)
             return True
         return False
 
@@ -40,9 +49,12 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         if member.bot:
             return False
 
-        role: Optional[Role] = await get_role(message, emoji)
-        if role is not None:
-            await member.remove_roles(role)
+        result = await get_role(message, emoji, False)
+        if result is not None:
+            try:
+                await member.remove_roles(result[0])
+            except NotFound:
+                pass
             return True
         return False
 
@@ -55,7 +67,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         """
 
         if ctx.invoked_subcommand is None:
-            await ctx.send_help(ReactionRoleCog.reactionrole)
+            raise UserInputError
 
     @reactionrole.command(name="list", aliases=["l", "?"])
     async def list_links(self, ctx: Context, message: Optional[Message] = None):
@@ -104,14 +116,19 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 if role is None:
                     await run_in_thread(db.delete, link)
                     continue
-                out.append(f"{link.emoji} -> `@{role}`")
+                if link.auto_remove:
+                    out.append(translations.f_rr_link_auto_remove(link.emoji, role.name))
+                else:
+                    out.append(translations.f_rr_link(link.emoji, role.name))
             if not out:
                 await ctx.send(translations.no_reactionrole_links_for_msg)
             else:
                 await ctx.send("\n".join(out))
 
     @reactionrole.command(name="add", aliases=["a", "+"])
-    async def add(self, ctx: Context, message: Message, emoji: FixedEmojiConverter, role: Role):
+    async def add(
+        self, ctx: Context, message: Message, emoji: FixedEmojiConverter, role: Role, auto_remove: bool = False
+    ):
         """
         add a new reactionrole link
         """
@@ -120,13 +137,15 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         if await run_in_thread(ReactionRole.get, message.channel.id, message.id, str(emoji)) is not None:
             raise CommandError(translations.rr_link_already_exists)
+        if not message.channel.permissions_for(message.guild.me).add_reactions:
+            raise CommandError(translations.rr_link_not_created_no_permissions)
 
-        if role > ctx.me.top_role:
+        if role >= ctx.me.top_role:
             raise CommandError(translations.f_link_not_created_too_high(role, ctx.me.top_role))
         if role.managed or role.is_default():
             raise CommandError(translations.f_link_not_created_managed_role(role))
 
-        await run_in_thread(ReactionRole.create, message.channel.id, message.id, str(emoji), role.id)
+        await run_in_thread(ReactionRole.create, message.channel.id, message.id, str(emoji), role.id, auto_remove)
         await message.add_reaction(emoji)
         await ctx.send(translations.rr_link_created)
         await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role, message.jump_url))
