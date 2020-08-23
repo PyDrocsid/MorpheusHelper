@@ -121,6 +121,8 @@ class VerificationCog(Cog, name="Verification"):
     async def verification_role_add(self, ctx: Context, role: Role, reverse: bool = False):
         """
         add verification role
+        if `reverse` is set to `true`, the role is not added but removed during verification.
+        the `verify` command will fail if the user does not have the role.
         """
 
         if role >= ctx.me.top_role:
