@@ -20,7 +20,7 @@ from util import permission_level, send_to_changelog, check_permissions, get_pre
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
     return [
         role
-        for link in await run_in_thread(db.query, RoleVoiceLink, voice_channel=channel_id)
+        for link in await run_in_thread(db.all, RoleVoiceLink, voice_channel=channel_id)
         if (role := guild.get_role(link.role)) is not None
     ]
 
@@ -58,7 +58,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         guild: Guild = self.bot.guilds[0]
         print(translations.updating_voice_roles)
         linked_roles = {}
-        for link in await run_in_thread(db.query, RoleVoiceLink):
+        for link in await run_in_thread(db.all, RoleVoiceLink):
             role = guild.get_role(link.role)
             voice = guild.get_channel(link.voice_channel)
             if role is not None and voice is not None:
@@ -68,7 +68,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     db.first, DynamicVoiceGroup, channel_id=voice.id
                 )
                 if group is not None:
-                    for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
+                    for dyn_channel in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
                         channel: Optional[VoiceChannel] = guild.get_channel(dyn_channel.channel_id)
                         if channel is not None:
                             linked_roles[role].add(channel)
@@ -82,7 +82,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     if role in member.roles:
                         await member.remove_roles(role)
 
-        for group in await run_in_thread(db.query, DynamicVoiceGroup):
+        for group in await run_in_thread(db.all, DynamicVoiceGroup):
             channel: Optional[VoiceChannel] = guild.get_channel(group.channel_id)
             if channel is None:
                 continue
@@ -506,7 +506,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         group: Optional[DynamicVoiceGroup] = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
         if group is not None:
-            for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
+            for dyn_channel in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
                 dchannel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
                 if dchannel is not None:
                     for member in dchannel.members:
@@ -530,7 +530,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         group: Optional[DynamicVoiceGroup] = await run_in_thread(db.first, DynamicVoiceGroup, channel_id=channel.id)
         if group is not None:
-            for dyn_channel in await run_in_thread(db.query, DynamicVoiceChannel, group_id=group.id):
+            for dyn_channel in await run_in_thread(db.all, DynamicVoiceChannel, group_id=group.id):
                 dchannel: Optional[VoiceChannel] = self.bot.get_channel(dyn_channel.channel_id)
                 if dchannel is not None:
                     for member in dchannel.members:

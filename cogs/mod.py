@@ -61,7 +61,7 @@ class ModCog(Cog, name="Mod Tools"):
         guild: Guild = self.bot.guilds[0]
         mute_role: Optional[Role] = guild.get_role(await run_in_thread(Settings.get, int, "mute_role"))
         if mute_role is not None:
-            for mute in await run_in_thread(db.query, Mute, active=True):
+            for mute in await run_in_thread(db.all, Mute, active=True):
                 member: Optional[Member] = guild.get_member(mute.member)
                 if member is not None:
                     await member.add_roles(mute_role)
@@ -76,7 +76,7 @@ class ModCog(Cog, name="Mod Tools"):
     async def mod_loop(self):
         guild: Guild = self.bot.guilds[0]
 
-        for ban in await run_in_thread(db.query, Ban, active=True):
+        for ban in await run_in_thread(db.all, Ban, active=True):
             if ban.days != -1 and datetime.utcnow() >= ban.timestamp + timedelta(days=ban.days):
                 user: Optional[User] = await self.bot.fetch_user(ban.member)
                 if user is not None:
@@ -88,7 +88,7 @@ class ModCog(Cog, name="Mod Tools"):
         if mute_role is None:
             return
 
-        for mute in await run_in_thread(db.query, Mute, active=True):
+        for mute in await run_in_thread(db.all, Mute, active=True):
             if mute.days != -1 and datetime.utcnow() >= mute.timestamp + timedelta(days=mute.days):
                 member: Optional[Member] = guild.get_member(mute.member)
                 if member is not None:
@@ -292,7 +292,7 @@ class ModCog(Cog, name="Mod Tools"):
             was_muted = True
             await user.remove_roles(mute_role)
 
-        for mute in await run_in_thread(db.query, Mute, active=True, member=user.id):
+        for mute in await run_in_thread(db.all, Mute, active=True, member=user.id):
             await run_in_thread(Mute.deactivate, mute.id, ctx.author.id, reason)
             was_muted = True
         if not was_muted:
@@ -395,7 +395,7 @@ class ModCog(Cog, name="Mod Tools"):
         except HTTPException:
             was_banned = False
 
-        for ban in await run_in_thread(db.query, Ban, active=True, member=user.id):
+        for ban in await run_in_thread(db.all, Ban, active=True, member=user.id):
             was_banned = True
             await run_in_thread(Ban.deactivate, ban.id, ctx.author.id, reason)
         if not was_banned:
@@ -482,11 +482,11 @@ class ModCog(Cog, name="Mod Tools"):
         await update_join_date(self.bot.guilds[0], user_id)
 
         out: List[Tuple[datetime, str]] = [(snowflake_time(user_id), translations.ulog_created)]
-        for join in await run_in_thread(db.query, Join, member=user_id):
+        for join in await run_in_thread(db.all, Join, member=user_id):
             out.append((join.timestamp, translations.ulog_joined))
-        for leave in await run_in_thread(db.query, Leave, member=user_id):
+        for leave in await run_in_thread(db.all, Leave, member=user_id):
             out.append((leave.timestamp, translations.ulog_left))
-        for username_update in await run_in_thread(db.query, UsernameUpdate, member=user_id):
+        for username_update in await run_in_thread(db.all, UsernameUpdate, member=user_id):
             if not username_update.nick:
                 msg = translations.f_ulog_username_updated(username_update.member_name, username_update.new_name)
             elif username_update.member_name is None:
@@ -496,11 +496,11 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 msg = translations.f_ulog_nick_updated(username_update.member_name, username_update.new_name)
             out.append((username_update.timestamp, msg))
-        for report in await run_in_thread(db.query, Report, member=user_id):
+        for report in await run_in_thread(db.all, Report, member=user_id):
             out.append((report.timestamp, translations.f_ulog_reported(f"<@{report.reporter}>", report.reason)))
-        for warn in await run_in_thread(db.query, Warn, member=user_id):
+        for warn in await run_in_thread(db.all, Warn, member=user_id):
             out.append((warn.timestamp, translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason)))
-        for mute in await run_in_thread(db.query, Mute, member=user_id):
+        for mute in await run_in_thread(db.all, Mute, member=user_id):
             if mute.days == -1:
                 out.append((mute.timestamp, translations.f_ulog_muted_inf(f"<@{mute.mod}>", mute.reason)))
             else:
@@ -515,12 +515,12 @@ class ModCog(Cog, name="Mod Tools"):
                             translations.f_ulog_unmuted(f"<@{mute.unmute_mod}>", mute.unmute_reason),
                         )
                     )
-        for kick in await run_in_thread(db.query, Kick, member=user_id):
+        for kick in await run_in_thread(db.all, Kick, member=user_id):
             if kick.mod is not None:
                 out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
             else:
                 out.append((kick.timestamp, translations.ulog_autokicked))
-        for ban in await run_in_thread(db.query, Ban, member=user_id):
+        for ban in await run_in_thread(db.all, Ban, member=user_id):
             if ban.days == -1:
                 out.append((ban.timestamp, translations.f_ulog_banned_inf(f"<@{ban.mod}>", ban.reason)))
             else:
@@ -535,7 +535,7 @@ class ModCog(Cog, name="Mod Tools"):
                             translations.f_ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
                         )
                     )
-        for log in await run_in_thread(db.query, InviteLog, applicant=user_id):  # type: InviteLog
+        for log in await run_in_thread(db.all, InviteLog, applicant=user_id):  # type: InviteLog
             if log.approved:
                 out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
             else:

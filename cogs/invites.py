@@ -39,8 +39,8 @@ class AllowedServerConverter(Converter):
 
 def get_discord_invite(url) -> Optional[str]:
     while True:
-        if re.match(r"^(https?://)?(discord(.gg|app.com/invite)/[a-zA-Z0-9\-_]+)$", url):
-            return url
+        if match := re.match(r"^(https?://)?discord(.gg|(app)?.com/invite)/([a-zA-Z0-9\-_]+)$", url):
+            return match.group(4)
 
         if not re.match(r"^(https?://).*$", url):
             url = "https://" + url
@@ -69,14 +69,14 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         forbidden = []
         legal_invite = False
         for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~]+(/\S*)?)", message.content):
-            if (url := get_discord_invite(url)) is None:
+            if (code := get_discord_invite(url)) is None:
                 continue
             try:
-                invite = await self.bot.fetch_invite(url)
+                invite = await self.bot.fetch_invite(code)
             except NotFound:
                 continue
             except Forbidden:
-                forbidden.append(f"`{url}` (banned from this server)")
+                forbidden.append(f"`{code}` (banned from this server)")
                 continue
             if invite.guild is None:
                 continue
@@ -145,7 +145,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         """
 
         out = []
-        for row in sorted(await run_in_thread(db.query, AllowedInvite), key=lambda a: a.guild_name):
+        for row in sorted(await run_in_thread(db.all, AllowedInvite), key=lambda a: a.guild_name):
             out.append(f"- {row.guild_name} ({row.guild_id})")
         if out:
             await ctx.send(translations.allowed_servers_header + "\n```\n" + "\n".join(out) + "```")

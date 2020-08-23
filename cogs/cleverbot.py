@@ -64,7 +64,7 @@ class CleverBotCog(Cog, name="CleverBot"):
 
         out = []
         guild: Guild = ctx.guild
-        for channel in await run_in_thread(db.query, CleverBotChannel):
+        for channel in await run_in_thread(db.all, CleverBotChannel):
             text_channel: Optional[TextChannel] = guild.get_channel(channel.channel)
             if text_channel is not None:
                 out.append(f"- {text_channel.mention}")
