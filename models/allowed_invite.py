@@ -3,7 +3,7 @@ from typing import Union
 
 from sqlalchemy import Column, String, BigInteger, DateTime, Boolean, Integer
 
-from database import db
+from PyDrocsid.database import db
 
 
 class AllowedInvite(db.Base):

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8a71a688f21bb99466a10e8c25a74b1082c7c91317a908c45fd3552058330142"
+            "sha256": "12933b85c0b5232323dc739cb3edbd006e789767bdd23f94d80407107baa7151"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -66,7 +66,7 @@
         },
         "discord-py": {
             "git": "https://github.com/Rapptz/discord.py.git",
-            "ref": "0bc15fa130b8f01fe2d67446a2184d474b0d0ba7"
+            "ref": "2628949cda29e424f52fbfe8a2889430fa6f3855"
         },
         "discord.py": {
             "git": "https://github.com/Rapptz/discord.py.git"
@@ -138,13 +138,21 @@
             "index": "pypi",
             "version": "==3.9.8"
         },
-        "pymysql": {
+        "pydrocsid": {
             "hashes": [
-                "sha256:3943fbbbc1e902f41daf7f9165519f140c4451c179380677e6a848587042561a",
-                "sha256:d8c059dcd81dedb85a9f034d5e22dcb4442c0b201908bede99e306d65ea7c8e7"
+                "sha256:b029eeaf90872bd39a881e05884faf3376fc3af2856447d0922d0e77841ee30b",
+                "sha256:c7d3570cb98e5a0b19594009f8314aa0e23ab65714b8506e372f4b5f7bf6bd25"
             ],
             "index": "pypi",
-            "version": "==0.9.3"
+            "version": "==1.0.1"
+        },
+        "pymysql": {
+            "hashes": [
+                "sha256:adef15ceccf1ff544a23a6f46609f65187261dc8b0cf94c9644189c173b0a451",
+                "sha256:e14070bc84e050e0f80bf6063e31d276f03a0bb4d46b9eca2854566c4ae19837"
+            ],
+            "index": "pypi",
+            "version": "==0.10.0"
         },
         "pyyaml": {
             "hashes": [
@@ -173,11 +181,11 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:2f023ff348359ec5f0b73a840e8b08e6a8d3b2613a98c57d11c222ef43879237",
-                "sha256:380a280cfc7c4ade5912294e6d9aa71ce776b5fca60a3782e9331b0bcd2866bf"
+                "sha256:2de15b13836fa3522815a933bd9c887c77f4868071043349f94f1b896c1bcfb8",
+                "sha256:38bb09d0277117f76507c8728d9a5156f09a47ac5175bb8072513859d19a593b"
             ],
             "index": "pypi",
-            "version": "==0.16.1"
+            "version": "==0.16.2"
         },
         "sqlalchemy": {
             "hashes": [
@@ -215,11 +223,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527",
-                "sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115"
+                "sha256:91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a",
+                "sha256:e7983572181f5e1522d9c98453462384ee92a0be7fac5f1413a1e35c56cc0461"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
-            "version": "==1.25.9"
+            "version": "==1.25.10"
         },
         "websockets": {
             "hashes": [

@@ -429,6 +429,7 @@ filling_join_log: Creating join log entries for {} members. This may take a whil
 join_log_filled: Join log has been initialized successfully.
 
 stats_not_allowed: You are not allowed to access this information.
+could_not_send_dm: Message could not be sent. Please enable direct messages from this server!
 stats: User Statistics
 reported_cnt: ":speech_balloon:  Reported"
 warned_cnt: ":warning:  Warned"

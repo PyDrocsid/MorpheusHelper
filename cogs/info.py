@@ -6,11 +6,11 @@ from discord import Role
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, UserInputError
 
-from database import run_in_thread, db
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
-from models.settings import Settings
-from translations import translations
 
 
 class InfoCog(Cog, name="Server Information"):
@@ -23,17 +23,15 @@ class InfoCog(Cog, name="Server Information"):
             self.status_loop.start()
         except RuntimeError:
             self.status_loop.restart()
-        return True
 
-    async def on_message(self, message: Message) -> bool:
+    async def on_message(self, message: Message):
         if message.guild is None:
-            return True
+            return
 
         for line in message.content.splitlines():
             if re.match(r"^> .*<@&\d+>.*$", line):
                 await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
                 break
-        return True
 
     @tasks.loop(seconds=20)
     async def status_loop(self):
@@ -42,7 +40,7 @@ class InfoCog(Cog, name="Server Information"):
         )
         self.current_status = (self.current_status + 1) % len(translations.profile_status)
 
-    @commands.group(name="server")
+    @commands.group()
     @guild_only()
     async def server(self, ctx: Context):
         """
@@ -66,7 +64,7 @@ class InfoCog(Cog, name="Server Information"):
         embed.add_field(name=translations.owner, value=guild.owner.mention)
 
         async def get_role(role_name) -> Optional[Role]:
-            return guild.get_role(await run_in_thread(Settings.get, int, role_name + "_role"))
+            return guild.get_role(await Settings.get(int, role_name + "_role"))
 
         role: Role
         if (role := await get_role("admin")) is not None and role.members:
@@ -89,17 +87,17 @@ class InfoCog(Cog, name="Server Information"):
         bots_online = sum([m.status != Status.offline for m in bots])
         embed.add_field(name=translations.f_cnt_bots(len(bots)), value=translations.f_cnt_online(bots_online))
         embed.add_field(
-            name=translations.topics, value=translations.f_cnt_topics(len(await run_in_thread(db.all, BTPRole)))
+            name=translations.topics, value=translations.f_cnt_topics(len(await db_thread(db.all, BTPRole)))
         )
         embed.add_field(
             name=translations.allowed_discord_server,
-            value=translations.f_cnt_servers_whitelisted(len(await run_in_thread(db.all, AllowedInvite))),
+            value=translations.f_cnt_servers_whitelisted(len(await db_thread(db.all, AllowedInvite))),
         )
 
         await ctx.send(embed=embed)
 
     @server.command(name="bots")
-    async def list_bots(self, ctx: Context):
+    async def server_bots(self, ctx: Context):
         """
         list all bots on the server
         """
