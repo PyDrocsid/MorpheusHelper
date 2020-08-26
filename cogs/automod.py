@@ -2,16 +2,16 @@ import asyncio
 from asyncio import Task
 from typing import Optional, Dict
 
+from PyDrocsid.database import db_thread
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 from discord import Role, Member, Guild, Forbidden, HTTPException, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from database import run_in_thread
 from models.mod import Kick
-from models.settings import Settings
-from permission import Permission
-from translations import translations
-from util import permission_level, send_to_changelog, get_colour
+from permissions import Permission
+from util import send_to_changelog, get_colour
 
 
 async def kick(member: Member) -> bool:
@@ -28,7 +28,7 @@ async def kick(member: Member) -> bool:
     except (Forbidden, HTTPException):
         pass
     await member.kick(reason=translations.log_autokicked)
-    await run_in_thread(Kick.create, member.id, str(member), None, None)
+    await db_thread(Kick.create, member.id, str(member), None, None)
     return True
 
 
@@ -48,60 +48,53 @@ class AutoModCog(Cog, name="AutoMod"):
 
     async def get_autokick_role(self) -> Optional[Role]:
         guild: Guild = self.bot.guilds[0]
-        return guild.get_role(await run_in_thread(Settings.get, int, "autokick_role", -1))
+        return guild.get_role(await Settings.get(int, "autokick_role", -1))
 
     async def get_instantkick_role(self) -> Optional[Role]:
         guild: Guild = self.bot.guilds[0]
-        return guild.get_role(await run_in_thread(Settings.get, int, "instantkick_role", -1))
+        return guild.get_role(await Settings.get(int, "instantkick_role", -1))
 
     def cancel_task(self, member: Member):
         if member in self.kick_tasks:
             self.kick_tasks.pop(member).cancel()
 
-    async def on_member_join(self, member: Member) -> bool:
+    async def on_member_join(self, member: Member):
         if member.bot:
-            return True
+            return
 
-        mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
+        mode: int = await Settings.get(int, "autokick_mode", 0)
         role: Optional[Role] = await self.get_autokick_role()
         if mode == 0 or role is None:
-            return True
+            return
 
-        delay: int = await run_in_thread(Settings.get, int, "autokick_delay", 30)
+        delay: int = await Settings.get(int, "autokick_delay", 30)
         self.kick_tasks[member] = asyncio.create_task(kick_delay(member, delay, role, mode == 2))
         self.kick_tasks[member].add_done_callback(lambda _: self.cancel_task(member))
-        return True
 
     async def on_member_remove(self, member: Member):
         self.cancel_task(member)
-        return True
 
-    async def on_member_role_add(self, member: Member, role: Role) -> bool:
+    async def on_member_role_add(self, member: Member, role: Role):
         if member.bot:
-            return True
+            return
 
-        if role == await self.get_instantkick_role():
-            if await kick(member):
-                return False
+        if role == await self.get_instantkick_role() and await kick(member):
+            return
 
-        mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
+        mode: int = await Settings.get(int, "autokick_mode", 0)
         if mode == 1 and role == await self.get_autokick_role():
             self.cancel_task(member)
 
-        return True
-
-    async def on_member_role_remove(self, member: Member, role: Role) -> bool:
+    async def on_member_role_remove(self, member: Member, role: Role):
         if member.bot:
-            return True
+            return
 
-        mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
+        mode: int = await Settings.get(int, "autokick_mode", 0)
         if mode == 2 and role == await self.get_autokick_role():
             self.cancel_task(member)
 
-        return True
-
-    @commands.group(name="autokick", aliases=["ak"])
-    @permission_level(Permission.manage_autokick)
+    @commands.group(aliases=["ak"])
+    @Permission.manage_autokick.check
     @guild_only()
     async def autokick(self, ctx: Context):
         """
@@ -114,7 +107,7 @@ class AutoModCog(Cog, name="AutoMod"):
             return
 
         embed = Embed(title=translations.autokick, colour=get_colour("red"))
-        mode: int = await run_in_thread(Settings.get, int, "autokick_mode", 0)
+        mode: int = await Settings.get(int, "autokick_mode", 0)
         role: Optional[Role] = await self.get_autokick_role()
         if mode == 0 or role is None:
             embed.add_field(name=translations.status, value=translations.autokick_disabled, inline=False)
@@ -123,7 +116,7 @@ class AutoModCog(Cog, name="AutoMod"):
 
         embed.add_field(name=translations.status, value=translations.autokick_mode[mode - 1], inline=False)
         embed.colour = get_colour(self)
-        delay: int = await run_in_thread(Settings.get, int, "autokick_delay", 30)
+        delay: int = await Settings.get(int, "autokick_delay", 30)
         embed.add_field(name=translations.delay, value=translations.f_x_seconds(delay), inline=False)
         embed.add_field(name=translations.role, value=role.mention, inline=False)
 
@@ -143,7 +136,7 @@ class AutoModCog(Cog, name="AutoMod"):
         if mode is None:
             raise UserInputError
 
-        await run_in_thread(Settings.set, int, "autokick_mode", mode)
+        await Settings.set(int, "autokick_mode", mode)
         embed = Embed(title=translations.autokick, description=translations.autokick_mode_configured[mode],
                       colour=get_colour(self))
         await ctx.send(embed=embed)
@@ -158,7 +151,7 @@ class AutoModCog(Cog, name="AutoMod"):
         if not 0 < seconds < 300:
             raise CommandError(translations.invalid_duration)
 
-        await run_in_thread(Settings.set, int, "autokick_delay", seconds)
+        await Settings.set(int, "autokick_delay", seconds)
         embed = Embed(title=translations.autokick, description=translations.autokick_delay_configured,
                       colour=get_colour(self))
         await ctx.send(embed=embed)
@@ -170,14 +163,14 @@ class AutoModCog(Cog, name="AutoMod"):
         configure autokick role
         """
 
-        await run_in_thread(Settings.set, int, "autokick_role", role.id)
+        await Settings.set(int, "autokick_role", role.id)
         embed = Embed(title=translations.autokick, description=translations.autokick_role_configured,
                       colour=get_colour(self))
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.name, role.id))
 
-    @commands.group(name="instantkick", aliases=["ik"])
-    @permission_level(Permission.manage_instantkick)
+    @commands.group(aliases=["ik"])
+    @Permission.manage_instantkick.check
     @guild_only()
     async def instantkick(self, ctx: Context):
         """
@@ -208,7 +201,7 @@ class AutoModCog(Cog, name="AutoMod"):
         disable instantkick
         """
 
-        await run_in_thread(Settings.set, int, "instantkick_role", -1)
+        await Settings.set(int, "instantkick_role", -1)
         embed = Embed(title=translations.instantkick, description=translations.instantkick_set_disabled,
                       colour=get_colour(self))
         await ctx.send(embed=embed)
@@ -223,7 +216,7 @@ class AutoModCog(Cog, name="AutoMod"):
         if role >= ctx.me.top_role:
             raise CommandError(translations.instantkick_cannot_kick)
 
-        await run_in_thread(Settings.set, int, "instantkick_role", role.id)
+        await Settings.set(int, "instantkick_role", role.id)
         embed = Embed(title=translations.instantkick, description=translations.instantkick_role_configured,
                       colour=get_colour(self))
         await ctx.send(embed=embed)

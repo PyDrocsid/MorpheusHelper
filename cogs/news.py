@@ -1,29 +1,23 @@
 import re
 from typing import Optional, Union
 
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed, read_normal_message, attachment_to_file
 from discord import Member, TextChannel, Role, Guild, HTTPException, Forbidden, Embed, Color
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from database import run_in_thread, db
 from models.news_authorization import NewsAuthorization
-from permission import Permission
-from translations import translations
-from util import (
-    permission_level,
-    send_to_changelog,
-    read_normal_message,
-    get_colour,
-    send_long_embed,
-    attachment_to_file,
-)
+from permissions import Permission
+from util import send_to_changelog, get_colour
 
 
 class NewsCog(Cog, name="News"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="news")
+    @commands.group()
     @guild_only()
     async def news(self, ctx: Context):
         """
@@ -34,8 +28,8 @@ class NewsCog(Cog, name="News"):
             raise UserInputError
 
     @news.group(name="auth", aliases=["a"])
-    @permission_level(Permission.news_manage)
-    async def auth(self, ctx: Context):
+    @Permission.news_manage.check
+    async def news_auth(self, ctx: Context):
         """
         manage authorized users and channels
         """
@@ -43,25 +37,25 @@ class NewsCog(Cog, name="News"):
         if ctx.invoked_subcommand is None:
             raise UserInputError
 
-    @auth.command(name="list", aliases=["l", "?"])
-    async def list_auth(self, ctx: Context):
+    @news_auth.command(name="list", aliases=["l", "?"])
+    async def news_auth_list(self, ctx: Context):
         """
         list authorized users and channels
         """
 
         out = []
         guild: Guild = ctx.guild
-        for authorization in await run_in_thread(db.all, NewsAuthorization):
+        for authorization in await db_thread(db.all, NewsAuthorization):
             text_channel: Optional[TextChannel] = guild.get_channel(authorization.channel_id)
             member: Optional[Member] = guild.get_member(authorization.user_id)
             if text_channel is None or member is None:
-                await run_in_thread(db.delete, authorization)
+                await db_thread(db.delete, authorization)
                 continue
             line = f":small_orange_diamond: {member.mention} -> {text_channel.mention}"
             if authorization.notification_role_id is not None:
                 role: Optional[Role] = guild.get_role(authorization.notification_role_id)
                 if role is None:
-                    await run_in_thread(db.delete, authorization)
+                    await db_thread(db.delete, authorization)
                     continue
                 line += f" ({role.mention})"
             out.append(line)
@@ -73,49 +67,49 @@ class NewsCog(Cog, name="News"):
             embed.description = translations.no_news_authorizations
         await send_long_embed(ctx, embed)
 
-    @auth.command(name="add", aliases=["a", "+"])
-    async def auth_add(self, ctx: Context, user: Member, channel: TextChannel, notification_role: Optional[Role]):
+    @news_auth.command(name="add", aliases=["a", "+"])
+    async def news_auth_add(self, ctx: Context, user: Member, channel: TextChannel, notification_role: Optional[Role]):
         """
         authorize a new user to send news to a specific channel
         """
 
-        if await run_in_thread(db.first, NewsAuthorization, user_id=user.id, channel_id=channel.id) is not None:
+        if await db_thread(db.first, NewsAuthorization, user_id=user.id, channel_id=channel.id) is not None:
             raise CommandError(translations.news_already_authorized)
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.news_not_added_no_permissions)
 
         role_id = notification_role.id if notification_role is not None else None
 
-        await run_in_thread(NewsAuthorization.create, user.id, channel.id, role_id)
+        await db_thread(NewsAuthorization.create, user.id, channel.id, role_id)
         embed = Embed(title=translations.news, colour=get_colour(self), description=translations.news_authorized)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_news_authorized(user.mention, channel.mention))
 
-    @auth.command(name="remove", aliases=["del", "r", "d", "-"])
-    async def auth_del(self, ctx: Context, user: Member, channel: TextChannel):
+    @news_auth.command(name="remove", aliases=["del", "r", "d", "-"])
+    async def news_auth_remove(self, ctx: Context, user: Member, channel: TextChannel):
         """
         remove user authorization
         """
 
-        authorization: Optional[NewsAuthorization] = await run_in_thread(
+        authorization: Optional[NewsAuthorization] = await db_thread(
             db.first, NewsAuthorization, user_id=user.id, channel_id=channel.id
         )
         if authorization is None:
             raise CommandError(translations.news_not_authorized)
 
-        await run_in_thread(db.delete, authorization)
+        await db_thread(db.delete, authorization)
         embed = Embed(title=translations.news, colour=get_colour(self), description=translations.news_unauthorized)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_news_unauthorized(user.mention, channel.mention))
 
     @news.command(name="send", aliases=["s"])
-    async def send(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None, *,
-                   message: Optional[str]):
+    async def news_send(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None, *,
+                        message: Optional[str]):
         """
         send a news message
         """
 
-        authorization: Optional[NewsAuthorization] = await run_in_thread(
+        authorization: Optional[NewsAuthorization] = await db_thread(
             db.first, NewsAuthorization, user_id=ctx.author.id, channel_id=channel.id
         )
         if authorization is None:

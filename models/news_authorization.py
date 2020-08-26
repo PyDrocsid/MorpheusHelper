@@ -1,8 +1,7 @@
 from typing import Union, Optional
 
+from PyDrocsid.database import db
 from sqlalchemy import Column, BigInteger
-
-from database import db
 
 
 class NewsAuthorization(db.Base):

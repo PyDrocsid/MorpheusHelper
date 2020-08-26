@@ -236,7 +236,7 @@ metaquestion_description: >
   Eine Metafrage ist eine Frage über eine Frage, wie beispielsweise „Darf ich etwas fragen?“
   oder „Kennt sich jemand mit Computern aus?“.
 
-  In der Regel wird der Begriff Metafrage aber verallgemeinert und damit alle Fragen bezeichnet,
+  In der Regel wird der Begriff Metafrage aber verallgemeinert und für alle Fragen verwendet,
   die keine direkte Frage zum Problem des Hilfesuchenden sind. Der Hilfesuchende fragt also zunächst
   allgemein, ob jemand helfen kann. Gerade Neulinge oder unerfahrene Benutzer lassen sich zu Metafragen
   hinreißen, um einen kompetenten und hilfsbereiten Ansprechpartner zu finden. Meistens werden Metafragen
@@ -261,7 +261,7 @@ mq_disadvantages:
     spezielle Frage zu diesem beantworten kann – niemand ist allwissend,
   - >-
     wenn keine Reaktion auf die Metafrage erfolgt, beläßt es der Fragende meist dabei. So
-    kann eine Antwort auf das Problem von später aufmerksam Werdenden nicht erfolgen.
+    kann eine Antwort auf das Problem von später Aufmerksamwerdenden nicht erfolgen.
 
 # reactionpin
 reactionpin: Reactionpin
@@ -456,6 +456,7 @@ filling_join_log: ":hourglass_flowing_sand: Creating join log entries for {} mem
 join_log_filled: ":white_check_mark: Join log has been initialized successfully."
 
 stats_not_allowed: You are not allowed to access this information.
+could_not_send_dm: Message could not be sent. Please enable direct messages from this server!
 stats: User Statistics
 reported_cnt: ":speech_balloon:  Reported"
 warned_cnt: ":warning:  Warned"

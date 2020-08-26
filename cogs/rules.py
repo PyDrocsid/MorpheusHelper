@@ -2,21 +2,22 @@ import re
 from http.client import HTTPException
 from typing import Optional, Union
 
+from PyDrocsid.translations import translations
+from PyDrocsid.util import read_normal_message, read_complete_message
 from discord import TextChannel, Message, Forbidden, Permissions, Color, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from permission import Permission
-from translations import translations
-from util import permission_level, read_normal_message, read_complete_message, get_colour
+from permissions import Permission
+from util import get_colour
 
 
 class RulesCog(Cog, name="Rule Commands"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="send")
-    @permission_level(Permission.send)
+    @commands.group()
+    @Permission.send.check
     @guild_only()
     async def send(self, ctx: Context):
         """
@@ -102,8 +103,8 @@ class RulesCog(Cog, name="Rule Commands"):
             embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.msg_sent)
             await ctx.send(embed=embed)
 
-    @commands.group(name="edit")
-    @permission_level(Permission.edit)
+    @commands.group()
+    @Permission.edit.check
     @guild_only()
     async def edit(self, ctx: Context):
         """
@@ -178,8 +179,8 @@ class RulesCog(Cog, name="Rule Commands"):
         embed = Embed(title=translations.rule, colour=get_colour(self), description=translations.msg_edited)
         await ctx.send(embed=embed)
 
-    @commands.command(name="delete")
-    @permission_level(Permission.delete)
+    @commands.command()
+    @Permission.delete.check
     @guild_only()
     async def delete(self, ctx: Context, message: Message):
         """

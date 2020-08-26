@@ -1,21 +1,21 @@
 from typing import Optional
 
+from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadArgument, CommandError, UserInputError
 
-from permission import Permission
-from translations import translations
-from util import permission_level, ADMINISTRATOR, get_permission_level, MODERATOR, SUPPORTER, PUBLIC, send_long_embed, \
-    get_colour
+from permissions import Permission, PermissionLevel  # skipcq: PYL-W0406
+from util import get_colour
 
 
-async def list_permissions(ctx: Context, title: str, min_level: int):
+async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel):
     out = {}
     for permission in Permission:  # type: Permission
         level = await permission.resolve()
-        if min_level >= level:
-            out.setdefault(level, []).append(f"`{permission.name}` - {permission.description}")
+        if min_level.value >= level.value:
+            out.setdefault(level.value, []).append(f"`{permission.name}` - {permission.description}")
 
     embed = Embed(title=title, colour=get_colour("red"))
     if not out:
@@ -31,15 +31,15 @@ async def list_permissions(ctx: Context, title: str, min_level: int):
 
 
 class PermissionLevelConverter(Converter):
-    async def convert(self, ctx: Context, argument: str) -> int:
+    async def convert(self, ctx: Context, argument: str) -> PermissionLevel:
         if argument.lower() in ("administrator", "admin", "a"):
-            return ADMINISTRATOR
+            return PermissionLevel.ADMINISTRATOR
         if argument.lower() in ("moderator", "mod", "m"):
-            return MODERATOR
+            return PermissionLevel.MODERATOR
         if argument.lower() in ("supporter", "supp", "s"):
-            return SUPPORTER
+            return PermissionLevel.SUPPORTER
         if argument.lower() in ("public", "p"):
-            return PUBLIC
+            return PermissionLevel.PUBLIC
         raise BadArgument(translations.invalid_permission_level)
 
 
@@ -47,7 +47,7 @@ class PermissionsCog(Cog, name="Permissions"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="permissions", aliases=["perm", "p"])
+    @commands.group(aliases=["perm", "p"])
     @guild_only()
     async def permissions(self, ctx: Context):
         """
@@ -58,31 +58,35 @@ class PermissionsCog(Cog, name="Permissions"):
             raise UserInputError
 
     @permissions.command(name="list", aliases=["show", "l", "?"])
-    @permission_level(Permission.view_all_permissions)
-    async def list_permissions(self, ctx: Context, min_level: Optional[PermissionLevelConverter]):
+    @Permission.view_all_permissions.check
+    async def permissions_list(self, ctx: Context, min_level: Optional[PermissionLevelConverter]):
         """
         list all permissions
         """
 
-        await list_permissions(ctx, translations.permissions_title, ADMINISTRATOR if min_level is None else min_level)
+        if min_level is None:
+            min_level = PermissionLevel.ADMINISTRATOR
+
+        await list_permissions(ctx, translations.permissions_title, min_level)
 
     @permissions.command(name="my", aliases=["m", "own", "o"])
-    @permission_level(Permission.view_own_permissions)
-    async def my_permissions(self, ctx: Context):
+    @Permission.view_own_permissions.check
+    async def permissions_my(self, ctx: Context):
         """
         list all permissions granted to the user
         """
 
-        await list_permissions(ctx, translations.my_permissions_title, await get_permission_level(ctx.author))
+        min_level: PermissionLevel = await PermissionLevel.get_permission_level(ctx.author)
+        await list_permissions(ctx, translations.my_permissions_title, min_level)
 
     @permissions.command(name="set", aliases=["s", "="])
-    @permission_level(ADMINISTRATOR)
-    async def set_permission(self, ctx: Context, permission: str, level: PermissionLevelConverter):
+    @PermissionLevel.ADMINISTRATOR.check
+    async def permissions_set(self, ctx: Context, permission: str, level: PermissionLevelConverter):
         """
         configure bot permissions
         """
 
-        level: int
+        level: PermissionLevel
         try:
             permission: Permission = Permission[permission.lower()]
         except KeyError:
@@ -90,5 +94,6 @@ class PermissionsCog(Cog, name="Permissions"):
 
         await permission.set(level)
         embed = Embed(title=translations.permissions_title, colour=get_colour(self),
-                      description=translations.f_permission_set(permission.name, translations.permission_levels[level]))
+                      description=translations.f_permission_set(permission.name,
+                                                                translations.permission_levels[level.value]))
         await ctx.send(embed=embed)

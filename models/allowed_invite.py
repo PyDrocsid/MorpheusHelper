@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Union
 
+from PyDrocsid.database import db
 from sqlalchemy import Column, String, BigInteger, DateTime, Boolean, Integer
-
-from database import db
 
 
 class AllowedInvite(db.Base):

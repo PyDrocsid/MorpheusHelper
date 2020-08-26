@@ -1,8 +1,7 @@
 from typing import Union
 
+from PyDrocsid.database import db
 from sqlalchemy import Column, BigInteger, Boolean
-
-from database import db
 
 
 class VerificationRole(db.Base):

@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Union, Optional
 
+from PyDrocsid.database import db
 from sqlalchemy import Column, Integer, BigInteger, DateTime, Text, Boolean
-
-from database import db
 
 
 class Join(db.Base):

@@ -1,15 +1,16 @@
 import string
 from typing import List
 
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.translations import translations
+from PyDrocsid.util import calculate_edit_distance, send_long_embed
 from discord import Role, Guild, Member, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from database import run_in_thread, db
 from models.btp_role import BTPRole
-from permission import Permission
-from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog, get_colour, send_long_embed
+from permissions import Permission
+from util import send_to_changelog, get_colour
 
 
 def split_topics(topics: str) -> List[str]:
@@ -39,9 +40,9 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
 
 async def list_topics(guild: Guild) -> List[Role]:
     roles: List[Role] = []
-    for btp_role in await run_in_thread(db.all, BTPRole):
+    for btp_role in await db_thread(db.all, BTPRole):
         if (role := guild.get_role(btp_role.role_id)) is None:
-            await run_in_thread(db.delete, btp_role)
+            await db_thread(db.delete, btp_role)
         else:
             roles.append(role)
     return roles
@@ -113,7 +114,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await ctx.send(embed=embed)
 
     @commands.command(name="*")
-    @permission_level(Permission.btp_manage)
+    @Permission.btp_manage.check
     @guild_only()
     async def register_role(self, ctx: Context, *, topics: str):
         """
@@ -139,7 +140,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
                 to_be_created.append(topic)
                 continue
 
-            if await run_in_thread(db.get, BTPRole, role.id) is not None:
+            if await db_thread(db.get, BTPRole, role.id) is not None:
                 raise CommandError(translations.f_topic_already_registered(topic))
             if role >= ctx.me.top_role:
                 raise CommandError(translations.f_topic_not_registered_too_high(role, ctx.me.top_role))
@@ -151,7 +152,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             roles.append(await guild.create_role(name=name, mentionable=True))
 
         for role in roles:
-            await run_in_thread(BTPRole.create, role.id)
+            await db_thread(BTPRole.create, role.id)
 
         embed = Embed(title=translations.betheprofessional, colour=get_colour(self))
         if len(roles) > 1:
@@ -165,7 +166,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await ctx.send(embed=embed)
 
     @commands.command(name="/")
-    @permission_level(Permission.btp_manage)
+    @Permission.btp_manage.check
     @guild_only()
     async def unregister_role(self, ctx: Context, *, topics: str):
         """
@@ -185,14 +186,14 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
                     break
             else:
                 raise CommandError(translations.f_topic_not_registered(topic))
-            if (btp_role := await run_in_thread(db.get, BTPRole, role.id)) is None:
+            if (btp_role := await db_thread(db.get, BTPRole, role.id)) is None:
                 raise CommandError(translations.f_topic_not_registered(topic))
 
             roles.append(role)
             btp_roles.append(btp_role)
 
         for role, btp_role in zip(roles, btp_roles):
-            await run_in_thread(db.delete, btp_role)
+            await db_thread(db.delete, btp_role)
             await role.delete()
         embed = Embed(title=translations.betheprofessional, colour=get_colour(self))
         if len(roles) > 1:

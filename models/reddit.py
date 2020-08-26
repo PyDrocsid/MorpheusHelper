@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Union
 
+from PyDrocsid.database import db
 from sqlalchemy import Column, String, BigInteger, DateTime
-
-from database import db
 
 
 class RedditChannel(db.Base):
