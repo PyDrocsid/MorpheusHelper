@@ -10,6 +10,7 @@ from discord.utils import snowflake_time
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
+from PyDrocsid.emojis import emoji_map
 from PyDrocsid.util import send_long_embed
 from models.allowed_invite import InviteLog
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
@@ -495,7 +496,7 @@ class ModCog(Cog, name="Mod Tools"):
                 await ctx.author.send(embed=embed)
             except (Forbidden, HTTPException):
                 raise CommandError(translations.could_not_send_dm)
-            await ctx.message.add_reaction("\u2705")
+            await ctx.message.add_reaction(emoji_map["white_check_mark"])
 
     @commands.command(aliases=["userlog", "ulog", "uinfo", "userinfo"])
     async def userlogs(self, ctx: Context, user: Optional[Union[User, int]] = None):
@@ -585,7 +586,7 @@ class ModCog(Cog, name="Mod Tools"):
                 await send_long_embed(ctx.author, embed)
             except (Forbidden, HTTPException):
                 raise CommandError(translations.could_not_send_dm)
-            await ctx.message.add_reaction("\u2705")
+            await ctx.message.add_reaction(emoji_map["white_check_mark"])
 
     @commands.command()
     @Permission.init_join_log.check

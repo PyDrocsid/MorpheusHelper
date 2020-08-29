@@ -7,10 +7,9 @@ from discord.ext.commands import Cog, Bot, Context, guild_only
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
+from PyDrocsid.emojis import emoji_map
 from models.mediaonly_channel import MediaOnlyChannel
 from permissions import Permission
-
-WASTEBASKET = b"\xf0\x9f\x97\x91\xef\xb8\x8f".decode()
 
 
 def make_embed(requested_by: Member) -> Embed:
@@ -57,9 +56,9 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                     break
             await message.add_reaction(emoji)
             msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
-            await msg.add_reaction(WASTEBASKET)
+            await msg.add_reaction(emoji_map["wastebasket"])
             raise StopEventHandling
-        if emoji.name == WASTEBASKET:
+        if emoji.name == emoji_map["wastebasket"]:
             for embed in message.embeds:
                 pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
                 if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
@@ -89,4 +88,4 @@ class MetaQuestionCog(Cog, name="Metafragen"):
         """
 
         message: Message = await ctx.send(embed=make_embed(ctx.author))
-        await message.add_reaction(WASTEBASKET)
+        await message.add_reaction(emoji_map["wastebasket"])
