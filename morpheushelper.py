@@ -47,6 +47,7 @@ from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
+from cogs.polls import PollsCog
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permissions import Permission
 from util import make_error, send_to_changelog, get_prefix, set_prefix
@@ -124,21 +125,6 @@ async def ping(ctx: Context):
         await ctx.send(translations.f_pong_latency(latency * 1000))
     else:
         await ctx.send(translations.pong)
-
-
-@bot.command(aliases=["yn"])
-@guild_only()
-async def yesno(ctx: Context, message: Optional[Message] = None):
-    """
-    adds thumbsup and thumbsdown reactions to the message
-    """
-
-    if message is None or message.guild is None:
-        message = ctx.message
-
-    if message.channel.permissions_for(ctx.author).add_reactions:
-        await message.add_reaction(chr(0x1F44D))
-        await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
@@ -279,5 +265,6 @@ register_cogs(
     RedditCog,
     AutoModCog,
     VerificationCog,
+    PollsCog,
 )
 bot.run(os.environ["TOKEN"])
