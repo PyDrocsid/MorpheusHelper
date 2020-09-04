@@ -40,7 +40,6 @@ from cogs.metaquestion import MetaQuestionCog
 from cogs.mod import ModCog
 from cogs.news import NewsCog
 from cogs.permissions import PermissionsCog
-from cogs.random_stuff_enc import RandomStuffCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.reddit import RedditCog
@@ -273,7 +272,6 @@ register_cogs(
     ReactionRoleCog,
     CleverBotCog,
     NewsCog,
-    RandomStuffCog,
     ModCog,
     PermissionsCog,
     RedditCog,
