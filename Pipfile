@@ -10,7 +10,7 @@ requests = "*"
 sentry-sdk = "*"
 pyyaml = "*"
 pycryptodome = "*"
-"discord.py" = { git = "https://github.com/Rapptz/discord.py.git" }
+discord.py = "*"
 pydrocsid = "*"
 
 [dev-packages]

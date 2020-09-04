@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "12933b85c0b5232323dc739cb3edbd006e789767bdd23f94d80407107baa7151"
+            "sha256": "d3e6d11a4e083e31249984f0bae279be577c295b61d796db686f455cac0510b6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -64,12 +64,22 @@
             ],
             "version": "==3.0.4"
         },
-        "discord-py": {
-            "git": "https://github.com/Rapptz/discord.py.git",
-            "ref": "4203e7a5a830ee2a05e9642ef83721d05c9e21f6"
+        "discord": {
+            "hashes": [
+                "sha256:9d4debb4a37845543bd4b92cb195bc53a302797333e768e70344222857ff1559",
+                "sha256:ff6653655e342e7721dfb3f10421345fd852c2a33f2cca912b1c39b3778a9429"
+            ],
+            "index": "pypi",
+            "py": "*",
+            "version": "==1.0.1"
         },
         "discord.py": {
-            "git": "https://github.com/Rapptz/discord.py.git"
+            "hashes": [
+                "sha256:98ea3096a3585c9c379209926f530808f5fcf4930928d8cfb579d2562d119570",
+                "sha256:f9decb3bfa94613d922376288617e6a6f969260923643e2897f4540c34793442"
+            ],
+            "markers": "python_full_version >= '3.5.3'",
+            "version": "==1.4.1"
         },
         "idna": {
             "hashes": [
@@ -181,11 +191,11 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:09cbc253c827a88064c5ed548d24fb4294568bfe9b1816a857fa5a423d4ce762",
-                "sha256:1d654ac57be9967dae67545fb759f6e7594de07f487c21a276e6466dd52e83f1"
+                "sha256:0af429c221670e602f960fca85ca3f607c85510a91f11e8be8f742a978127f78",
+                "sha256:a088a1054673c6a19ea590045c871c38da029ef743b61a07bfee95e9f3c060f7"
             ],
             "index": "pypi",
-            "version": "==0.17.0"
+            "version": "==0.17.3"
         },
         "sqlalchemy": {
             "hashes": [
