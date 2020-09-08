@@ -44,11 +44,11 @@
         },
         "attrs": {
             "hashes": [
-                "sha256:0ef97238856430dcf9228e07f316aefc17e8939fc8507e18c6501b761ef1a42a",
-                "sha256:2867b7b9f8326499ab5b0e2d12801fa5c98842d2cbd22b35112ae04bf85b4dff"
+                "sha256:26b54ddbbb9ee1d34d5d3668dd37d6cf74990ab23c828c2888dccdceee395594",
+                "sha256:fce7fc47dfc976152e82d53ff92fa0407700c21acd20886a13777a0d20e655dc"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
-            "version": "==20.1.0"
+            "version": "==20.2.0"
         },
         "certifi": {
             "hashes": [
@@ -150,11 +150,11 @@
         },
         "pydrocsid": {
             "hashes": [
-                "sha256:04825c9763b3e78d42ae2a091276dce14a50f0e3d5d03959e612d0ca3489eefb",
-                "sha256:6f218de4a996ad3417c79fd3d2a6beb8c50394adf2e00fffd257ac89b959c696"
+                "sha256:42ae52f957e3dc501a77a9652d8a7c1547b7e8a7c1b92d412e09c95ca56ded53",
+                "sha256:4ea41e076afa4d4964be43af9a57fbaff71a5ff8f170801ab8638172d95f5f5d"
             ],
             "index": "pypi",
-            "version": "==1.1.0"
+            "version": "==1.2.0"
         },
         "pymysql": {
             "hashes": [
