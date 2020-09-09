@@ -335,7 +335,7 @@ not_in_private_voice: You have to be in a private voice channel to use this comm
 private_voice_owner_required: You are not the owner of this voice channel.
 private_voice_closed: Private voice channel has been closed successfully.
 user_added_to_private_voice: "{} has been invited to join this private voice channel."
-user_added_to_private_voice_dm: "You were invited by {} to a private voice channel."
+user_added_to_private_voice_dm: "{} just invited you to join a private voice channel."
 user_added_to_private_voice_response: User has been added to this private voice channel.
 user_removed_from_private_voice: "{} has been removed from this private voice channel."
 user_removed_from_private_voice_response: User has been removed from this private voice channel.
