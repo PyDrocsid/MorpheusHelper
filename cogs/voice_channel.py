@@ -412,6 +412,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.voice_channel,
                 translations.f_user_added_to_private_voice(member.mention),
             )
+            await member.send(translations.f_user_added_to_private_voice_dm(ctx.author.mention))
         if text_channel != ctx.channel:
             embed = Embed(title=translations.voice_channel, colour=get_colour(self)["commands"],
                           description=translations.user_added_to_private_voice_response)
