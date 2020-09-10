@@ -8,12 +8,12 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from PyDrocsid.emojis import emoji_map
+from PyDrocsid.emojis import name_to_emoji
 from models.reactionpin_channel import ReactionPinChannel
 from permissions import Permission
 from util import make_error, send_to_changelog
 
-EMOJI = emoji_map["pushpin"]
+EMOJI = name_to_emoji["pushpin"]
 
 
 class ReactionPinCog(Cog, name="ReactionPin"):

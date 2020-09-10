@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Bot, Context, guild_only
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
-from PyDrocsid.emojis import emoji_map
+from PyDrocsid.emojis import name_to_emoji
 from models.mediaonly_channel import MediaOnlyChannel
 from permissions import Permission
 
@@ -56,9 +56,9 @@ class MetaQuestionCog(Cog, name="Metafragen"):
                     break
             await message.add_reaction(emoji)
             msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
-            await msg.add_reaction(emoji_map["wastebasket"])
+            await msg.add_reaction(name_to_emoji["wastebasket"])
             raise StopEventHandling
-        if emoji.name == emoji_map["wastebasket"]:
+        if emoji.name == name_to_emoji["wastebasket"]:
             for embed in message.embeds:
                 pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
                 if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
@@ -88,4 +88,4 @@ class MetaQuestionCog(Cog, name="Metafragen"):
         """
 
         message: Message = await ctx.send(embed=make_embed(ctx.author))
-        await message.add_reaction(emoji_map["wastebasket"])
+        await message.add_reaction(name_to_emoji["wastebasket"])
