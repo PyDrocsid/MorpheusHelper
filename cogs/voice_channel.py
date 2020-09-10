@@ -7,7 +7,7 @@ from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed
+from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed, Forbidden
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
@@ -412,7 +412,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.voice_channel,
                 translations.f_user_added_to_private_voice(member.mention),
             )
-            await member.send(translations.f_user_added_to_private_voice_dm(ctx.author.mention))
+            user_embed = Embed(title=translations.voice_channel, colour=get_colour(self)["commands"],
+                               description=translations.f_user_added_to_private_voice_dm(ctx.author.mention))
+            try:
+                await member.send(embed=user_embed)
+            except (Forbidden, HTTPException):
+                pass
         if text_channel != ctx.channel:
             embed = Embed(title=translations.voice_channel, colour=get_colour(self)["commands"],
                           description=translations.user_added_to_private_voice_response)
