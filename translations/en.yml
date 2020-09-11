@@ -337,6 +337,7 @@ private_voice_closed: Private voice channel has been closed successfully.
 user_added_to_private_voice: "{} has been invited to join this private voice channel."
 user_added_to_private_voice_dm: "{} just invited you to join a private voice channel."
 user_added_to_private_voice_response: User has been added to this private voice channel.
+cannot_add_user: User could not be added.
 user_removed_from_private_voice: "{} has been removed from this private voice channel."
 user_removed_from_private_voice_response: User has been removed from this private voice channel.
 cannot_remove_member: This member could not be removed.
