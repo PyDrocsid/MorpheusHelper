@@ -403,6 +403,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         invite a member into a private voice channel
         """
 
+        if self.bot.user == member:
+            raise CommandError(translations.cannot_add_user)
+
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
         if text_channel is not None:
