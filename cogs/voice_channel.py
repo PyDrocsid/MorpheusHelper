@@ -398,13 +398,13 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
         if text_channel is not None:
+            await self.send_voice_msg(
+                text_channel,
+                group.public,
+                translations.voice_channel,
+                translations.f_user_added_to_private_voice(member.mention),
+            )
             try:
-                await self.send_voice_msg(
-                    text_channel,
-                    group.public,
-                    translations.voice_channel,
-                    translations.f_user_added_to_private_voice(member.mention),
-                )
                 await member.send(translations.f_user_added_to_private_voice_dm(ctx.author.mention))
             except (Forbidden, HTTPException):
                 pass
