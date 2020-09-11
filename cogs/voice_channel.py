@@ -393,7 +393,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         """
 
         if self.bot.user == member:
-            return
+            raise CommandError(translations.cannot_add_user)
+
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
         if text_channel is not None:
@@ -405,8 +406,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     translations.f_user_added_to_private_voice(member.mention),
                 )
                 await member.send(translations.f_user_added_to_private_voice_dm(ctx.author.mention))
-            except(Forbidden, HTTPException):
-                 raise CommandError(translations.no_dm)
+            except (Forbidden, HTTPException):
+                pass
         if text_channel != ctx.channel:
             await ctx.send(translations.user_added_to_private_voice_response)
 
