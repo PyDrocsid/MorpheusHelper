@@ -638,3 +638,9 @@ disabled: ":x: Disabled"
 # vote
 vote_explanation: Vote using the reactions below!
 too_many_options: You specified too many options. The maximum amount is {}.
+missing_options: Missing options
+empty_option: Empty option
+poll_usage: |
+  <question>
+  [emoji1] <option1>
+  [emojiX] [optionX]
