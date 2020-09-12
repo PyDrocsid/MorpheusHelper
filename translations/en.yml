@@ -249,6 +249,22 @@ mq_disadvantages:
     wenn keine Reaktion auf die Metafrage erfolgt, beläßt es der Fragende meist dabei. So
     kann eine Antwort auf das Problem von später Aufmerksamwerdenden nicht erfolgen.
 
+# codeblocks
+codeblocks_title: How to Code Block
+codeblocks_description: |
+  \```language
+  <code>
+  \```
+
+  **Example**
+  \```python
+  print("Hello World")
+  \```
+  *turns into*
+  ```python
+  print("Hello World")
+  ```
+
 # reactionpin
 msg_not_pinned_system: Message could not be pinned, because it is a system message.
 msg_not_pinned_limit: Message could not be pinned, because 50 messages are already pinned in this channel.
