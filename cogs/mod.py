@@ -604,10 +604,8 @@ class ModCog(Cog, name="Mod Tools"):
 
         if out:
             embed.set_footer(text=translations.utc_note)
-            await send_long_embed(ctx, embed)
         else:
             embed = Embed(title=translations.userlogs, description=translations.ulog_empty, color=get_colour("red"))
-            await ctx.send(embed=embed)
         if arg_passed:
             await send_long_embed(ctx, embed)
         else:
