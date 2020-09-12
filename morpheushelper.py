@@ -32,6 +32,7 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
+from cogs.codeblocks import CodeblocksCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
@@ -276,6 +277,7 @@ register_cogs(
     InfoCog,
     ReactionRoleCog,
     CleverBotCog,
+    CodeblocksCog,
     NewsCog,
     ModCog,
     PermissionsCog,
