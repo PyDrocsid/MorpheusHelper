@@ -245,7 +245,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_edit_mindiff", mindist)
         await ctx.send(translations.f_edit_mindiff_updated(mindist))
-        await ctx.send(translations.f_log_mindiff_updated(mindist))
+        await send_to_changelog(ctx.guild, translations.f_log_mindiff_updated(mindist))
 
     @logging_edit.command(name="channel", aliases=["ch", "c"])
     async def logging_edit_channel(self, ctx: Context, channel: TextChannel):
