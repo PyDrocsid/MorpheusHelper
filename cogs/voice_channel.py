@@ -1,8 +1,8 @@
 import random
 import re
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union, Tuple, List, Dict, Set
 
-from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed
+from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed, Forbidden
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
@@ -57,28 +57,33 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
     async def on_ready(self):
         guild: Guild = self.bot.guilds[0]
         print(translations.updating_voice_roles)
-        linked_roles = {}
+        linked_roles: Dict[Role, Set[VoiceChannel]] = {}
         for link in await db_thread(db.all, RoleVoiceLink):
             role = guild.get_role(link.role)
             voice = guild.get_channel(link.voice_channel)
-            if role is not None and voice is not None:
-                linked_roles.setdefault(role, set()).add(voice)
+            if role is None or voice is None:
+                continue
 
-                group: Optional[DynamicVoiceGroup] = await db_thread(db.first, DynamicVoiceGroup, channel_id=voice.id)
-                if group is not None:
-                    for dyn_channel in await db_thread(db.all, DynamicVoiceChannel, group_id=group.id):
-                        channel: Optional[VoiceChannel] = guild.get_channel(dyn_channel.channel_id)
-                        if channel is not None:
-                            linked_roles[role].add(channel)
+            linked_roles.setdefault(role, set()).add(voice)
 
-        for member in guild.members:
-            for role, channels in linked_roles.items():
-                if any(member in channel.members for channel in channels):
-                    if role not in member.roles:
-                        await member.add_roles(role)
-                else:
-                    if role in member.roles:
-                        await member.remove_roles(role)
+            group: Optional[DynamicVoiceGroup] = await db_thread(db.first, DynamicVoiceGroup, channel_id=voice.id)
+            if group is None:
+                continue
+            for dyn_channel in await db_thread(db.all, DynamicVoiceChannel, group_id=group.id):
+                channel: Optional[VoiceChannel] = guild.get_channel(dyn_channel.channel_id)
+                if channel is not None:
+                    linked_roles[role].add(channel)
+
+        for role, channels in linked_roles.items():
+            members = set()
+            for channel in channels:
+                members.update(channel.members)
+            for member in members:
+                if role not in member.roles:
+                    await member.add_roles(role)
+            for member in role.members:
+                if member not in members:
+                    await member.remove_roles(role)
 
         for group in await db_thread(db.all, DynamicVoiceGroup):
             channel: Optional[VoiceChannel] = guild.get_channel(group.channel_id)
@@ -92,7 +97,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
             for dyn_channel in await db_thread(db.all, DynamicVoiceChannel, group_id=group.id):
                 channel: Optional[VoiceChannel] = guild.get_channel(dyn_channel.channel_id)
-                if channel is not None and not channel.members:
+                if channel is not None and all(member.bot for member in channel.members):
                     await channel.delete()
                     if (text_channel := self.bot.get_channel(dyn_channel.text_chat_id)) is not None:
                         await text_channel.delete()
@@ -148,6 +153,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if group is None:
             return
 
+        if member.bot:
+            await member.move_to(None)
+            return
         if channel.category is not None and len(channel.category.channels) >= 49 or len(channel.guild.channels) >= 499:
             await member.move_to(None)
             return
@@ -384,6 +392,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         invite a member into a private voice channel
         """
 
+        if self.bot.user == member:
+            raise CommandError(translations.cannot_add_user)
+
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
         if text_channel is not None:
@@ -393,6 +404,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.voice_channel,
                 translations.f_user_added_to_private_voice(member.mention),
             )
+            try:
+                await member.send(translations.f_user_added_to_private_voice_dm(ctx.author.mention))
+            except (Forbidden, HTTPException):
+                pass
         if text_channel != ctx.channel:
             await ctx.send(translations.user_added_to_private_voice_response)
 

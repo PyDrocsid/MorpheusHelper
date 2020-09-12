@@ -76,7 +76,9 @@ class AutoModCog(Cog, name="AutoMod"):
         if member.bot:
             return
 
-        if role == await self.get_instantkick_role() and await kick(member):
+        if role == await self.get_instantkick_role():
+            if not await kick(member):
+                await member.remove_roles(role)
             return
 
         mode: int = await Settings.get(int, "autokick_mode", 0)
