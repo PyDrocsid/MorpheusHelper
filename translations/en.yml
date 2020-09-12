@@ -634,3 +634,13 @@ verification_role_already_set: Role already set.
 verification_role_not_set: Role not set.
 verification_reverse_role_not_assigned: Verification failed!
 disabled: ":x: Disabled"
+
+# vote
+vote_explanation: Vote using the reactions below!
+too_many_options: You specified too many options. The maximum amount is {}.
+missing_options: Missing options
+empty_option: Empty option
+poll_usage: |
+  <question>
+  [emoji1] <option1>
+  [emojiX] [optionX]

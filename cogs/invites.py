@@ -9,6 +9,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Co
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
+from PyDrocsid.emojis import name_to_emoji
 from models.allowed_invite import InviteLog, AllowedInvite
 from permissions import Permission
 from util import send_to_changelog, get_prefix
@@ -116,7 +117,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 )
             return False
         if legal_invite:
-            await message.add_reaction(chr(9989))
+            await message.add_reaction(name_to_emoji["white_check_mark"])
         return True
 
     async def on_message(self, message: Message):
