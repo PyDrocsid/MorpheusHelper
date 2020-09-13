@@ -408,6 +408,19 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
+
+        user_embed = Embed(title=translations.voice_channel, colour=get_colour(self)["commands"],
+                           description=translations.f_user_added_to_private_voice_dm(member.mention))
+        content = ''
+        try:
+            content += f"\n{await voice_channel.create_invite(unique=False)}"
+        except Forbidden:
+            pass
+        try:
+            await member.send(content=content, embed=user_embed)
+        except (Forbidden, HTTPException):
+            pass
+
         if text_channel is not None:
             await self.send_voice_msg(
                 text_channel,
@@ -415,12 +428,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.voice_channel,
                 translations.f_user_added_to_private_voice(member.mention),
             )
-            user_embed = Embed(title=translations.voice_channel, colour=get_colour(self)["commands"],
-                               description=translations.f_user_added_to_private_voice_dm(ctx.author.mention))
-            try:
-                await member.send(embed=user_embed)
-            except (Forbidden, HTTPException):
-                pass
         if text_channel != ctx.channel:
             embed = Embed(title=translations.voice_channel, colour=get_colour(self)["commands"],
                           description=translations.user_added_to_private_voice_response)
