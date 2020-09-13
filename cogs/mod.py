@@ -342,19 +342,29 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command()
     @Permission.ban.check
     @guild_only()
-    async def ban(self, ctx: Context, user: Union[Member, User, int], days: DurationConverter, *, reason: str):
+    async def ban(
+        self,
+        ctx: Context,
+        user: Union[Member, User, int],
+        ban_days: DurationConverter,
+        delete_days: int,
+        *,
+        reason: str,
+    ):
         """
         ban a user
-        set days to inf for a permanent ban
+        set ban_days to `inf` for a permanent ban
         """
 
-        days: Optional[int]
+        ban_days: Optional[int]
 
         if not ctx.guild.me.guild_permissions.ban_members:
             raise CommandError(translations.cannot_ban_permissions)
 
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
+        if not 0 <= delete_days <= 7:
+            raise CommandError(translations.invalid_duration)
 
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
 
@@ -364,19 +374,19 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.cannot_ban)
 
         try:
-            if days is not None:
-                await user.send(translations.f_banned(ctx.author.mention, ctx.guild.name, days, reason))
+            if ban_days is not None:
+                await user.send(translations.f_banned(ctx.author.mention, ctx.guild.name, ban_days, reason))
             else:
                 await user.send(translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason))
         except (Forbidden, HTTPException):
             await ctx.send(translations.no_dm)
 
-        await ctx.guild.ban(user, delete_message_days=1, reason=reason)
-        if days is not None:
-            await db_thread(Ban.create, user.id, str(user), ctx.author.id, days, reason)
+        await ctx.guild.ban(user, delete_message_days=delete_days, reason=reason)
+        if ban_days is not None:
+            await db_thread(Ban.create, user.id, str(user), ctx.author.id, ban_days, reason)
             await ctx.send(translations.banned_response)
             await send_to_changelog(
-                ctx.guild, translations.f_log_banned(ctx.author.mention, user.mention, user, days, reason)
+                ctx.guild, translations.f_log_banned(ctx.author.mention, user.mention, user, ban_days, reason)
             )
         else:
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason)
