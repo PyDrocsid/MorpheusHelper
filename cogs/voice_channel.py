@@ -3,7 +3,7 @@ import re
 from typing import Optional, Union, Tuple, List, Dict, Set
 
 from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed, Forbidden
-from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
+from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel, utils
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
@@ -405,7 +405,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.f_user_added_to_private_voice(member.mention),
             )
             try:
-                await member.send(translations.f_user_added_to_private_voice_dm(ctx.author.mention))
+                channel = utils.get(ctx.guild.voice_channels, name=voice_channel.name)
+                link = await channel.create_invite()
+                await member.send(translations.f_user_added_to_private_voice_dm(member.mention, link))
             except (Forbidden, HTTPException):
                 pass
         if text_channel != ctx.channel:
