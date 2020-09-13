@@ -6,8 +6,8 @@ from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadArgument, CommandError, UserInputError
 
+from colours import Colours
 from permissions import Permission, PermissionLevel  # skipcq: PYL-W0406
-from util import get_colour
 
 
 async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel):
@@ -17,13 +17,13 @@ async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel)
         if min_level.value >= level.value:
             out.setdefault(level.value, []).append(f"`{permission.name}` - {permission.description}")
 
-    embed = Embed(title=title, colour=get_colour("red"))
+    embed = Embed(title=title, colour=Colours.error)
     if not out:
         embed.description = translations.no_permissions
         await ctx.send(embed=embed)
         return
 
-    embed.colour = get_colour("Permissions")
+    embed.colour = Colours.Permissions
     for level, lines in sorted(out.items(), reverse=True):
         embed.add_field(name=translations.permission_levels[level], value="\n".join(sorted(lines)), inline=False)
 
@@ -93,7 +93,7 @@ class PermissionsCog(Cog, name="Permissions"):
             raise CommandError(translations.invalid_permission)
 
         await permission.set(level)
-        embed = Embed(title=translations.permissions_title, colour=get_colour(self),
+        embed = Embed(title=translations.permissions_title, colour=Colours.Permissions,
                       description=translations.f_permission_set(permission.name,
                                                                 translations.permission_levels[level.value]))
         await ctx.send(embed=embed)

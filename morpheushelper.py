@@ -48,9 +48,10 @@ from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
+from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL
 from permissions import Permission
-from util import make_error, send_to_changelog, get_prefix, set_prefix, get_colour
+from util import make_error, send_to_changelog, get_prefix, set_prefix
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
@@ -120,7 +121,7 @@ async def ping(ctx: Context):
     """
 
     latency: Optional[float] = measure_latency()
-    embed = Embed(title=translations.pong, colour=get_colour("ping"))
+    embed = Embed(title=translations.pong, colour=Colours.ping)
     if latency is not None:
         embed.description = translations.f_pong_latency(latency * 1000)
     await ctx.send(embed=embed)
@@ -142,13 +143,13 @@ async def change_prefix(ctx: Context, new_prefix: str):
         raise CommandError(translations.prefix_invalid_chars)
 
     await set_prefix(new_prefix)
-    embed = Embed(title=translations.prefix, description=translations.prefix_updated, colour=get_colour())
+    embed = Embed(title=translations.prefix, description=translations.prefix_updated, colour=Colours.prefix)
     await ctx.send(embed=embed)
     await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", colour=get_colour("info"), description=translations.bot_description)
+    embed = Embed(title="MorpheusHelper", colour=Colours.info, description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -188,7 +189,7 @@ async def github(ctx: Context):
 
     embed = Embed(title="Defelo/MorpheusHelper",
                   description="Bot for the Discord Server of The Morpheus Tutorials - Defelo/MorpheusHelper",
-                  colour=get_colour("github"),
+                  colour=Colours.github,
                   url=GITHUB_LINK)
     embed.set_thumbnail(url=AVATAR_URL)
     await ctx.send(embed=embed)
@@ -200,7 +201,7 @@ async def version(ctx: Context):
     show version
     """
 
-    embed = Embed(title=f"MorpheusHelper v{VERSION}", colour=get_colour())
+    embed = Embed(title=f"MorpheusHelper v{VERSION}", colour=Colours.version)
     await ctx.send(embed=embed)
 
 

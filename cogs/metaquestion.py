@@ -8,13 +8,13 @@ from discord import Embed, Member, Message, PartialEmoji, Forbidden
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
+from colours import Colours
 from models.mediaonly_channel import MediaOnlyChannel
 from permissions import Permission
-from util import get_colour
 
 
 def make_embed(requested_by: Member) -> Embed:
-    embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/", colour=get_colour("Metafragen"))
+    embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/", colour=Colours.MetaQuestions)
     embed.description = translations.metaquestion_description
     embed.set_footer(text=translations.f_requested_by(requested_by, requested_by.id), icon_url=requested_by.avatar_url)
     embed.add_field(

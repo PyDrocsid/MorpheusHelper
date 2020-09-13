@@ -3,7 +3,7 @@ from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 
-from util import get_colour
+from colours import Colours
 
 
 class CodeblocksCog(Cog, name="Codeblocks command"):
@@ -14,5 +14,5 @@ class CodeblocksCog(Cog, name="Codeblocks command"):
     async def codeblocks(self, ctx):
         await ctx.send(
             embed=Embed(title=translations.codeblocks_title, description=translations.codeblocks_description,
-                        colour=get_colour(self))
+                        colour=Colours.CodeBlocks)
         )

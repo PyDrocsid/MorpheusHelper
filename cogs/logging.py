@@ -14,9 +14,10 @@ from discord import (
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
+from colours import Colours
 from models.log_exclude import LogExclude
 from permissions import Permission
-from util import send_to_changelog, get_colour
+from util import send_to_changelog
 
 ignored_messages: Set[int] = set()
 
@@ -86,7 +87,7 @@ class LoggingCog(Cog, name="Logging"):
         if await db_thread(LogExclude.exists, after.channel.id):
             return
 
-        embed = Embed(title=translations.message_edited, color=get_colour(self)["edit"], timestamp=datetime.utcnow())
+        embed = Embed(title=translations.message_edited, color=Colours.Logging["edit"], timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=before.channel.mention)
         embed.add_field(name=translations.author_title, value=before.author.mention)
         embed.add_field(name=translations.url, value=before.jump_url, inline=False)
@@ -105,7 +106,7 @@ class LoggingCog(Cog, name="Logging"):
         if await db_thread(LogExclude.exists, message.channel.id):
             return
 
-        embed = Embed(title=translations.message_edited, color=get_colour(self)["edit"], timestamp=datetime.utcnow())
+        embed = Embed(title=translations.message_edited, color=Colours.Logging["edit"], timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=channel.mention)
         if message is not None:
             embed.add_field(name=translations.author_title, value=message.author.mention)
@@ -126,7 +127,7 @@ class LoggingCog(Cog, name="Logging"):
         if await db_thread(LogExclude.exists, message.channel.id):
             return
 
-        embed = Embed(title=translations.message_deleted, color=get_colour(self)["delete"], timestamp=datetime.utcnow())
+        embed = Embed(title=translations.message_deleted, color=Colours.Logging['delete'], timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=message.channel.mention)
         embed.add_field(name=translations.author_title, value=message.author.mention)
         add_field(embed, translations.old_content, message.content)
@@ -153,7 +154,7 @@ class LoggingCog(Cog, name="Logging"):
         if await db_thread(LogExclude.exists, event.channel_id):
             return
 
-        embed = Embed(title=translations.message_deleted, color=get_colour(self)["delete"], timestamp=datetime.utcnow())
+        embed = Embed(title=translations.message_deleted, color=Colours.Logging["delete"], timestamp=datetime.utcnow())
         channel: Optional[TextChannel] = self.bot.get_channel(event.channel_id)
         if channel is not None:
             if await self.is_logging_channel(channel):
@@ -181,7 +182,7 @@ class LoggingCog(Cog, name="Logging"):
         changelog_channel: Optional[TextChannel] = await self.get_logging_channel("changelog")
         maxage: int = await Settings.get(int, "logging_maxage", -1)
 
-        embed = Embed(title=translations.logging, color=get_colour(self)["commands"])
+        embed = Embed(title=translations.logging, color=Colours.Logging)
 
         if maxage != -1:
             embed.add_field(name=translations.maxage, value=translations.f_x_days(maxage), inline=False)
@@ -218,7 +219,7 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.invalid_duration)
 
         await Settings.set(int, "logging_maxage", days)
-        embed = Embed(title=translations.logging, color=get_colour(self)["commands"])
+        embed = Embed(title=translations.logging, color=Colours.Logging)
         if days == -1:
             embed.description = translations.maxage_set_disabled
             await send_to_changelog(ctx.guild, translations.maxage_set_disabled)
@@ -248,7 +249,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_edit_mindiff", mindist)
         embed = Embed(title=translations.logging, description=translations.f_edit_mindiff_updated(mindist),
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_mindiff_updated(mindist))
 
@@ -263,7 +264,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_edit", channel.id)
         embed = Embed(title=translations.logging, description=translations.f_log_edit_updated(channel.mention),
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_edit_updated(channel.mention))
 
@@ -275,7 +276,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_edit", -1)
         embed = Embed(title=translations.logging, description=translations.log_edit_disabled,
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.log_edit_disabled)
 
@@ -299,7 +300,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_delete", channel.id)
         embed = Embed(title=translations.logging, description=translations.f_log_delete_updated(channel.mention),
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_delete_updated(channel.mention))
 
@@ -311,7 +312,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_delete", -1)
         embed = Embed(title=translations.logging, description=translations.log_delete_disabled,
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.log_delete_disabled)
 
@@ -335,7 +336,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await Settings.set(int, "logging_changelog", channel.id)
         embed = Embed(title=translations.logging, description=translations.f_log_changelog_updated(channel.mention),
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_changelog_updated(channel.mention))
 
@@ -348,7 +349,7 @@ class LoggingCog(Cog, name="Logging"):
         await send_to_changelog(ctx.guild, translations.log_changelog_disabled)
         await Settings.set(int, "logging_changelog", -1)
         embed = Embed(title=translations.logging, description=translations.log_changelog_disabled,
-                      color=get_colour(self)["commands"])
+                      color=Colours.Logging)
         await ctx.send(embed=embed)
 
     @logging.group(name="exclude", aliases=["x", "ignore", "i"])
@@ -362,7 +363,7 @@ class LoggingCog(Cog, name="Logging"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.excluded_channels, colour=get_colour(self)["commands"])
+        embed = Embed(title=translations.excluded_channels, colour=Colours.Logging)
         out = []
         for channel_id in await db_thread(LogExclude.all):
             channel: Optional[TextChannel] = self.bot.get_channel(channel_id)
@@ -372,7 +373,7 @@ class LoggingCog(Cog, name="Logging"):
                 out.append(f":small_blue_diamond: {channel.mention}")
         if not out:
             embed.description = translations.no_channels_excluded
-            embed.colour = get_colour("red")
+            embed.colour = Colours.error
         else:
             embed.description = "\n".join(out)
         await send_long_embed(ctx, embed)
@@ -388,7 +389,7 @@ class LoggingCog(Cog, name="Logging"):
 
         await db_thread(LogExclude.add, channel.id)
         embed = Embed(title=translations.excluded_channels, description=translations.excluded,
-                      colour=get_colour(self)["commands"])
+                      colour=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_excluded(channel.mention))
 
@@ -403,6 +404,6 @@ class LoggingCog(Cog, name="Logging"):
 
         await db_thread(LogExclude.remove, channel.id)
         embed = Embed(title=translations.excluded_channels, description=translations.unexcluded,
-                      colour=get_colour(self)["commands"])
+                      colour=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_unexcluded(channel.mention))

@@ -9,10 +9,11 @@ from discord import Embed, TextChannel
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
+from colours import Colours
 from info import VERSION
 from models.reddit import RedditPost, RedditChannel
 from permissions import Permission
-from util import send_to_changelog, get_colour
+from util import send_to_changelog
 
 
 def exists_subreddit(subreddit: str) -> bool:
@@ -63,7 +64,7 @@ def create_embed(post: dict) -> Embed:
         title=post["title"],
         url=f"https://reddit.com{post['permalink']}",
         description=f"{post['score']} :thumbsup: \u00B7 {post['num_comments']} :speech_balloon:",
-        colour=get_colour("Reddit"),  # Reddit's brand color
+        colour=Colours.Reddit,  # Reddit's brand color
     )
     embed.set_author(name=f"u/{post['author']}", url=f"https://reddit.com/u/{post['author']}")
     embed.set_image(url=post["url"])
@@ -120,7 +121,7 @@ class RedditCog(Cog, name="Reddit"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.reddit, colour=get_colour(self))
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit)
 
         interval = await Settings.get(int, "reddit_interval", 4)
         embed.add_field(name=translations.interval, value=translations.f_x_hours(interval))
@@ -158,7 +159,7 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.reddit_link_already_exists)
 
         await db_thread(RedditChannel.create, subreddit, channel.id)
-        embed = Embed(title=translations.reddit, colour=get_colour(self), description=translations.reddit_link_created)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_link_created)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_created(subreddit, channel.mention))
 
@@ -176,7 +177,7 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.reddit_link_not_found)
 
         await db_thread(db.delete, link)
-        embed = Embed(title=translations.reddit, colour=get_colour(self), description=translations.reddit_link_removed)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_link_removed)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_removed(subreddit, channel.mention))
 
@@ -191,7 +192,7 @@ class RedditCog(Cog, name="Reddit"):
 
         await Settings.set(int, "reddit_interval", hours)
         await self.start_loop(hours)
-        embed = Embed(title=translations.reddit, colour=get_colour(self), description=translations.reddit_interval_set)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_interval_set)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_interval_set(hours))
 
@@ -205,7 +206,7 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.invalid_limit)
 
         await Settings.set(int, "reddit_limit", limit)
-        embed = Embed(title=translations.reddit, colour=get_colour(self), description=translations.reddit_limit_set)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_limit_set)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_limit_set(limit))
 
@@ -216,5 +217,5 @@ class RedditCog(Cog, name="Reddit"):
         """
 
         await self.start_loop(await Settings.get(int, "reddit_interval", 4))
-        embed = Embed(title=translations.reddit, colour=get_colour(self), description=translations.done)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.done)
         await ctx.send(embed=embed)

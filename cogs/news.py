@@ -8,9 +8,10 @@ from discord import Member, TextChannel, Role, Guild, HTTPException, Forbidden, 
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
+from colours import Colours
 from models.news_authorization import NewsAuthorization
 from permissions import Permission
-from util import send_to_changelog, get_colour
+from util import send_to_changelog
 
 
 class NewsCog(Cog, name="News"):
@@ -59,11 +60,11 @@ class NewsCog(Cog, name="News"):
                     continue
                 line += f" ({role.mention})"
             out.append(line)
-        embed = Embed(title=translations.news, colour=get_colour(self))
+        embed = Embed(title=translations.news, colour=Colours.News)
         if out:
             embed.description = "\n".join(out)
         else:
-            embed.colour = get_colour("red")
+            embed.colour = Colours.error
             embed.description = translations.no_news_authorizations
         await send_long_embed(ctx, embed)
 
@@ -81,7 +82,7 @@ class NewsCog(Cog, name="News"):
         role_id = notification_role.id if notification_role is not None else None
 
         await db_thread(NewsAuthorization.create, user.id, channel.id, role_id)
-        embed = Embed(title=translations.news, colour=get_colour(self), description=translations.news_authorized)
+        embed = Embed(title=translations.news, colour=Colours.News, description=translations.news_authorized)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_news_authorized(user.mention, channel.mention))
 
@@ -98,7 +99,7 @@ class NewsCog(Cog, name="News"):
             raise CommandError(translations.news_not_authorized)
 
         await db_thread(db.delete, authorization)
-        embed = Embed(title=translations.news, colour=get_colour(self), description=translations.news_unauthorized)
+        embed = Embed(title=translations.news, colour=Colours.News, description=translations.news_unauthorized)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_news_unauthorized(user.mention, channel.mention))
 
@@ -123,7 +124,7 @@ class NewsCog(Cog, name="News"):
         if message is None:
             message = ""
 
-        embed = Embed(title=translations.news, colour=get_colour(self), description="")
+        embed = Embed(title=translations.news, colour=Colours.News, description="")
         if not message and not ctx.message.attachments:
             embed.description = translations.send_message
             await ctx.send(embed=embed)
@@ -132,7 +133,7 @@ class NewsCog(Cog, name="News"):
             files = [await attachment_to_file(attachment) for attachment in ctx.message.attachments]
 
         content = ""
-        send_embed = Embed(title=translations.news, description=message, colour=get_colour(self))
+        send_embed = Embed(title=translations.news, description=message, colour=Colours.News)
         send_embed.set_footer(text=translations.f_sent_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
 
         if authorization.notification_role_id is not None:

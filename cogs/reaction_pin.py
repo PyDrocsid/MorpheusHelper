@@ -9,9 +9,10 @@ from discord import TextChannel, Message, Guild, Member, MessageType, HTTPExcept
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError, UserInputError
 
+from colours import Colours
 from models.reactionpin_channel import ReactionPinChannel
 from permissions import Permission
-from util import make_error, send_to_changelog, get_colour
+from util import make_error, send_to_changelog
 
 EMOJI = name_to_emoji["pushpin"]
 
@@ -92,11 +93,11 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             if text_channel is None:
                 continue
             out.append(f":small_orange_diamond: {text_channel.mention}")
-        embed = Embed(title=translations.reactionpin, colour=get_colour(self))
+        embed = Embed(title=translations.reactionpin, colour=Colours.ReactionPin)
         if out:
             embed.description = translations.whitelisted_channels_header + "\n" + "\n".join(out)
         else:
-            embed.colour = get_colour("red")
+            embed.colour = Colours.error
             embed.description = translations.no_whitelisted_channels
         await ctx.send(embed=embed)
 
@@ -110,7 +111,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             raise CommandError(translations.channel_already_whitelisted)
 
         await db_thread(ReactionPinChannel.create, channel.id)
-        embed = Embed(title=translations.reactionpin, colour=get_colour(self),
+        embed = Embed(title=translations.reactionpin, colour=Colours.ReactionPin,
                       description=translations.channel_whitelisted)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_rp(channel.mention))
@@ -125,7 +126,8 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             raise CommandError(translations.channel_not_whitelisted)
 
         await db_thread(db.delete, row)
-        embed = Embed(title=translations.reactionpin, colour=get_colour(self), description=translations.channel_removed)
+        embed = Embed(title=translations.reactionpin, colour=Colours.ReactionPin,
+                      description=translations.channel_removed)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_rp(channel.mention))
 
@@ -135,7 +137,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         enable/disable "pinned a message" notification
         """
 
-        embed = Embed(title=translations.reactionpin, colour=get_colour(self))
+        embed = Embed(title=translations.reactionpin, colour=Colours.ReactionPin)
         if enabled is None:
             if await Settings.get(bool, "reactionpin_pin_message", True):
                 embed.description = translations.pin_messages_enabled

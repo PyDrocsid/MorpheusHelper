@@ -9,9 +9,9 @@ from discord import Role
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, UserInputError
 
+from colours import Colours
 from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
-from util import get_colour
 
 
 class InfoCog(Cog, name="Server Information"):
@@ -60,7 +60,7 @@ class InfoCog(Cog, name="Server Information"):
             return
 
         guild: Guild = ctx.guild
-        embed = Embed(title=guild.name, description=translations.info_description, color=get_colour(self))
+        embed = Embed(title=guild.name, description=translations.info_description, color=Colours.ServerInformation)
         embed.set_thumbnail(url=guild.icon_url)
         created = guild.created_at.date()
         embed.add_field(name=translations.creation_date, value=f"{created.day}.{created.month}.{created.year}")
@@ -110,7 +110,7 @@ class InfoCog(Cog, name="Server Information"):
         """
 
         guild: Guild = ctx.guild
-        embed = Embed(title=translations.bots, color=get_colour(self))
+        embed = Embed(title=translations.bots, color=Colours.ServerInformation)
         online: List[Member] = []
         offline: List[Member] = []
         for member in guild.members:  # type: Member
@@ -118,7 +118,7 @@ class InfoCog(Cog, name="Server Information"):
                 [offline, online][member.status != Status.offline].append(member)
 
         if not online + offline:
-            embed.colour = get_colour("red")
+            embed.colour = Colours.error
             embed.description = translations.no_bots
             await ctx.send(embed=embed)
             return

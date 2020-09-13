@@ -12,10 +12,11 @@ from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
 from discord.utils import snowflake_time
 
+from colours import Colours
 from models.allowed_invite import InviteLog
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from permissions import Permission, PermissionLevel
-from util import send_to_changelog, get_prefix, is_teamler, get_colour
+from util import send_to_changelog, get_prefix, is_teamler
 
 
 class DurationConverter(Converter):
@@ -38,7 +39,7 @@ async def configure_role(ctx: Context, role_name: str, role: Role, check_assigna
         if role.managed:
             raise CommandError(translations.f_role_not_set_managed_role(role))
     await Settings.set(int, role_name + "_role", role.id)
-    embed = Embed(title=translations.roles, description=translations.role_set, color=get_colour("Mod Tools"))
+    embed = Embed(title=translations.roles, description=translations.role_set, color=Colours.ModTools)
     await ctx.send(embed=embed)
     await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
 
@@ -134,7 +135,7 @@ class ModCog(Cog, name="Mod Tools"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.roles, color=get_colour(self))
+        embed = Embed(title=translations.roles, color=Colours.ModTools)
         for role_name in ["admin", "mod", "supp", "team", "mute"]:
             role = ctx.guild.get_role(await Settings.get(int, role_name + "_role"))
             val = role.mention if role is not None else translations.role_not_set
@@ -192,7 +193,7 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.reason_too_long)
 
         await db_thread(Report.create, member.id, str(member), ctx.author.id, reason)
-        embed = Embed(title=translations.report, description=translations.reported_response, colour=get_colour(self))
+        embed = Embed(title=translations.report, description=translations.reported_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
         await send_to_changelog(
             ctx.guild, translations.f_log_reported(ctx.author.mention, member.mention, member, reason)
@@ -214,13 +215,13 @@ class ModCog(Cog, name="Mod Tools"):
 
         user_embed = Embed(title=translations.warn,
                            description=translations.f_warned(ctx.author.mention, ctx.guild.name, reason),
-                           colour=get_colour(self))
-        server_embed = Embed(title=translations.warn, description=translations.warned_response, colour=get_colour(self))
+                           colour=Colours.ModTools)
+        server_embed = Embed(title=translations.warn, description=translations.warned_response, colour=Colours.ModTools)
         try:
             await member.send(embed=user_embed)
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
-            server_embed.colour = get_colour("red")
+            server_embed.colour = Colours.error
         await db_thread(Warn.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(embed=server_embed)
         await send_to_changelog(
@@ -267,8 +268,8 @@ class ModCog(Cog, name="Mod Tools"):
                 raise CommandError(translations.already_muted)
             await user.add_roles(mute_role)
 
-        user_embed = Embed(title=translations.mute, colour=get_colour(self))
-        server_embed = Embed(title=translations.mute, description=translations.muted_response, colour=get_colour(self))
+        user_embed = Embed(title=translations.mute, colour=Colours.ModTools)
+        server_embed = Embed(title=translations.mute, description=translations.muted_response, colour=Colours.ModTools)
 
         if days is not None:
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, days, reason)
@@ -287,7 +288,7 @@ class ModCog(Cog, name="Mod Tools"):
             await user.send(embed=user_embed)
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
-            server_embed.colour = get_colour("red")
+            server_embed.colour = Colours.error
 
         await ctx.send(embed=server_embed)
 
@@ -316,7 +317,7 @@ class ModCog(Cog, name="Mod Tools"):
         if not was_muted:
             raise CommandError(translations.not_muted)
 
-        embed = Embed(title=translations.mute, description=translations.unmuted_response, colour=get_colour(self))
+        embed = Embed(title=translations.mute, description=translations.unmuted_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_unmuted(ctx.author.mention, user.mention, user, reason))
 
@@ -348,14 +349,14 @@ class ModCog(Cog, name="Mod Tools"):
 
         user_embed = Embed(title=translations.kick,
                            description=translations.f_kicked(ctx.author.mention, ctx.guild.name, reason),
-                           colour=get_colour(self))
-        server_embed = Embed(title=translations.kick, description=translations.kicked_response, colour=get_colour(self))
+                           colour=Colours.ModTools)
+        server_embed = Embed(title=translations.kick, description=translations.kicked_response, colour=Colours.ModTools)
 
         try:
             await member.send(embed=user_embed)
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
-            server_embed.colour = get_colour("red")
+            server_embed.colour = Colours.error
 
         await ctx.send(embed=server_embed)
 
@@ -395,8 +396,8 @@ class ModCog(Cog, name="Mod Tools"):
 
         await ctx.guild.ban(user, delete_message_days=1, reason=reason)
 
-        user_embed = Embed(title=translations.ban, colour=get_colour(self))
-        server_embed = Embed(title=translations.ban, description=translations.banned_response, colour=get_colour(self))
+        user_embed = Embed(title=translations.ban, colour=Colours.ModTools)
+        server_embed = Embed(title=translations.ban, description=translations.banned_response, colour=Colours.ModTools)
 
         if ban_days is not None:
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, ban_days, reason)
@@ -415,7 +416,7 @@ class ModCog(Cog, name="Mod Tools"):
             await user.send(embed=user_embed)
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
-            server_embed.colour = get_colour("red")
+            server_embed.colour = Colours.error
 
         await ctx.send(embed=server_embed)
 
@@ -447,7 +448,7 @@ class ModCog(Cog, name="Mod Tools"):
         if not was_banned:
             raise CommandError(translations.not_banned)
 
-        embed = Embed(title=translations.ban, description=translations.unbanned_response, colour=get_colour(self))
+        embed = Embed(title=translations.ban, description=translations.unbanned_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
 
@@ -484,7 +485,7 @@ class ModCog(Cog, name="Mod Tools"):
         user, user_id, arg_passed = await self.get_stats_user(ctx, user)
         await update_join_date(self.bot.guilds[0], user_id)
 
-        embed = Embed(title=translations.stats, color=get_colour("stats"))
+        embed = Embed(title=translations.stats, color=Colours.stats)
         if isinstance(user, int):
             embed.set_author(name=str(user))
         else:
@@ -603,7 +604,7 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
 
         out.sort()
-        embed = Embed(title=translations.userlogs, color=get_colour("userlog"))
+        embed = Embed(title=translations.userlogs, color=Colours.userlog)
         if isinstance(user, int):
             embed.set_author(name=str(user))
         else:
@@ -616,7 +617,7 @@ class ModCog(Cog, name="Mod Tools"):
         if out:
             embed.set_footer(text=translations.utc_note)
         else:
-            embed = Embed(title=translations.userlogs, description=translations.ulog_empty, color=get_colour("red"))
+            embed = Embed(title=translations.userlogs, description=translations.ulog_empty, color=Colours.error)
         if arg_passed:
             await send_long_embed(ctx, embed)
         else:
@@ -641,7 +642,7 @@ class ModCog(Cog, name="Mod Tools"):
                 Join.update(member.id, str(member), member.joined_at)
 
         embed = Embed(title=translations.init_join_log, description=translations.f_filling_join_log(len(guild.members)),
-                      color=get_colour(self))
+                      color=Colours.ModTools)
         msg: Message = await ctx.send(embed=embed)
         await db_thread(init)
         embed.description += "\n\n" + translations.join_log_filled

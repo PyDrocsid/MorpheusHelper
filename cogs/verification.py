@@ -8,9 +8,10 @@ from discord import Role, Member, Guild, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, check, guild_only, UserInputError
 
+from colours import Colours
 from models.verification_role import VerificationRole
 from permissions import Permission
-from util import send_to_changelog, get_colour
+from util import send_to_changelog
 
 
 @check
@@ -64,7 +65,7 @@ class VerificationCog(Cog, name="Verification"):
 
         await member.add_roles(*add)
         await member.remove_roles(*remove)
-        embed = Embed(title=translations.verification, description=translations.verified, colour=get_colour(self))
+        embed = Embed(title=translations.verification, description=translations.verified, colour=Colours.Verification)
         await ctx.send(embed=embed)
 
     @commands.group(aliases=["vf"])
@@ -91,13 +92,13 @@ class VerificationCog(Cog, name="Verification"):
             else:
                 [normal, reverse][vrole.reverse].append(role)
 
-        embed = Embed(title=translations.verification, colour=get_colour("red"))
+        embed = Embed(title=translations.verification, colour=Colours.error)
         if password is None or not normal + reverse:
             embed.add_field(name=translations.status, value=translations.verification_disabled, inline=False)
             await ctx.send(embed=embed)
             return
 
-        embed.colour = get_colour(self)
+        embed.colour = Colours.Verification
         embed.add_field(name=translations.status, value=translations.verification_enabled, inline=False)
         embed.add_field(name=translations.password, value=f"`{password}`", inline=False)
 
@@ -136,7 +137,7 @@ class VerificationCog(Cog, name="Verification"):
 
         await db_thread(VerificationRole.create, role.id, reverse)
         embed = Embed(title=translations.verification, description=translations.verification_role_added,
-                      colour=get_colour(self))
+                      colour=Colours.Verification)
         await ctx.send(embed=embed)
         if reverse:
             await send_to_changelog(ctx.guild, translations.f_log_verification_role_added_reverse(role.name, role.id))
@@ -154,7 +155,7 @@ class VerificationCog(Cog, name="Verification"):
 
         await db_thread(db.delete, row)
         embed = Embed(title=translations.verification, description=translations.verification_role_removed,
-                      colour=get_colour(self))
+                      colour=Colours.Verification)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_verification_role_removed(role.name, role.id))
 
@@ -169,7 +170,7 @@ class VerificationCog(Cog, name="Verification"):
 
         await Settings.set(str, "verification_password", password)
         embed = Embed(title=translations.verification, description=translations.verification_password_configured,
-                      colour=get_colour(self))
+                      colour=Colours.Verification)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_verification_password_configured(password))
 
@@ -184,7 +185,7 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.invalid_duration)
 
         await Settings.set(int, "verification_delay", seconds)
-        embed = Embed(title=translations.verification, colour=get_colour(self))
+        embed = Embed(title=translations.verification, colour=Colours.Verification)
         if seconds == -1:
             embed.description = translations.verification_delay_disabled
             await send_to_changelog(ctx.guild, translations.verification_delay_disabled)
