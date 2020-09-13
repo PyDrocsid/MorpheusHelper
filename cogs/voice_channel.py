@@ -2,15 +2,15 @@ import random
 import re
 from typing import Optional, Union, Tuple, List, Dict, Set
 
-from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed, Forbidden
-from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel, utils
-from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
-
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
+from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed, Forbidden
+from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
+from discord.ext import commands
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
+
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from permissions import Permission
@@ -397,6 +397,17 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
+
+        text = translations.f_user_added_to_private_voice_dm(member.mention)
+        try:
+            text += f"\n{await voice_channel.create_invite(unique=False)}"
+        except Forbidden:
+            pass
+        try:
+            await member.send(text)
+        except (Forbidden, HTTPException):
+            pass
+
         if text_channel is not None:
             await self.send_voice_msg(
                 text_channel,
@@ -404,12 +415,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.voice_channel,
                 translations.f_user_added_to_private_voice(member.mention),
             )
-            try:
-                channel = utils.get(ctx.guild.voice_channels, name=voice_channel.name)
-                link = await channel.create_invite()
-                await member.send(translations.f_user_added_to_private_voice_dm(member.mention, link))
-            except (Forbidden, HTTPException):
-                pass
         if text_channel != ctx.channel:
             await ctx.send(translations.user_added_to_private_voice_response)
 
