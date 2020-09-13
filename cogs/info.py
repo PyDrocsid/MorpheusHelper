@@ -29,10 +29,16 @@ class InfoCog(Cog, name="Server Information"):
         if message.guild is None:
             return
 
+        role_mentions = {role.id for role in message.role_mentions}
+        quote_mentions = set()
         for line in message.content.splitlines():
-            if re.match(r"^> .*<@&\d+>.*$", line):
-                await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
-                break
+            mentions = {int(match.group(1)) for match in re.finditer(r"<@&(\d+)>", line)}
+            if line.startswith("> "):
+                quote_mentions.update(mentions)
+            else:
+                role_mentions.difference_update(mentions)
+        if role_mentions & quote_mentions:
+            await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
 
     @tasks.loop(seconds=20)
     async def status_loop(self):
