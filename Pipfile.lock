@@ -150,19 +150,19 @@
         },
         "pydrocsid": {
             "hashes": [
-                "sha256:42ae52f957e3dc501a77a9652d8a7c1547b7e8a7c1b92d412e09c95ca56ded53",
-                "sha256:4ea41e076afa4d4964be43af9a57fbaff71a5ff8f170801ab8638172d95f5f5d"
+                "sha256:9d5ac7cb87005924c6e374b2a6eec6174ad8ecc7d0777683bc65d49d649f5afc",
+                "sha256:f8160e380060e2bb2d494f38a560e29b4ebef628f763ecbc78fd4b76b77e21b3"
             ],
             "index": "pypi",
-            "version": "==1.2.0"
+            "version": "==1.4.1"
         },
         "pymysql": {
             "hashes": [
-                "sha256:adef15ceccf1ff544a23a6f46609f65187261dc8b0cf94c9644189c173b0a451",
-                "sha256:e14070bc84e050e0f80bf6063e31d276f03a0bb4d46b9eca2854566c4ae19837"
+                "sha256:263040d2779a3b84930f7ac9da5132be0fefcd6f453a885756656103f8ee1fdd",
+                "sha256:44f47128dda8676e021c8d2dbb49a82be9e4ab158b9f03e897152a3a287c69ea"
             ],
             "index": "pypi",
-            "version": "==0.10.0"
+            "version": "==0.10.1"
         },
         "pyyaml": {
             "hashes": [
@@ -191,11 +191,11 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:0af429c221670e602f960fca85ca3f607c85510a91f11e8be8f742a978127f78",
-                "sha256:a088a1054673c6a19ea590045c871c38da029ef743b61a07bfee95e9f3c060f7"
+                "sha256:97bff68e57402ad39674e6fe2545df0d5eea41c3d51e280c170761705c8c20ff",
+                "sha256:a16caf9ce892623081cbb9a95f6c1f892778bb123909b0ed7afdfb52ce7a58a1"
             ],
             "index": "pypi",
-            "version": "==0.17.3"
+            "version": "==0.17.4"
         },
         "sqlalchemy": {
             "hashes": [

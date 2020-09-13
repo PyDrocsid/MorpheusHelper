@@ -41,6 +41,7 @@ from cogs.metaquestion import MetaQuestionCog
 from cogs.mod import ModCog
 from cogs.news import NewsCog
 from cogs.permissions import PermissionsCog
+from cogs.polls import PollsCog
 from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.reddit import RedditCog
@@ -123,21 +124,6 @@ async def ping(ctx: Context):
     if latency is not None:
         embed.description = translations.f_pong_latency(latency * 1000)
     await ctx.send(embed=embed)
-
-
-@bot.command(aliases=["yn"])
-@guild_only()
-async def yesno(ctx: Context, message: Optional[Message] = None):
-    """
-    adds thumbsup and thumbsdown reactions to the message
-    """
-
-    if message is None or message.guild is None:
-        message = ctx.message
-
-    if message.channel.permissions_for(ctx.author).add_reactions:
-        await message.add_reaction(chr(0x1F44D))
-        await message.add_reaction(chr(0x1F44E))
 
 
 @bot.command(name="prefix")
@@ -284,5 +270,6 @@ register_cogs(
     RedditCog,
     AutoModCog,
     VerificationCog,
+    PollsCog,
 )
 bot.run(os.environ["TOKEN"])

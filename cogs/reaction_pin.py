@@ -1,6 +1,7 @@
 from typing import Optional
 
 from PyDrocsid.database import db_thread, db
+from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -12,7 +13,7 @@ from models.reactionpin_channel import ReactionPinChannel
 from permissions import Permission
 from util import make_error, send_to_changelog, get_colour
 
-EMOJI = chr(int("1f4cc", 16))
+EMOJI = name_to_emoji["pushpin"]
 
 
 class ReactionPinCog(Cog, name="ReactionPin"):

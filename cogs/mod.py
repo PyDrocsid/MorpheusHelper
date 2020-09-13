@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Union, List, Tuple
 
 from PyDrocsid.database import db_thread, db
+from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
@@ -520,7 +521,7 @@ class ModCog(Cog, name="Mod Tools"):
                 await ctx.author.send(embed=embed)
             except (Forbidden, HTTPException):
                 raise CommandError(translations.could_not_send_dm)
-            await ctx.message.add_reaction("\u2705")
+            await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
 
     @commands.command(aliases=["userlog", "ulog", "uinfo", "userinfo"])
     async def userlogs(self, ctx: Context, user: Optional[Union[User, int]] = None):
@@ -613,7 +614,7 @@ class ModCog(Cog, name="Mod Tools"):
                 await send_long_embed(ctx.author, embed)
             except (Forbidden, HTTPException):
                 raise CommandError(translations.could_not_send_dm)
-            await ctx.message.add_reaction("\u2705")
+            await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
 
     @commands.command()
     @Permission.init_join_log.check

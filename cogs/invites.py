@@ -3,6 +3,7 @@ from typing import Optional
 
 import requests
 from PyDrocsid.database import db_thread, db
+from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
@@ -42,7 +43,7 @@ class AllowedServerConverter(Converter):
 def get_discord_invite(url) -> Optional[str]:
     while True:
         if match := re.match(
-                r"^.*(https?://)?discord(.gg|(app)?.com/(\.*/)*invite)/(\.*/)*(?P<code>[a-zA-Z0-9\-_]+)$",
+                r"^.*(https?://)?discord(\.gg|(app)?\.com/(\.*/)*invite)\.*/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
                 url,
                 re.IGNORECASE,
         ):
@@ -118,7 +119,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 )
             return False
         if legal_invite:
-            await message.add_reaction(chr(9989))
+            await message.add_reaction(name_to_emoji["white_check_mark"])
         return True
 
     async def on_message(self, message: Message):
