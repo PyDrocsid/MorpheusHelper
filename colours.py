@@ -19,6 +19,7 @@ class Colours(MaterialColours):
     ModTools = MaterialColours.blue['a700']
     News = MaterialColours.orange
     Permissions = MaterialColours.blue['a700']
+    Polls = MaterialColours.orange[800]
     ReactionPin = MaterialColours.blue['a700']
     ReactionRole = MaterialColours.blue['a700']
     Reddit = 0xFF4500  # Reddit color

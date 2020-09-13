@@ -9,6 +9,8 @@ from discord import Embed, Message
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
+from colours import Colours
+
 MAX_OPTIONS = 20  # Discord reactions limit
 
 default_emojis = [name_to_emoji[f"regional_indicator_{x}"] for x in string.ascii_lowercase]
@@ -35,7 +37,7 @@ class PollsCog(Cog, name="Polls"):
         options = [PollOption(ctx, line, i) for i, line in enumerate(options)]
 
         embed = Embed(
-            title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
+            title=question, description=translations.vote_explanation, color=Colours.Polls, timestamp=datetime.utcnow()
         )
         embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
 
