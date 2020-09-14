@@ -5,6 +5,7 @@ class Colours(MaterialColours):
     # General
     default = MaterialColours.teal
     error = MaterialColours.red
+    warning = MaterialColours.yellow[700]
 
     # Cogs
     AllowedInvites = MaterialColours.lightgreen["a700"]

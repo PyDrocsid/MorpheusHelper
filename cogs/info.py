@@ -38,7 +38,12 @@ class InfoCog(Cog, name="Server Information"):
             else:
                 role_mentions.difference_update(mentions)
         if role_mentions & quote_mentions:
-            await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
+            embed = Embed(
+                title=translations.warning,
+                description=translations.f_quote_remove_mentions(message.author.mention),
+                colour=Colours.warning,
+            )
+            await message.channel.send(embed=embed)
 
     @tasks.loop(seconds=20)
     async def status_loop(self):
