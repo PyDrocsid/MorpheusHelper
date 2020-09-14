@@ -213,9 +213,11 @@ class ModCog(Cog, name="Mod Tools"):
         if member == self.bot.user:
             raise CommandError(translations.cannot_warn)
 
-        user_embed = Embed(title=translations.warn,
-                           description=translations.f_warned(ctx.author.mention, ctx.guild.name, reason),
-                           colour=Colours.ModTools)
+        user_embed = Embed(
+            title=translations.warn,
+            description=translations.f_warned(ctx.author.mention, ctx.guild.name, reason),
+            colour=Colours.ModTools,
+        )
         server_embed = Embed(title=translations.warn, description=translations.warned_response, colour=Colours.ModTools)
         try:
             await member.send(embed=user_embed)
@@ -347,9 +349,11 @@ class ModCog(Cog, name="Mod Tools"):
             ctx.guild, translations.f_log_kicked(ctx.author.mention, member.mention, member, reason)
         )
 
-        user_embed = Embed(title=translations.kick,
-                           description=translations.f_kicked(ctx.author.mention, ctx.guild.name, reason),
-                           colour=Colours.ModTools)
+        user_embed = Embed(
+            title=translations.kick,
+            description=translations.f_kicked(ctx.author.mention, ctx.guild.name, reason),
+            colour=Colours.ModTools,
+        )
         server_embed = Embed(title=translations.kick, description=translations.kicked_response, colour=Colours.ModTools)
 
         try:
@@ -364,13 +368,13 @@ class ModCog(Cog, name="Mod Tools"):
     @Permission.ban.check
     @guild_only()
     async def ban(
-            self,
-            ctx: Context,
-            user: Union[Member, User, int],
-            ban_days: DurationConverter,
-            delete_days: int,
-            *,
-            reason: str,
+        self,
+        ctx: Context,
+        user: Union[Member, User, int],
+        ban_days: DurationConverter,
+        delete_days: int,
+        *,
+        reason: str,
     ):
         """
         ban a user
@@ -453,7 +457,7 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog(ctx.guild, translations.f_log_unbanned(ctx.author.mention, user.mention, user, reason))
 
     async def get_stats_user(
-            self, ctx: Context, user: Optional[Union[User, int]]
+        self, ctx: Context, user: Optional[Union[User, int]]
     ) -> Tuple[Union[User, int], int, bool]:
         arg_passed = len(ctx.message.content.strip(await get_prefix()).split()) >= 2
         if user is None:
@@ -641,8 +645,11 @@ class ModCog(Cog, name="Mod Tools"):
             for member in guild.members:  # type: Member
                 Join.update(member.id, str(member), member.joined_at)
 
-        embed = Embed(title=translations.init_join_log, description=translations.f_filling_join_log(len(guild.members)),
-                      color=Colours.ModTools)
+        embed = Embed(
+            title=translations.init_join_log,
+            description=translations.f_filling_join_log(len(guild.members)),
+            color=Colours.ModTools,
+        )
         msg: Message = await ctx.send(embed=embed)
         await db_thread(init)
         embed.description += "\n\n" + translations.join_log_filled

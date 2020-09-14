@@ -136,8 +136,11 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.verification_role_already_set)
 
         await db_thread(VerificationRole.create, role.id, reverse)
-        embed = Embed(title=translations.verification, description=translations.verification_role_added,
-                      colour=Colours.Verification)
+        embed = Embed(
+            title=translations.verification,
+            description=translations.verification_role_added,
+            colour=Colours.Verification,
+        )
         await ctx.send(embed=embed)
         if reverse:
             await send_to_changelog(ctx.guild, translations.f_log_verification_role_added_reverse(role.name, role.id))
@@ -154,8 +157,11 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.verification_role_not_set)
 
         await db_thread(db.delete, row)
-        embed = Embed(title=translations.verification, description=translations.verification_role_removed,
-                      colour=Colours.Verification)
+        embed = Embed(
+            title=translations.verification,
+            description=translations.verification_role_removed,
+            colour=Colours.Verification,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_verification_role_removed(role.name, role.id))
 
@@ -169,8 +175,11 @@ class VerificationCog(Cog, name="Verification"):
             raise CommandError(translations.password_too_long)
 
         await Settings.set(str, "verification_password", password)
-        embed = Embed(title=translations.verification, description=translations.verification_password_configured,
-                      colour=Colours.Verification)
+        embed = Embed(
+            title=translations.verification,
+            description=translations.verification_password_configured,
+            colour=Colours.Verification,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_verification_password_configured(password))
 

@@ -40,8 +40,8 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         if emoji.name == "metaquestion":
             media_only = (
-                    not await Permission.mo_bypass.check_permissions(member)
-                    and await db_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
+                not await Permission.mo_bypass.check_permissions(member)
+                and await db_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
             )
             if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
                 try:

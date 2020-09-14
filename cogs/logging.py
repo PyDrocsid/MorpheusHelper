@@ -127,7 +127,7 @@ class LoggingCog(Cog, name="Logging"):
         if await db_thread(LogExclude.exists, message.channel.id):
             return
 
-        embed = Embed(title=translations.message_deleted, color=Colours.Logging['delete'], timestamp=datetime.utcnow())
+        embed = Embed(title=translations.message_deleted, color=Colours.Logging["delete"], timestamp=datetime.utcnow())
         embed.add_field(name=translations.channel, value=message.channel.mention)
         embed.add_field(name=translations.author_title, value=message.author.mention)
         add_field(embed, translations.old_content, message.content)
@@ -248,8 +248,9 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.min_diff_gt_zero)
 
         await Settings.set(int, "logging_edit_mindiff", mindist)
-        embed = Embed(title=translations.logging, description=translations.f_edit_mindiff_updated(mindist),
-                      color=Colours.Logging)
+        embed = Embed(
+            title=translations.logging, description=translations.f_edit_mindiff_updated(mindist), color=Colours.Logging
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_mindiff_updated(mindist))
 
@@ -263,8 +264,11 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.log_not_changed_no_permissions)
 
         await Settings.set(int, "logging_edit", channel.id)
-        embed = Embed(title=translations.logging, description=translations.f_log_edit_updated(channel.mention),
-                      color=Colours.Logging)
+        embed = Embed(
+            title=translations.logging,
+            description=translations.f_log_edit_updated(channel.mention),
+            color=Colours.Logging,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_edit_updated(channel.mention))
 
@@ -275,8 +279,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         await Settings.set(int, "logging_edit", -1)
-        embed = Embed(title=translations.logging, description=translations.log_edit_disabled,
-                      color=Colours.Logging)
+        embed = Embed(title=translations.logging, description=translations.log_edit_disabled, color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.log_edit_disabled)
 
@@ -299,8 +302,11 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.log_not_changed_no_permissions)
 
         await Settings.set(int, "logging_delete", channel.id)
-        embed = Embed(title=translations.logging, description=translations.f_log_delete_updated(channel.mention),
-                      color=Colours.Logging)
+        embed = Embed(
+            title=translations.logging,
+            description=translations.f_log_delete_updated(channel.mention),
+            color=Colours.Logging,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_delete_updated(channel.mention))
 
@@ -311,8 +317,7 @@ class LoggingCog(Cog, name="Logging"):
         """
 
         await Settings.set(int, "logging_delete", -1)
-        embed = Embed(title=translations.logging, description=translations.log_delete_disabled,
-                      color=Colours.Logging)
+        embed = Embed(title=translations.logging, description=translations.log_delete_disabled, color=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.log_delete_disabled)
 
@@ -335,8 +340,11 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.log_not_changed_no_permissions)
 
         await Settings.set(int, "logging_changelog", channel.id)
-        embed = Embed(title=translations.logging, description=translations.f_log_changelog_updated(channel.mention),
-                      color=Colours.Logging)
+        embed = Embed(
+            title=translations.logging,
+            description=translations.f_log_changelog_updated(channel.mention),
+            color=Colours.Logging,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_changelog_updated(channel.mention))
 
@@ -348,8 +356,9 @@ class LoggingCog(Cog, name="Logging"):
 
         await send_to_changelog(ctx.guild, translations.log_changelog_disabled)
         await Settings.set(int, "logging_changelog", -1)
-        embed = Embed(title=translations.logging, description=translations.log_changelog_disabled,
-                      color=Colours.Logging)
+        embed = Embed(
+            title=translations.logging, description=translations.log_changelog_disabled, color=Colours.Logging
+        )
         await ctx.send(embed=embed)
 
     @logging.group(name="exclude", aliases=["x", "ignore", "i"])
@@ -388,8 +397,7 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.already_excluded)
 
         await db_thread(LogExclude.add, channel.id)
-        embed = Embed(title=translations.excluded_channels, description=translations.excluded,
-                      colour=Colours.Logging)
+        embed = Embed(title=translations.excluded_channels, description=translations.excluded, colour=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_excluded(channel.mention))
 
@@ -403,7 +411,6 @@ class LoggingCog(Cog, name="Logging"):
             raise CommandError(translations.not_excluded)
 
         await db_thread(LogExclude.remove, channel.id)
-        embed = Embed(title=translations.excluded_channels, description=translations.unexcluded,
-                      colour=Colours.Logging)
+        embed = Embed(title=translations.excluded_channels, description=translations.unexcluded, colour=Colours.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_unexcluded(channel.mention))

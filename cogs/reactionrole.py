@@ -99,13 +99,15 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 embed.colour = Colours.error
                 embed.description = translations.no_reactionrole_links
             else:
-                embed.description = "\n\n".join(f"{channel.mention}: " + "\n".join(
-                    f"[{' '.join(emojis)}]({url})" for url, emojis in messages.items()) for channel, messages in
-                                                channels.items())
+                embed.description = "\n\n".join(
+                    f"{channel.mention}: "
+                    + "\n".join(f"[{' '.join(emojis)}]({url})" for url, emojis in messages.items())
+                    for channel, messages in channels.items()
+                )
         else:
             out = []
             for link in await db_thread(
-                    db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
+                db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
             ):  # type: ReactionRole
                 channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
                 if channel is None or await channel.fetch_message(link.message_id) is None:
@@ -146,8 +148,9 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         await db_thread(ReactionRole.create, msg.channel.id, msg.id, str(emoji), role.id, auto_remove)
         await msg.add_reaction(emoji)
-        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole,
-                      description=translations.rr_link_created)
+        embed = Embed(
+            title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_created
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role.id, msg.jump_url))
 
@@ -166,7 +169,8 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         for reaction in msg.reactions:
             if str(emoji) == str(reaction.emoji):
                 await reaction.clear()
-        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole,
-                      description=translations.rr_link_removed)
+        embed = Embed(
+            title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_removed
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_rr_link_removed(emoji, msg.jump_url))

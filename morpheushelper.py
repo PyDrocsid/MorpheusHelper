@@ -88,8 +88,14 @@ def get_owner() -> Optional[User]:
 async def on_ready():
     if (owner := get_owner()) is not None:
         try:
-            await send_editable_log(owner, translations.online_status, translations.logged_in, time.ctime(),
-                                    force_resend=True, force_new_embed=bot.initial)
+            await send_editable_log(
+                owner,
+                translations.online_status,
+                translations.logged_in,
+                time.ctime(),
+                force_resend=True,
+                force_new_embed=bot.initial,
+            )
         except Forbidden:
             pass
 
@@ -167,7 +173,9 @@ async def build_info_embed(authorized: bool) -> Embed:
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
     embed.add_field(name=translations.help_command_title, value=f"`{prefix}help`", inline=True)
     embed.add_field(
-        name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
+        name=translations.bugs_features_title,
+        value=translations.bugs_features,
+        inline=False,
     )
     return embed
 
@@ -187,10 +195,12 @@ async def github(ctx: Context):
     return the github link
     """
 
-    embed = Embed(title="Defelo/MorpheusHelper",
-                  description="Bot for the Discord Server of The Morpheus Tutorials - Defelo/MorpheusHelper",
-                  colour=Colours.github,
-                  url=GITHUB_LINK)
+    embed = Embed(
+        title="Defelo/MorpheusHelper",
+        description="Bot for the Discord Server of The Morpheus Tutorials - Defelo/MorpheusHelper",
+        colour=Colours.github,
+        url=GITHUB_LINK,
+    )
     embed.set_thumbnail(url=AVATAR_URL)
     await ctx.send(embed=embed)
 
@@ -240,8 +250,9 @@ async def on_command_error(ctx: Context, error: CommandError):
         messages = await send_help(ctx, ctx.command)
     else:
         messages = [
-            await ctx.send(embed=make_error(error),
-                           allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
+            await ctx.send(
+                embed=make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
+            )
         ]
     add_to_error_cache(ctx.message, messages)
 

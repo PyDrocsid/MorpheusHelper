@@ -13,6 +13,9 @@ class CodeblocksCog(Cog, name="Codeblocks command"):
     @commands.command(name="codeblocks", aliases=["codeblock", "code", "c"])
     async def codeblocks(self, ctx):
         await ctx.send(
-            embed=Embed(title=translations.codeblocks_title, description=translations.codeblocks_description,
-                        colour=Colours.CodeBlocks)
+            embed=Embed(
+                title=translations.codeblocks_title,
+                description=translations.codeblocks_description,
+                colour=Colours.CodeBlocks,
+            )
         )

@@ -111,8 +111,9 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             raise CommandError(translations.channel_already_whitelisted)
 
         await db_thread(ReactionPinChannel.create, channel.id)
-        embed = Embed(title=translations.reactionpin, colour=Colours.ReactionPin,
-                      description=translations.channel_whitelisted)
+        embed = Embed(
+            title=translations.reactionpin, colour=Colours.ReactionPin, description=translations.channel_whitelisted
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_rp(channel.mention))
 
@@ -126,8 +127,9 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             raise CommandError(translations.channel_not_whitelisted)
 
         await db_thread(db.delete, row)
-        embed = Embed(title=translations.reactionpin, colour=Colours.ReactionPin,
-                      description=translations.channel_removed)
+        embed = Embed(
+            title=translations.reactionpin, colour=Colours.ReactionPin, description=translations.channel_removed
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_rp(channel.mention))
 

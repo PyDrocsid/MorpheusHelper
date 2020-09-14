@@ -86,8 +86,9 @@ class CleverBotCog(Cog, name="CleverBot"):
             raise CommandError(translations.channel_already_whitelisted)
 
         await db_thread(CleverBotChannel.create, channel.id)
-        embed = Embed(title=translations.cleverbot, description=translations.channel_whitelisted,
-                      colour=Colours.CleverBot)
+        embed = Embed(
+            title=translations.cleverbot, description=translations.channel_whitelisted, colour=Colours.CleverBot
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 

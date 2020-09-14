@@ -42,8 +42,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         channel: TextChannel = message.channel
         await message.delete()
-        embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia,
-                      colour=Colours.error)
+        embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia, colour=Colours.error)
         await channel.send(content=message.author.mention, embed=embed, delete_after=30)
         await send_to_changelog(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
@@ -96,8 +95,11 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             raise CommandError(translations.media_only_not_changed_no_permissions)
 
         await db_thread(MediaOnlyChannel.create, channel.id)
-        embed = Embed(title=translations.media_only_channels_header, description=translations.channel_now_media_only,
-                      colour=Colours.MediaOnly)
+        embed = Embed(
+            title=translations.media_only_channels_header,
+            description=translations.channel_now_media_only,
+            colour=Colours.MediaOnly,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_now_media_only(channel.mention))
 
@@ -111,8 +113,10 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             raise CommandError(translations.channel_not_media_only)
 
         await db_thread(db.delete, row)
-        embed = Embed(title=translations.media_only_channels_header,
-                      description=translations.channel_not_media_only_anymore,
-                      colour=Colours.MediaOnly)
+        embed = Embed(
+            title=translations.media_only_channels_header,
+            description=translations.channel_not_media_only_anymore,
+            colour=Colours.MediaOnly,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_not_media_only_anymore(channel.mention))

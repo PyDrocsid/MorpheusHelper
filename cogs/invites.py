@@ -44,9 +44,9 @@ class AllowedServerConverter(Converter):
 def get_discord_invite(url) -> Optional[str]:
     while True:
         if match := re.match(
-                r"^.*(https?://)?discord(\.gg|(app)?\.com/(\.*/)*invite)\.*/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
-                url,
-                re.IGNORECASE,
+            r"^.*(https?://)?discord(\.gg|(app)?\.com/(\.*/)*invite)\.*/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
+            url,
+            re.IGNORECASE,
         ):
             return match.group("code")
 
@@ -100,9 +100,11 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             if can_delete:
                 await message.delete()
             prefix = await get_prefix()
-            embed = Embed(title=translations.invites,
-                          description=translations.f_illegal_invite_link(prefix + "invites list"),
-                          color=Colours.error)
+            embed = Embed(
+                title=translations.invites,
+                description=translations.f_illegal_invite_link(prefix + "invites list"),
+                color=Colours.error,
+            )
             await message.channel.send(content=message.author.mention, embed=embed, delete_after=30)
             if can_delete:
                 await send_to_changelog(
@@ -206,8 +208,9 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
 
         await db_thread(AllowedInvite.create, guild.id, invite.code, guild.name, applicant.id, ctx.author.id)
         await db_thread(InviteLog.create, guild.id, guild.name, applicant.id, ctx.author.id, True)
-        embed = Embed(title=translations.invites, description=translations.server_whitelisted,
-                      color=Colours.AllowedInvites)
+        embed = Embed(
+            title=translations.invites, description=translations.server_whitelisted, color=Colours.AllowedInvites
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_server_whitelisted(guild.name))
 
@@ -229,8 +232,11 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             raise CommandError(translations.not_allowed)
 
         await db_thread(AllowedInvite.update, guild.id, invite.code)
-        embed = Embed(title=translations.invites, description=translations.f_invite_updated(row.guild_name),
-                      color=Colours.AllowedInvites)
+        embed = Embed(
+            title=translations.invites,
+            description=translations.f_invite_updated(row.guild_name),
+            color=Colours.AllowedInvites,
+        )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, row.guild_name))
 

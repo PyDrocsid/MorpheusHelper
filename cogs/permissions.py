@@ -93,7 +93,9 @@ class PermissionsCog(Cog, name="Permissions"):
             raise CommandError(translations.invalid_permission)
 
         await permission.set(level)
-        embed = Embed(title=translations.permissions_title, colour=Colours.Permissions,
-                      description=translations.f_permission_set(permission.name,
-                                                                translations.permission_levels[level.value]))
+        embed = Embed(
+            title=translations.permissions_title,
+            colour=Colours.Permissions,
+            description=translations.f_permission_set(permission.name, translations.permission_levels[level.value]),
+        )
         await ctx.send(embed=embed)

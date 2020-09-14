@@ -104,8 +104,9 @@ class NewsCog(Cog, name="News"):
         await send_to_changelog(ctx.guild, translations.f_log_news_unauthorized(user.mention, channel.mention))
 
     @news.command(name="send", aliases=["s"])
-    async def news_send(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None, *,
-                        message: Optional[str]):
+    async def news_send(
+        self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None, *, message: Optional[str]
+    ):
         """
         send a news message
         """
