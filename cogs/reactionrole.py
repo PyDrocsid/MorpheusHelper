@@ -4,6 +4,7 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.emoji_converter import EmojiConverter
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
 from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
@@ -92,18 +93,20 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 if ctx.guild.get_role(link.role_id) is None:
                     await db_thread(db.delete, link)
                     continue
-                channels.setdefault(channel, {}).setdefault(msg.jump_url, set())
-                channels[channel][msg.jump_url].add(link.emoji)
+                channels.setdefault(channel, {}).setdefault((msg.jump_url, msg.id), set())
+                channels[channel][(msg.jump_url, msg.id)].add(link.emoji)
 
             if not channels:
                 embed.colour = Colours.error
                 embed.description = translations.no_reactionrole_links
             else:
-                embed.description = "\n\n".join(
-                    f"{channel.mention}: "
-                    + "\n".join(f"[{' '.join(emojis)}]({url})" for url, emojis in messages.items())
-                    for channel, messages in channels.items()
-                )
+                out = []
+                for channel, messages in channels.items():
+                    value = channel.mention + "\n"
+                    for (url, msg_id), emojis in messages.items():
+                        value += f"[{msg_id}]({url}): {' '.join(emojis)}\n"
+                    out.append(value)
+                embed.description = "\n".join(out)
         else:
             out = []
             for link in await db_thread(
@@ -126,7 +129,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 embed.description = translations.no_reactionrole_links_for_msg
             else:
                 embed.description = "\n".join(out)
-        await ctx.send(embed=embed)
+        await send_long_embed(ctx, embed)
 
     @reactionrole.command(name="add", aliases=["a", "+"])
     async def reactionrole_add(self, ctx: Context, msg: Message, emoji: EmojiConverter, role: Role, auto_remove: bool):
