@@ -121,7 +121,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                     await db_thread(db.delete, link)
                     continue
                 if link.auto_remove:
-                    out.append(translations.f_rr_link_auto_remove(link.emoji, role.name))
+                    out.append(translations.f_rr_link_auto_remove(link.emoji, role.mention))
                 else:
                     out.append(translations.f_rr_link(link.emoji, role.mention))
             if not out:
