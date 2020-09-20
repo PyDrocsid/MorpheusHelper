@@ -36,6 +36,7 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
+from cogs.discordpy_documentation import DiscordpyDocumentationCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
@@ -462,5 +463,6 @@ register_cogs(
     RedditCog,
     AutoModCog,
     VerificationCog,
+    DiscordpyDocumentationCog
 )
 bot.run(os.environ["TOKEN"])

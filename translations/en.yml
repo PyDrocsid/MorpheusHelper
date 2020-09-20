@@ -30,6 +30,10 @@ not_authorized: Role `@{}` is not authorized.
 role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 log_role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 
+# discordpy documentation
+dpy_no_results: Could not find anything. Sorry.
+dpy_documentation: documentation
+
 # info
 bot_description: Helper Bot for the Discord Server of The Morpheus Tutorials
 test:
