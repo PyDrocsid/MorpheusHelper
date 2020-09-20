@@ -126,6 +126,9 @@ no_bots: No bots found.
 online: Online
 offline: Offline
 
+# links
+illegal_link: "{} Illegal link! Please contact a team member to submit a request for whitelisting the link."
+
 # invites
 illegal_invite_link: >
   {} Illegal discord invite link!
