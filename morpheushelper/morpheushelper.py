@@ -28,7 +28,32 @@ from discord.utils import snowflake_time
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from cogs import COGS
+from PyDrocsid.command_edit import add_to_error_cache
+from PyDrocsid.database import db
+from PyDrocsid.events import listener, register_cogs
+from PyDrocsid.help import send_help
+from PyDrocsid.translations import translations
+from PyDrocsid.util import measure_latency, send_long_embed
+from cogs.automod import AutoModCog
+from cogs.betheprofessional import BeTheProfessionalCog
+from cogs.cleverbot import CleverBotCog
+from cogs.codeblocks import CodeblocksCog
+from cogs.info import InfoCog
+from cogs.invites import InvitesCog
+from cogs.links import  LinksCog
+from cogs.logging import LoggingCog
+from cogs.mediaonly import MediaOnlyCog
+from cogs.metaquestion import MetaQuestionCog
+from cogs.mod import ModCog
+from cogs.news import NewsCog
+from cogs.permissions import PermissionsCog
+from cogs.reaction_pin import ReactionPinCog
+from cogs.reactionrole import ReactionRoleCog
+from cogs.reddit import RedditCog
+from cogs.rules import RulesCog
+from cogs.verification import VerificationCog
+from cogs.voice_channel import VoiceChannelCog
+from cogs.polls import PollsCog
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
@@ -288,6 +313,7 @@ async def on_bot_ping(message: Message):
     await message.channel.send(embed=await build_info_embed(False))
 
 
+<<<<<<< HEAD:morpheushelper/morpheushelper.py
 cog_blacklist = set(map(str.lower, os.getenv("DISABLED_COGS", "").split(",")))
 disabled_cogs = []
 enabled_cogs = []
@@ -310,4 +336,29 @@ if disabled_cogs:
     for name in disabled_cogs:
         print(f" - {name}")
 
+=======
+register_cogs(
+    bot,
+    VoiceChannelCog,
+    ReactionPinCog,
+    BeTheProfessionalCog,
+    LoggingCog,
+    MediaOnlyCog,
+    RulesCog,
+    InvitesCog,
+    LinksCog,
+    MetaQuestionCog,
+    InfoCog,
+    ReactionRoleCog,
+    CleverBotCog,
+    CodeblocksCog,
+    NewsCog,
+    ModCog,
+    PermissionsCog,
+    RedditCog,
+    AutoModCog,
+    VerificationCog,
+    PollsCog,
+)
+>>>>>>> Added cogs for link filtering:morpheushelper.py
 bot.run(os.environ["TOKEN"])
