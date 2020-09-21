@@ -1,7 +1,7 @@
 from typing import Union
-from sqlalchemy import Column, String, BigInteger, DateTime, Integer
 
 from PyDrocsid.database import db
+from sqlalchemy import Column, String, Integer
 
 
 class Links(db.Base):
