@@ -17,13 +17,12 @@ class LinksCog(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @staticmethod
-    async def on_message(message: Message):
+    async def on_message(self, message: Message):
         for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~.]+(/\S*)?)", message.content):
             if domain := filter_links(url):
-                root_domain = ".".join(itemgetter(len(domain) - 2, len(domain) - 1)(domain))
-                for row in await db_thread(db.all, Links):
-                    if row.link == root_domain:
-                        continue
-                    if f"*.{root_domain.lower()}" in row.link.lower():
-                        await message.channel.send(translations.f_illegal_link(message.author.mention))
+                root_domain = ".".join(itemgetter(len(domain) - 2, len(domain) - 1)(domain)).lower()
+                links = [item.link for item in await db_thread(db.all, Links)]
+                if root_domain in links:
+                    continue
+                if f"*.{root_domain}" in links or f"*.{domain[len(domain) - 1]}" in links:
+                    await message.channel.send(translations.f_illegal_link(message.author.mention))
