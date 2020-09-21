@@ -11,6 +11,7 @@ from models.links import Links
 def filter_links(url: str):
     if match := re.match(r"(https?://)?([a-zA-Z0-9\-_~.]+).*$", url, re.IGNORECASE):
         return match.group(2).split(".")
+    return None
 
 
 class LinksCog(Cog):
