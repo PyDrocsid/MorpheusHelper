@@ -40,7 +40,7 @@ from cogs.cleverbot import CleverBotCog
 from cogs.codeblocks import CodeblocksCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
-from cogs.links import  LinksCog
+from cogs.links import LinksCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
