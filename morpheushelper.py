@@ -20,6 +20,7 @@ from discord import (
     NotFound,
     Forbidden,
     AllowedMentions,
+    Intents,
 )
 from discord.ext import tasks
 from discord.ext.commands import (
@@ -87,7 +88,9 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description)
+intents = Intents.all()
+
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description, intents=intents)
 bot.remove_command("help")
 
 
