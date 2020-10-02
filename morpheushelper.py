@@ -261,7 +261,7 @@ async def on_error(*_, **__):
         raise  # skipcq: PYL-E0704
 
 
-error_cache: Dict[Message, Optional[Message]] = {}
+error_cache: Dict[int, Optional[Message]] = {}
 error_queue: List[Message] = []
 
 
@@ -275,19 +275,19 @@ async def on_command_error(ctx: Context, error: CommandError):
         msg = await ctx.send(
             make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
         )
-    error_cache[ctx.message] = msg
+    error_cache[ctx.message.id] = msg
     error_queue.append(ctx.message)
     while len(error_queue) > 1000:
         msg = error_queue.pop(0)
-        if msg in error_cache:
-            error_cache.pop(msg)
+        if msg.id in error_cache:
+            error_cache.pop(msg.id)
 
 
 async def handle_command_edit(message: Message):
-    if message not in error_cache:
+    if message.id not in error_cache:
         return
 
-    msg = error_cache.pop(message)
+    msg = error_cache.pop(message.id)
     if msg is not None:
         try:
             await msg.delete()
