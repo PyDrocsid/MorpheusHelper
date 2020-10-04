@@ -255,6 +255,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if isinstance(user, Member):
             await user.add_roles(mute_role)
+            await user.move_to(None)
 
         active_mutes: List[Mute] = await db_thread(db.all, Mute, active=True, member=user.id)
         if any(
