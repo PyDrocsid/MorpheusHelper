@@ -335,30 +335,5 @@ if disabled_cogs:
     print(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
     for name in disabled_cogs:
         print(f" - {name}")
-
-=======
-register_cogs(
-    bot,
-    VoiceChannelCog,
-    ReactionPinCog,
-    BeTheProfessionalCog,
-    LoggingCog,
-    MediaOnlyCog,
-    RulesCog,
-    InvitesCog,
-    LinksCog,
-    MetaQuestionCog,
-    InfoCog,
-    ReactionRoleCog,
-    CleverBotCog,
-    CodeblocksCog,
-    NewsCog,
-    ModCog,
-    PermissionsCog,
-    RedditCog,
-    AutoModCog,
-    VerificationCog,
-    PollsCog,
-)
->>>>>>> Added cogs for link filtering:morpheushelper.py
+                
 bot.run(os.environ["TOKEN"])

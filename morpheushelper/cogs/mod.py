@@ -257,17 +257,6 @@ class ModCog(Cog, name="Mod Tools"):
             await user.add_roles(mute_role)
             await user.move_to(None)
 
-        active_mutes: List[Mute] = await db_thread(db.all, Mute, active=True, member=user.id)
-        if any(
-            mute.days == -1
-            or days is not None
-            and datetime.utcnow() + timedelta(days=days) <= mute.timestamp + timedelta(days=mute.days)
-            for mute in active_mutes
-        ):
-            raise CommandError(translations.already_muted)
-        for mute in active_mutes:
-            await db_thread(Mute.upgrade, mute.id, ctx.author.id)
-
         try:
             if days is not None:
                 await user.send(translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason))
