@@ -93,7 +93,7 @@ async def on_ready():
         except Forbidden:
             pass
 
-    print(f"Logged in as {bot.user}")
+    print(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
 
     if owner is not None:
         try:
