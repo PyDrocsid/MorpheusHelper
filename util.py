@@ -1,6 +1,7 @@
 import io
 import socket
 import time
+from os import getenv
 from typing import Optional, Tuple, List, Union
 
 from discord import Member, TextChannel, Guild, PartialEmoji, Message, File, Embed, User, Attachment
@@ -205,15 +206,33 @@ async def call_event_handlers(event: str, *args, identifier=None, prepare=None):
 
 
 def register_cogs(bot: Bot, *cogs):
+    disabled_cogs = set(map(str.lower, getenv("DISABLED_COGS", "").split(",")))
+    enabled = []
+    disabled = []
     for cog_class in cogs:
         if cog_class is None:
             continue
+        if cog_class.__name__.lower() in disabled_cogs:
+            disabled.append(cog_class.__name__)
+            continue
+
         cog: Cog = cog_class(bot)
+        enabled.append(cog)
         for e in dir(cog):
             func = getattr(cog, e)
             if e.startswith("on_") and callable(func):
                 event_handlers.setdefault(e[3:], []).append(func)
         bot.add_cog(cog)
+
+    if enabled:
+        print(f"\033[1m\033[32m{len(enabled)} Cog{'s' * (len(enabled) > 1)} enabled:\033[0m")
+        for cog in enabled:
+            commands = ", ".join(cmd.name for cmd in cog.get_commands())
+            print(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+    if disabled:
+        print(f"\033[1m\033[31m{len(disabled)} Cog{'s' * (len(disabled) > 1)} disabled:\033[0m")
+        for name in disabled:
+            print(f" - {name}")
 
 
 async def get_prefix() -> str:
