@@ -17,6 +17,7 @@ services:
       DB_PASSWORD: 'morpheushelper'
       SENTRY_DSN: ''
       OWNER_ID: ''
+      DISABLED_COGS: ''
 
   db:
     container_name: mariadb

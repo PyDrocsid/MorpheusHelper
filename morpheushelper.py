@@ -20,6 +20,7 @@ from discord import (
     NotFound,
     Forbidden,
     AllowedMentions,
+    Intents,
 )
 from discord.ext import tasks
 from discord.ext.commands import (
@@ -87,7 +88,9 @@ async def fetch_prefix(_, message: Message) -> Iterable[str]:
     return await get_prefix(), f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "
 
 
-bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description)
+intents = Intents.all()
+
+bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description, intents=intents)
 bot.remove_command("help")
 
 
@@ -106,7 +109,7 @@ async def on_ready():
         except Forbidden:
             pass
 
-    print(f"Logged in as {bot.user}")
+    print(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
 
     if owner is not None:
         try:
@@ -258,7 +261,7 @@ async def on_error(*_, **__):
         raise  # skipcq: PYL-E0704
 
 
-error_cache: Dict[Message, Optional[Message]] = {}
+error_cache: Dict[int, Optional[Message]] = {}
 error_queue: List[Message] = []
 
 
@@ -272,19 +275,19 @@ async def on_command_error(ctx: Context, error: CommandError):
         msg = await ctx.send(
             make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
         )
-    error_cache[ctx.message] = msg
+    error_cache[ctx.message.id] = msg
     error_queue.append(ctx.message)
     while len(error_queue) > 1000:
         msg = error_queue.pop(0)
-        if msg in error_cache:
-            error_cache.pop(msg)
+        if msg.id in error_cache:
+            error_cache.pop(msg.id)
 
 
 async def handle_command_edit(message: Message):
-    if message not in error_cache:
+    if message.id not in error_cache:
         return
 
-    msg = error_cache.pop(message)
+    msg = error_cache.pop(message.id)
     if msg is not None:
         try:
             await msg.delete()
