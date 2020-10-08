@@ -1,12 +1,14 @@
 import os
 import string
+import sys
 import time
 from typing import Optional, Iterable
 
 import sentry_sdk
 from PyDrocsid.command_edit import add_to_error_cache
 from PyDrocsid.database import db
-from PyDrocsid.events import listener, register_cogs
+from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.events import listener, register_cogs, call_event_handlers
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency, send_long_embed
@@ -18,7 +20,7 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
-from permissions import Permission
+from permissions import Permission, PermissionLevel
 from util import make_error, send_to_changelog, get_prefix, set_prefix
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -96,6 +98,27 @@ async def ping(ctx: Context):
         await ctx.send(translations.f_pong_latency(latency * 1000))
     else:
         await ctx.send(translations.pong)
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def reload(ctx: Context):
+    await call_event_handlers("ready")
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def stop(ctx: Context):
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+    await bot.close()
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def kill(ctx: Context):
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+    sys.exit(1)
 
 
 @bot.command(name="prefix")
