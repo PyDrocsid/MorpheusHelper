@@ -14,13 +14,22 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency, send_long_embed
 from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
 from discord.ext import tasks
-from discord.ext.commands import Bot, Context, CommandError, guild_only, CommandNotFound, UserInputError
+from discord.ext.commands import (
+    Bot,
+    Context,
+    CommandError,
+    guild_only,
+    CommandNotFound,
+    UserInputError,
+    check,
+    CheckFailure,
+)
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
-from permissions import Permission, PermissionLevel
+from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
@@ -98,6 +107,23 @@ async def ping(ctx: Context):
         await ctx.send(translations.f_pong_latency(latency * 1000))
     else:
         await ctx.send(translations.pong)
+
+
+@check
+def is_sudoer(ctx: Context):
+    if ctx.author.id != 370876111992913922:
+        raise CheckFailure(f"{ctx.author.mention} is not in the sudoers file. This incident will be reported.")
+
+    return True
+
+
+@bot.command()
+@is_sudoer
+async def sudo(ctx: Context, *, cmd: str):
+    message: Message = ctx.message
+    message.content = ctx.prefix + cmd
+    sudo_active.set(True)
+    await bot.process_commands(message)
 
 
 @bot.command()
