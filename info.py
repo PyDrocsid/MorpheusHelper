@@ -1,4 +1,4 @@
-from subprocess import getoutput
+from subprocess import getoutput  # skipcq: BAN-B404
 
 VERSION = getoutput("git describe").lstrip("v")
 MORPHEUS_ICON = "https://cdn.discordapp.com/avatars/686299664726622258/cb99c816286bdd1d988ec16d8ae85e15.png"
