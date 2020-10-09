@@ -2,6 +2,7 @@ import re
 from typing import Optional
 
 import requests
+from PyDrocsid.async_thread import run_in_thread
 from discord import Invite, Member, Guild, Embed, Message, NotFound, Forbidden, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
@@ -40,7 +41,7 @@ class AllowedServerConverter(Converter):
 
 
 def get_discord_invite(url) -> Optional[str]:
-    while True:
+    for _ in range(20):
         if match := re.match(
             r"^.*(https?://)?discord(\.gg|(app)?\.com/(\.*/)*invite)\.*/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
             url,
@@ -61,6 +62,9 @@ def get_discord_invite(url) -> Optional[str]:
         else:
             return None
 
+    print("URL could not be resolved:", url)
+    return None
+
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
     def __init__(self, bot: Bot):
@@ -75,7 +79,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         forbidden = []
         legal_invite = False
         for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~.]+(/\S*)?)", message.content):
-            if (code := get_discord_invite(url)) is None:
+            if (code := await run_in_thread(lambda: get_discord_invite(url))) is None:
                 continue
             try:
                 invite = await self.bot.fetch_invite(code)
