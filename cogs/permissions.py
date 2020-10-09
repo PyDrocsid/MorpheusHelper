@@ -31,6 +31,8 @@ async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel)
 
 class PermissionLevelConverter(Converter):
     async def convert(self, ctx: Context, argument: str) -> PermissionLevel:
+        if argument.lower() in ("owner", "o"):
+            return PermissionLevel.OWNER
         if argument.lower() in ("administrator", "admin", "a"):
             return PermissionLevel.ADMINISTRATOR
         if argument.lower() in ("moderator", "mod", "m"):
@@ -90,6 +92,12 @@ class PermissionsCog(Cog, name="Permissions"):
             permission: Permission = Permission[permission.lower()]
         except KeyError:
             raise CommandError(translations.invalid_permission)
+
+        if PermissionLevel.OWNER in (
+            level,
+            await permission.resolve(),
+        ) and not await PermissionLevel.OWNER.check_permissions(ctx.author):
+            raise CommandError(translations.cannot_manage_permission_level)
 
         await permission.set(level)
         await ctx.send(translations.f_permission_set(permission.name, translations.permission_levels[level.value]))
