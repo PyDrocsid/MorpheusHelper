@@ -41,28 +41,19 @@ class AllowedServerConverter(Converter):
 
 
 def get_discord_invite(url) -> Optional[str]:
-    for _ in range(20):
-        if match := re.match(
-            r"^.*(https?://)?discord(\.gg|(app)?\.com/(\.*/)*invite)\.*/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
-            url,
-            re.IGNORECASE,
-        ):
-            return match.group("code")
+    if not re.match(r"^(https?://).*$", url):
+        url = "https://" + url
+    try:
+        url = requests.head(url, allow_redirects=True, timeout=10).url
+    except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+        print("URL could not be resolved:", url)
+        return None
 
-        if not re.match(r"^(https?://).*$", url):
-            url = "https://" + url
+    if match := re.match(
+        r"^https?://discord\.com/(\.*/)*invite/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$", url, re.IGNORECASE,
+    ):
+        return match.group("code")
 
-        try:
-            response = requests.head(url)
-        except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
-            return None
-
-        if response.is_redirect and "Location" in response.headers:
-            url = response.headers["Location"]
-        else:
-            return None
-
-    print("URL could not be resolved:", url)
     return None
 
 
