@@ -2,6 +2,7 @@ from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.codeblocks import CodeblocksCog
+from cogs.discordpy_documentation import DiscordpyDocumentationCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
@@ -38,4 +39,5 @@ COGS = [
     AutoModCog,
     VerificationCog,
     PollsCog,
+    DiscordpyDocumentationCog,
 ]
