@@ -14,7 +14,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Us
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from permissions import Permission
-from util import get_prefix, send_to_changelog
+from util import get_prefix, send_to_changelog, is_teamler
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -429,8 +429,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(translations.cannot_remove_member)
 
         await voice_channel.set_permissions(member, overwrite=None)
-        team_role = await Settings.get(int, "team_role")
-        if member.guild_permissions.administrator or any(role.id == team_role for role in member.roles):
+        if await is_teamler(member):
             raise CommandError(translations.member_could_not_be_kicked)
 
         if member.voice is not None and member.voice.channel == voice_channel:

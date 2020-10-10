@@ -64,7 +64,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             return
 
         pin_messages_enabled = await Settings.get(bool, "reactionpin_pin_message", True)
-        if not pin_messages_enabled and message.author == self.bot.user and message.type == MessageType.pins_add:
+        if not pin_messages_enabled and message.type == MessageType.pins_add:
             await message.delete()
             raise StopEventHandling
 

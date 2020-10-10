@@ -239,7 +239,7 @@ class ModCog(Cog, name="Mod Tools"):
     async def mute(self, ctx: Context, user: Union[Member, User, int], days: DurationConverter, *, reason: str):
         """
         mute a member
-        set days to inf for a permanent mute
+        set days to `inf` for a permanent mute
         """
 
         days: Optional[int]
