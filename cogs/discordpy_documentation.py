@@ -28,35 +28,24 @@ import io
 import os
 import re
 import zlib
-from typing import Dict, Iterable, Tuple, Optional
+from typing import Dict, Iterable, Optional, Callable
 
 import aiohttp
 import discord
+from PyDrocsid.translations import translations
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 
-from translations import translations
 
-
-def finder(text: str, collection: Iterable, *, key: str = None, lazy: bool = True):
+def finder(text: str, collection: Iterable, *, key: Optional[Callable[..., str]] = None):
     suggestions = []
-    text = str(text)
-    pat = '.*?'.join(map(re.escape, text))
-    regex = re.compile(pat, flags=re.IGNORECASE)
+    regex = re.compile(".*?".join(map(re.escape, text.replace(" ", ""))), flags=re.IGNORECASE)
     for item in collection:
         to_search = key(item) if key else item
-        r = regex.search(to_search)
-        if r:
+        if r := regex.search(to_search):
             suggestions.append((len(r.group()), r.start(), item))
 
-    def sort_key(tup: Tuple):
-        if key:
-            return tup[0], tup[1], key(tup[2])
-        return tup
-
-    if lazy:
-        return (z for _, _, z in sorted(suggestions, key=sort_key))
-    return [z for _, _, z in sorted(suggestions, key=sort_key)]
+    return [z for *_, z in sorted(suggestions, key=lambda tup: (tup[0], tup[1], key(tup[2])) if key else tup)]
 
 
 class SphinxObjectFileReader:
@@ -67,7 +56,7 @@ class SphinxObjectFileReader:
         self.stream = io.BytesIO(buffer)
 
     def readline(self):
-        return self.stream.readline().decode('utf-8')
+        return self.stream.readline().decode()
 
     def skipline(self):
         self.stream.readline()
@@ -82,14 +71,16 @@ class SphinxObjectFileReader:
         yield decompressor.flush()
 
     def read_compressed_lines(self):
-        buf = b''
+        buf = b""
         for chunk in self.read_compressed_chunks():
             buf += chunk
-            pos = buf.find(b'\n')
-            while pos != -1:
-                yield buf[:pos].decode('utf-8')
-                buf = buf[pos + 1:]
-                pos = buf.find(b'\n')
+            while True:
+                pos = buf.find(b"\n")
+                if pos == -1:
+                    break
+                yield buf[:pos].decode()
+                pos += 1
+                buf = buf[pos:]
 
 
 def parse_object_inv(stream: SphinxObjectFileReader, url: str):
@@ -100,8 +91,8 @@ def parse_object_inv(stream: SphinxObjectFileReader, url: str):
     # first line is version info
     inv_version = stream.readline().rstrip()
 
-    if inv_version != '# Sphinx inventory version 2':
-        raise RuntimeError('Invalid objects.inv file version.')
+    if inv_version != "# Sphinx inventory version 2":
+        raise RuntimeError("Invalid objects.inv file version.")
 
     # next line is "# Project: <name>"
     # then after that is "# Version: <version>"
@@ -110,19 +101,19 @@ def parse_object_inv(stream: SphinxObjectFileReader, url: str):
 
     # next line says if it's a zlib header
     line = stream.readline()
-    if 'zlib' not in line:
-        raise RuntimeError('Invalid objects.inv file, not z-lib compatible.')
+    if "zlib" not in line:
+        raise RuntimeError("Invalid objects.inv file, not z-lib compatible.")
 
     # This code mostly comes from the Sphinx repository.
-    entry_regex = re.compile(r'(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)')
+    entry_regex = re.compile(r"(?x)(.+?)\s+(\S*:\S*)\s+(-?\d+)\s+(\S+)\s+(.*)")
     for line in stream.read_compressed_lines():
         match = entry_regex.match(line.rstrip())
         if not match:
             continue
 
         name, directive, _, location, dispname = match.groups()
-        domain, _, subdirective = directive.partition(':')
-        if directive == 'py:module' and name in result:
+        domain, _, subdirective = directive.partition(":")
+        if directive == "py:module" and name in result:
             # From the Sphinx Repository:
             # due to a bug in 1.1 and below,
             # two inventory entries are created
@@ -131,19 +122,19 @@ def parse_object_inv(stream: SphinxObjectFileReader, url: str):
             continue
 
         # Most documentation pages have a label
-        if directive == 'std:doc':
-            subdirective = 'label'
+        if directive == "std:doc":
+            subdirective = "label"
 
-        if location.endswith('$'):
+        if location.endswith("$"):
             location = location[:-1] + name
 
-        key = name if dispname == '-' else dispname
-        prefix = f'{subdirective}:' if domain == 'std' else ''
+        key = name if dispname == "-" else dispname
+        prefix = f"{subdirective}:" if domain == "std" else ""
 
-        if projname == 'discord.py':
-            key = key.replace('discord.ext.commands.', '').replace('discord.', '')
+        if projname == "discord.py":
+            key = key.replace("discord.ext.commands.", "").replace("discord.", "")
 
-        result[f'{prefix}{key}'] = os.path.join(url, location)
+        result[f"{prefix}{key}"] = os.path.join(url, location)
 
     return result
 
@@ -154,6 +145,7 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
 
     thanks danny :)
     """
+
     def __init__(self, bot: Bot):
         self.bot = bot
         self._cache = {}
@@ -162,58 +154,60 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
         cache = {}
         for key, page in page_types.items():
             async with aiohttp.ClientSession() as session:
-                resp = await session.get(page + '/objects.inv')
+                resp = await session.get(page + "/objects.inv")
                 if resp.status != 200:
-                    return -1
+                    return
                 stream = SphinxObjectFileReader(await resp.read())
                 cache[key] = parse_object_inv(stream, page)
         self._cache = cache
-        return 1
 
     async def do_rtfm(self, ctx: Context, key: str, obj: Optional[str]):
-        page_types = {
-            'discord.py': 'https://discordpy.readthedocs.io/en/latest',
-            'python': 'https://docs.python.org/3'
-        }
+        page_types = {"discord.py": "https://discordpy.readthedocs.io/en/latest", "python": "https://docs.python.org/3"}
 
         if obj is None:
             await ctx.send(page_types[key])
             return
 
-        if len(self._cache) == 0:
+        if not self._cache:
             await ctx.trigger_typing()
             await self.build_rtfm_lookup_table(page_types)
 
-        obj = re.sub(r'^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)', r'\1', obj)
+        obj = re.sub(r"^(?:discord\.(?:ext\.)?)?(?:commands\.)?(.+)", r"\1", obj)
 
-        if key.startswith('discord.py'):
+        if key.startswith("discord.py"):
             # point the abc.Messageable types properly:
             q = obj.lower()
             for name in dir(discord.abc.Messageable):
-                if name[0] == '_':
+                if name[0] == "_":
                     continue
                 if q == name:
-                    obj = f'abc.Messageable.{name}'
+                    obj = f"abc.Messageable.{name}"
                     break
 
         cache = list(self._cache[key].items())
 
-        matches = finder(obj, cache, key=lambda t: t[0], lazy=False)[:5]
+        matches = finder(obj, cache, key=lambda t: t[0])[:10]
 
-        if len(matches) == 0:
+        if not matches:
             return await ctx.send(translations.dpy_no_results)
 
-        e = discord.Embed(colour=discord.Colour.blurple(),
-                          title=f'{key} {translations.dpy_documentation}')
-        e.description = '\n'.join(f'[`{key}`]({url})' for key, url in matches)
-        e.set_footer(text=translations.f_requested_by(ctx.author, ctx.author.id),
-                     icon_url=ctx.author.avatar_url)
+        e = discord.Embed(colour=discord.Colour.blurple(), title=translations.f_dpy_documentation(key))
+        e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
+        e.set_footer(text=translations.f_requested_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
         await ctx.send(embed=e)
 
-    @commands.command(name="dpy_docs", aliases=["dpy"])
+    @commands.command(aliases=["dpy"])
     async def dpy_docs(self, ctx: Context, *, obj: str = None):
-        await self.do_rtfm(ctx, 'discord.py', obj)
+        """
+        search the official python documentation
+        """
 
-    @commands.command(name="py_docs", aliases=["py"])
+        await self.do_rtfm(ctx, "discord.py", obj)
+
+    @commands.command(aliases=["py"])
     async def py_docs(self, ctx: Context, *, obj: str = None):
-        await self.do_rtfm(ctx, 'python', obj)
+        """
+        search the official discord.py documentation
+        """
+
+        await self.do_rtfm(ctx, "python", obj)
