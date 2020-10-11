@@ -169,7 +169,9 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
 
         if obj is None:
             embed = Embed(
-                title=translations.f_dpy_documentation(key), description=page_types[key], colour=Colours.DiscordPy
+                title=translations.f_dpy_documentation(key.capitalize()),
+                description=page_types[key],
+                colour=Colours.DiscordPy,
             )
             return await ctx.send(embed=embed)
 
@@ -195,13 +197,13 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
 
         if not matches:
             embed = Embed(
-                title=translations.f_dpy_documentation(key),
+                title=translations.f_dpy_documentation(key.capitalize()),
                 description=translations.dpy_no_results,
                 colour=Colours.error,
             )
             return await ctx.send(embed=embed)
 
-        e = discord.Embed(colour=Colours.DiscordPy, title=translations.f_dpy_documentation(key))
+        e = discord.Embed(colour=Colours.DiscordPy, title=translations.f_dpy_documentation(key.capitalize()))
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
         e.set_footer(text=translations.f_requested_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
         await ctx.send(embed=e)
