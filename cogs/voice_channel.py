@@ -399,10 +399,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
 
         text = translations.f_user_added_to_private_voice_dm(member.mention)
-        try:
-            text += f"\n{await voice_channel.create_invite(unique=False)}"
-        except Forbidden:
-            pass
+        if ctx.author.permissions_in(voice_channel).create_instant_invite:
+            try:
+                text += f"\n{await voice_channel.create_invite(unique=False)}"
+            except Forbidden:
+                pass
         try:
             await member.send(text)
         except (Forbidden, HTTPException):
