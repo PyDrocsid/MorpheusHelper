@@ -9,7 +9,7 @@ profile_status:
 warning: Warning
 quote_remove_mentions: >
   :warning: Please remove all role mentions in a quote before sending the message,
-  otherwise the roles are notified again! {}
+  otherwise the roles are notified again!
 
 # ping
 pong: Pong!

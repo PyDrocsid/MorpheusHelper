@@ -40,10 +40,10 @@ class InfoCog(Cog, name="Server Information"):
         if role_mentions & quote_mentions:
             embed = Embed(
                 title=translations.warning,
-                description=translations.f_quote_remove_mentions(message.author.mention),
+                description=translations.quote_remove_mentions,
                 colour=Colours.warning,
             )
-            await message.channel.send(embed=embed)
+            await message.channel.send(message.author.mention, embed=embed)
 
     @tasks.loop(seconds=20)
     async def status_loop(self):
