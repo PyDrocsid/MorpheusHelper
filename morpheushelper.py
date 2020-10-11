@@ -1,17 +1,10 @@
 import os
 import string
 import sys
-import time
+from datetime import datetime
 from typing import Optional, Iterable
 
 import sentry_sdk
-from PyDrocsid.command_edit import add_to_error_cache
-from PyDrocsid.database import db
-from PyDrocsid.emojis import name_to_emoji
-from PyDrocsid.events import listener, register_cogs, call_event_handlers
-from PyDrocsid.help import send_help
-from PyDrocsid.translations import translations
-from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
 from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
 from discord.ext import tasks
 from discord.ext.commands import (
@@ -27,6 +20,13 @@ from discord.ext.commands import (
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from PyDrocsid.command_edit import add_to_error_cache
+from PyDrocsid.database import db
+from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.events import listener, register_cogs, call_event_handlers
+from PyDrocsid.help import send_help
+from PyDrocsid.translations import translations
+from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
 from cogs import COGS
 from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
@@ -86,8 +86,9 @@ async def on_ready():
             await send_editable_log(
                 owner,
                 translations.online_status,
+                translations.f_status_description(VERSION),
                 translations.logged_in,
-                time.ctime(),
+                datetime.utcnow().strftime("%d.%m.%Y %H:%M:%S UTC"),
                 force_resend=True,
                 force_new_embed=bot.initial,
             )
@@ -110,7 +111,13 @@ async def status_loop():
     if (owner := get_owner()) is None:
         return
     try:
-        await send_editable_log(owner, translations.online_status, translations.heartbeat, time.ctime())
+        await send_editable_log(
+            owner,
+            translations.online_status,
+            translations.f_status_description(VERSION),
+            translations.heartbeat,
+            datetime.utcnow().strftime("%d.%m.%Y %H:%M:%S UTC"),
+        )
     except Forbidden:
         pass
 

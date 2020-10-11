@@ -155,11 +155,11 @@
         },
         "pydrocsid": {
             "hashes": [
-                "sha256:2d044538d28f9f4d8eb4445198547d78124072225e03d8f8770075e2472b1931",
-                "sha256:40db8e27192b79fd746d0c6ae4d7a1192feeff8266c283b0390ae316a2d06b1a"
+                "sha256:3d659a1866eca03863aa9cb3b6d3c980a59d85f5e503b6ad2ee1e617bc2db841",
+                "sha256:ed6afc606d41c4861f76f1e6b3f424237acfbd679706a8d33d5d8159f15b99c2"
             ],
             "index": "pypi",
-            "version": "==1.4.2"
+            "version": "==1.4.3"
         },
         "pymysql": {
             "hashes": [
