@@ -29,7 +29,7 @@ from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
 from colours import Colours
-from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL
+from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
 
@@ -230,10 +230,11 @@ async def github(ctx: Context):
 
     embed = Embed(
         title="Defelo/MorpheusHelper",
-        description="Bot for the Discord Server of The Morpheus Tutorials - Defelo/MorpheusHelper",
+        description=GITHUB_DESCRIPTION,
         colour=Colours.github,
         url=GITHUB_LINK,
     )
+    embed.set_author(name="GitHub", icon_url="https://github.com/fluidicon.png")
     embed.set_thumbnail(url=AVATAR_URL)
     await ctx.send(embed=embed)
 

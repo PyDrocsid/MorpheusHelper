@@ -37,9 +37,9 @@ class Colours(MaterialColours):
 
     # Commands
     changelog = MaterialColours.teal
-    github = MaterialColours.grey[900]
+    github = MaterialColours.teal[800]
     info = MaterialColours.indigo
-    ping = MaterialColours.lightgreen["a400"]
+    ping = MaterialColours.green["a700"]
     prefix = MaterialColours.indigo
     stats = MaterialColours.green
     userlog = MaterialColours.green["a400"]
