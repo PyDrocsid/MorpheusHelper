@@ -94,14 +94,10 @@ class PermissionsCog(Cog, name="Permissions"):
         except KeyError:
             raise CommandError(translations.invalid_permission)
 
-        if (
-            PermissionLevel.OWNER
-            in (
-                level,
-                await permission.resolve(),
-            )
-            and not await PermissionLevel.OWNER.check_permissions(ctx.author)
-        ):
+        if PermissionLevel.OWNER in (
+            level,
+            await permission.resolve(),
+        ) and not await PermissionLevel.OWNER.check_permissions(ctx.author):
             raise CommandError(translations.cannot_manage_permission_level)
 
         await permission.set(level)

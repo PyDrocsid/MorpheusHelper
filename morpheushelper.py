@@ -206,9 +206,7 @@ async def build_info_embed(authorized: bool) -> Embed:
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
     embed.add_field(name=translations.help_command_title, value=f"`{prefix}help`", inline=True)
     embed.add_field(
-        name=translations.bugs_features_title,
-        value=translations.bugs_features,
-        inline=False,
+        name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
     )
     return embed
 
@@ -229,10 +227,7 @@ async def github(ctx: Context):
     """
 
     embed = Embed(
-        title="Defelo/MorpheusHelper",
-        description=GITHUB_DESCRIPTION,
-        colour=Colours.github,
-        url=GITHUB_LINK,
+        title="Defelo/MorpheusHelper", description=GITHUB_DESCRIPTION, colour=Colours.github, url=GITHUB_LINK,
     )
     embed.set_author(name="GitHub", icon_url="https://github.com/fluidicon.png")
     embed.set_thumbnail(url=AVATAR_URL)
