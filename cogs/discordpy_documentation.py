@@ -32,8 +32,8 @@ from typing import Dict, Iterable, Optional, Callable
 
 import aiohttp
 import discord
-from discord import Embed
 from PyDrocsid.translations import translations
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 

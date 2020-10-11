@@ -28,10 +28,10 @@ from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
+from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
-from colours import Colours
 
 banner = r"""
 
