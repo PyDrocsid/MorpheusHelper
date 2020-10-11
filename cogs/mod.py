@@ -263,24 +263,32 @@ class ModCog(Cog, name="Mod Tools"):
         if user == self.bot.user or await is_teamler(user):
             raise CommandError(translations.cannot_mute)
 
-        if await db_thread(db.first, Mute, active=True, member=user.id) is not None:
-            raise CommandError(translations.already_muted)
         if isinstance(user, Member):
-            if mute_role in user.roles:
-                raise CommandError(translations.already_muted)
             await user.add_roles(mute_role)
+            await user.move_to(None)
+
+        active_mutes: List[Mute] = await db_thread(db.all, Mute, active=True, member=user.id)
+        if any(
+            mute.days == -1
+            or days is not None
+            and datetime.utcnow() + timedelta(days=days) <= mute.timestamp + timedelta(days=mute.days)
+            for mute in active_mutes
+        ):
+            raise CommandError(translations.already_muted)
+        for mute in active_mutes:
+            await db_thread(Mute.upgrade, mute.id, ctx.author.id)
 
         user_embed = Embed(title=translations.mute, colour=Colours.ModTools)
         server_embed = Embed(title=translations.mute, description=translations.muted_response, colour=Colours.ModTools)
 
         if days is not None:
-            await db_thread(Mute.create, user.id, str(user), ctx.author.id, days, reason)
+            await db_thread(Mute.create, user.id, str(user), ctx.author.id, days, reason, bool(active_mutes))
             user_embed.description = translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason)
             await send_to_changelog(
                 ctx.guild, translations.f_log_muted(ctx.author.mention, user.mention, user, days, reason)
             )
         else:
-            await db_thread(Mute.create, user.id, str(user), ctx.author.id, -1, reason)
+            await db_thread(Mute.create, user.id, str(user), ctx.author.id, -1, reason, bool(active_mutes))
             user_embed.description = translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason)
             await send_to_changelog(
                 ctx.guild, translations.f_log_muted_inf(ctx.author.mention, user.mention, user, reason)
@@ -343,7 +351,6 @@ class ModCog(Cog, name="Mod Tools"):
         if member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id:
             raise CommandError(translations.cannot_kick)
 
-        await member.kick(reason=reason)
         await db_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
         await send_to_changelog(
             ctx.guild, translations.f_log_kicked(ctx.author.mention, member.mention, member, reason)
@@ -361,6 +368,8 @@ class ModCog(Cog, name="Mod Tools"):
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
             server_embed.colour = Colours.error
+
+        await member.kick(reason=reason)
 
         await ctx.send(embed=server_embed)
 
@@ -398,19 +407,30 @@ class ModCog(Cog, name="Mod Tools"):
         if isinstance(user, Member) and (user.top_role >= ctx.guild.me.top_role or user.id == ctx.guild.owner_id):
             raise CommandError(translations.cannot_ban)
 
-        await ctx.guild.ban(user, delete_message_days=1, reason=reason)
+        active_bans: List[Ban] = await db_thread(db.all, Ban, active=True, member=user.id)
+        if any(
+            ban.days == -1
+            or ban_days is not None
+            and datetime.utcnow() + timedelta(days=ban_days) <= ban.timestamp + timedelta(days=ban.days)
+            for ban in active_bans
+        ):
+            raise CommandError(translations.already_banned)
+        for ban in active_bans:
+            await db_thread(Ban.upgrade, ban.id, ctx.author.id)
+        for mute in await db_thread(db.all, Mute, active=True, member=user.id):
+            await db_thread(Mute.upgrade, mute.id, ctx.author.id)
 
         user_embed = Embed(title=translations.ban, colour=Colours.ModTools)
         server_embed = Embed(title=translations.ban, description=translations.banned_response, colour=Colours.ModTools)
 
         if ban_days is not None:
-            await db_thread(Ban.create, user.id, str(user), ctx.author.id, ban_days, reason)
+            await db_thread(Ban.create, user.id, str(user), ctx.author.id, ban_days, reason, bool(active_bans))
             user_embed.description = translations.f_banned(ctx.author.mention, ctx.guild.name, ban_days, reason)
             await send_to_changelog(
                 ctx.guild, translations.f_log_banned(ctx.author.mention, user.mention, user, ban_days, reason)
             )
         else:
-            await db_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason)
+            await db_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason, bool(active_bans))
             user_embed.description = translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason)
             await send_to_changelog(
                 ctx.guild, translations.f_log_banned_inf(ctx.author.mention, user.mention, user, reason)
@@ -421,6 +441,8 @@ class ModCog(Cog, name="Mod Tools"):
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
             server_embed.colour = Colours.error
+
+        await ctx.guild.ban(user, delete_message_days=delete_days, reason=reason)
 
         await ctx.send(embed=server_embed)
 
@@ -567,11 +589,12 @@ class ModCog(Cog, name="Mod Tools"):
         for warn in await db_thread(db.all, Warn, member=user_id):
             out.append((warn.timestamp, translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason)))
         for mute in await db_thread(db.all, Mute, member=user_id):
+            text = [translations.ulog_muted, translations.ulog_muted_inf][mute.days == -1][mute.is_upgrade].format
             if mute.days == -1:
-                out.append((mute.timestamp, translations.f_ulog_muted_inf(f"<@{mute.mod}>", mute.reason)))
+                out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.reason)))
             else:
-                out.append((mute.timestamp, translations.f_ulog_muted(f"<@{mute.mod}>", mute.days, mute.reason)))
-            if not mute.active:
+                out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.days, mute.reason)))
+            if not mute.active and not mute.upgraded:
                 if mute.unmute_mod is None:
                     out.append((mute.deactivation_timestamp, translations.ulog_unmuted_expired))
                 else:
@@ -587,11 +610,12 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 out.append((kick.timestamp, translations.ulog_autokicked))
         for ban in await db_thread(db.all, Ban, member=user_id):
+            text = [translations.ulog_banned, translations.ulog_banned_inf][ban.days == -1][ban.is_upgrade].format
             if ban.days == -1:
-                out.append((ban.timestamp, translations.f_ulog_banned_inf(f"<@{ban.mod}>", ban.reason)))
+                out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.reason)))
             else:
-                out.append((ban.timestamp, translations.f_ulog_banned(f"<@{ban.mod}>", ban.days, ban.reason)))
-            if not ban.active:
+                out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.days, ban.reason)))
+            if not ban.active and not ban.upgraded:
                 if ban.unban_mod is None:
                     out.append((ban.deactivation_timestamp, translations.ulog_unbanned_expired))
                 else:

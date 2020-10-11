@@ -41,6 +41,10 @@ not_authorized: Role `@{}` is not authorized.
 role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 log_role_unauthorized: Role `@{}` has been unauthorized to control this bot.
 
+# discordpy documentation
+dpy_no_results: Could not find anything. Sorry.
+dpy_documentation: "{} documentation"
+
 # info
 bot_description: Helper Bot for the Discord Server of The Morpheus Tutorials
 test:
@@ -440,7 +444,7 @@ invalid_duration_inf: Invalid duration. Try `inf` instead.
 mute: Mute
 mute_role_not_set: User could not be muted because no mute role is configured.
 cannot_mute: This member cannot be muted.
-already_muted: User is already muted.
+already_muted: User is already muted for the given period of time.
 muted: "{} just muted you on {} for {} days:```\n{}\n```"
 muted_inf: "{} just muted you on {}:```\n{}\n```"
 muted_response: ":white_check_mark: User muted."
@@ -458,6 +462,7 @@ cannot_kick: This member cannot be kicked.
 cannot_kick_permissions: User could not be kicked because I don't have `kick_members` permission on this server.
 ban: Ban
 cannot_ban: This member cannot be banned.
+already_banned: This member is already banned for the given period of time.
 cannot_ban_permissions: User could not be banned because I don't have `ban_members` permission on this server.
 banned: "{} just banned you from {} for {} days:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
@@ -501,14 +506,22 @@ ulog_nick_cleared: ":label:  **Nickname** `{}` **cleared**"
 ulog_username_updated: ":label:  **Username changed** from `{}` to `{}`"
 ulog_reported: ":speech_balloon:  **Reported** by {} because of `{}`"
 ulog_warned: ":warning:  **Warned** by {} because of `{}`"
-ulog_muted: ":mute:  **Muted** by {} for {} days because of `{}`"
-ulog_muted_inf: ":mute:  **Muted** by {} because of `{}`"
+ulog_muted:
+  - ":mute:  **Muted** by {} for {} days because of `{}`"
+  - ":mute:  **Mute upgraded** by {} to {} days because of `{}`"
+ulog_muted_inf:
+  - ":mute:  **Muted** by {} because of `{}`"
+  - ":mute:  **Mute upgraded** by {} because of `{}`"
 ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
 ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
 ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
 ulog_autokicked: ":hourglass:  **Kicked** automatically."
-ulog_banned: ":no_entry:  **Banned** by {} for {} days because of `{}`"
-ulog_banned_inf: ":no_entry:  **Banned** by {} because of `{}`"
+ulog_banned:
+  - ":no_entry:  **Banned** by {} for {} days because of `{}`"
+  - ":no_entry:  **Ban upgraded** by {} to {} days because of `{}`"
+ulog_banned_inf:
+  - ":no_entry:  **Banned** by {} because of `{}`"
+  - ":no_entry:  **Ban upgraded** by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
 ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
 ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"
@@ -521,9 +534,11 @@ permission_levels:
   - Supporter
   - Moderator
   - Administrator
+  - Owner
 no_permissions: No priviliges granted.
 invalid_permission_level: Invalid permission level.
 invalid_permission: Invalid permission.
+cannot_manage_permission_level: You are not allowed to manage this permission level.
 permission_set: ":white_check_mark: Permission `{}` has been granted to `>= {}`"
 permissions_title: Permissions
 my_permissions_title: My Permissions

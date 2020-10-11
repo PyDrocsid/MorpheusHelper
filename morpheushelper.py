@@ -1,23 +1,18 @@
 import os
 import string
+import sys
 import time
 from typing import Optional, Iterable
 
 import sentry_sdk
 from PyDrocsid.command_edit import add_to_error_cache
 from PyDrocsid.database import db
-from PyDrocsid.events import listener, register_cogs
+from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.events import listener, register_cogs, call_event_handlers
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
-from discord import (
-    Message,
-    Embed,
-    User,
-    Forbidden,
-    AllowedMentions,
-    Intents,
-)
+from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
 from discord.ext import tasks
 from discord.ext.commands import (
     Bot,
@@ -26,33 +21,30 @@ from discord.ext.commands import (
     guild_only,
     CommandNotFound,
     UserInputError,
+    check,
+    CheckFailure,
 )
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from cogs.automod import AutoModCog
-from cogs.betheprofessional import BeTheProfessionalCog
-from cogs.cleverbot import CleverBotCog
-from cogs.codeblocks import CodeblocksCog
-from cogs.info import InfoCog
-from cogs.invites import InvitesCog
-from cogs.logging import LoggingCog
-from cogs.mediaonly import MediaOnlyCog
-from cogs.metaquestion import MetaQuestionCog
-from cogs.mod import ModCog
-from cogs.news import NewsCog
-from cogs.permissions import PermissionsCog
-from cogs.polls import PollsCog
-from cogs.reaction_pin import ReactionPinCog
-from cogs.reactionrole import ReactionRoleCog
-from cogs.reddit import RedditCog
-from cogs.rules import RulesCog
-from cogs.verification import VerificationCog
-from cogs.voice_channel import VoiceChannelCog
-from colours import Colours
+from cogs import COGS
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL
-from permissions import Permission
+from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
+from colours import Colours
+
+banner = r"""
+
+        __  ___                 __                    __  __     __
+       /  |/  /___  _________  / /_  ___  __  _______/ / / /__  / /___  ___  _____
+      / /|_/ / __ \/ ___/ __ \/ __ \/ _ \/ / / / ___/ /_/ / _ \/ / __ \/ _ \/ ___/
+     / /  / / /_/ / /  / /_/ / / / /  __/ /_/ (__  ) __  /  __/ / /_/ /  __/ /
+    /_/  /_/\____/_/  / .___/_/ /_/\___/\__,_/____/_/ /_/\___/_/ .___/\___/_/
+                     /_/                                      /_/
+
+""".splitlines()
+print("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
+print(f"Starting MorpheusHelper v{VERSION} ({GITHUB_LINK})\n")
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
@@ -102,7 +94,7 @@ async def on_ready():
         except Forbidden:
             pass
 
-    print(f"Logged in as {bot.user}")
+    print(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
 
     if owner is not None:
         try:
@@ -134,6 +126,44 @@ async def ping(ctx: Context):
     if latency is not None:
         embed.description = translations.f_pong_latency(latency * 1000)
     await ctx.send(embed=embed)
+
+
+@check
+def is_sudoer(ctx: Context):
+    if ctx.author.id != 370876111992913922:
+        raise CheckFailure(f"{ctx.author.mention} is not in the sudoers file. This incident will be reported.")
+
+    return True
+
+
+@bot.command()
+@is_sudoer
+async def sudo(ctx: Context, *, cmd: str):
+    message: Message = ctx.message
+    message.content = ctx.prefix + cmd
+    sudo_active.set(True)
+    await bot.process_commands(message)
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def reload(ctx: Context):
+    await call_event_handlers("ready")
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def stop(ctx: Context):
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+    await bot.close()
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def kill(ctx: Context):
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+    sys.exit(1)
 
 
 @bot.command(name="prefix")
@@ -265,26 +295,26 @@ async def on_bot_ping(message: Message):
     await message.channel.send(embed=await build_info_embed(False))
 
 
-register_cogs(
-    bot,
-    VoiceChannelCog,
-    ReactionPinCog,
-    BeTheProfessionalCog,
-    LoggingCog,
-    MediaOnlyCog,
-    RulesCog,
-    InvitesCog,
-    MetaQuestionCog,
-    InfoCog,
-    ReactionRoleCog,
-    CleverBotCog,
-    CodeblocksCog,
-    NewsCog,
-    ModCog,
-    PermissionsCog,
-    RedditCog,
-    AutoModCog,
-    VerificationCog,
-    PollsCog,
-)
+cog_blacklist = set(map(str.lower, os.getenv("DISABLED_COGS", "").split(",")))
+disabled_cogs = []
+enabled_cogs = []
+for cog_class in COGS:
+    if cog_class.__name__.lower() in cog_blacklist:
+        disabled_cogs.append(cog_class.__name__)
+        continue
+
+    enabled_cogs.append(cog_class)
+
+register_cogs(bot, *enabled_cogs)
+
+if bot.cogs:
+    print(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
+    for cog in bot.cogs.values():
+        commands = ", ".join(cmd.name for cmd in cog.get_commands())
+        print(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+if disabled_cogs:
+    print(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
+    for name in disabled_cogs:
+        print(f" - {name}")
+
 bot.run(os.environ["TOKEN"])

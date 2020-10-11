@@ -2,6 +2,7 @@ import re
 from typing import Optional
 
 import requests
+from PyDrocsid.async_thread import run_in_thread
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
@@ -42,26 +43,22 @@ class AllowedServerConverter(Converter):
 
 
 def get_discord_invite(url) -> Optional[str]:
-    while True:
-        if match := re.match(
-            r"^.*(https?://)?discord(\.gg|(app)?\.com/(\.*/)*invite)\.*/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
-            url,
-            re.IGNORECASE,
-        ):
-            return match.group("code")
+    if not re.match(r"^(https?://).*$", url):
+        url = "https://" + url
+    try:
+        url = requests.head(url, allow_redirects=True, timeout=10).url
+    except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+        print("URL could not be resolved:", url)
+        return None
 
-        if not re.match(r"^(https?://).*$", url):
-            url = "https://" + url
+    if match := re.match(
+        r"^https?://discord\.com/(\.*/)*invite/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
+        url,
+        re.IGNORECASE,
+    ):
+        return match.group("code")
 
-        try:
-            response = requests.head(url)
-        except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
-            return None
-
-        if response.is_redirect and "Location" in response.headers:
-            url = response.headers["Location"]
-        else:
-            return None
+    return None
 
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
@@ -77,7 +74,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         forbidden = []
         legal_invite = False
         for url, *_ in re.findall(r"((https?://)?([a-zA-Z0-9\-_~]+\.)+[a-zA-Z0-9\-_~.]+(/\S*)?)", message.content):
-            if (code := get_discord_invite(url)) is None:
+            if (code := await run_in_thread(lambda: get_discord_invite(url))) is None:
                 continue
             try:
                 invite = await self.bot.fetch_invite(code)

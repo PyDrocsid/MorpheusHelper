@@ -1,4 +1,5 @@
 from PyDrocsid.material_colours import MaterialColours, NestedInt
+from discord import Colour
 
 
 class Colours(MaterialColours):
@@ -12,6 +13,7 @@ class Colours(MaterialColours):
     AutoMod = MaterialColours.blue["a700"]
     CleverBot = 0x8EBBF6  # clever bot color
     CodeBlocks = MaterialColours.grey[900]
+    DiscordPy = Colour.blurple()  # discord colour
     Logging = NestedInt(
         MaterialColours.blue["a700"], {"edit": MaterialColours.yellow["a200"], "delete": MaterialColours.yellow["a200"]}
     )
