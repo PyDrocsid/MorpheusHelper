@@ -629,7 +629,7 @@ autokick_mode_configured:
 autokick_delay_configured: ":white_check_mark: AutoKick delay has been configured."
 log_autokick_delay_configured: AutoKick delay has been set to {} seconds.
 autokick_role_configured: ":white_check_mark: AutoKick role has been configured."
-log_autokick_role_configured: "AutoKick role has been set to `@{}` ({})"
+log_autokick_role_configured: "AutoKick role has been set to {} ({})"
 autokick_disabled: AutoKick is disabled.
 autokick_mode:
   - Mode is set to normal.
@@ -646,7 +646,7 @@ instantkick_disabled: ":x: InstantKick is disabled."
 instantkick_enabled: ":white_check_mark: InstantKick is enabled."
 instantkick_set_disabled: ":white_check_mark: InstantKick has been disabled."
 instantkick_role_configured: ":white_check_mark: InstantKick role has been configured."
-log_instantkick_role_configured: ":white_check_mark: InstantKick role has been set to `@{}` ({})"
+log_instantkick_role_configured: ":white_check_mark: InstantKick role has been set to {} ({})"
 instantkick_cannot_kick: Members with this role cannot be kicked.
 
 # verification

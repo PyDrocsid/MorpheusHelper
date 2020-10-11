@@ -176,7 +176,7 @@ class AutoModCog(Cog, name="AutoMod"):
             title=translations.autokick, description=translations.autokick_role_configured, colour=Colours.AutoMod
         )
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.name, role.id))
+        await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.mention, role.id))
 
     @commands.group(aliases=["ik"])
     @Permission.manage_instantkick.check
@@ -205,7 +205,7 @@ class AutoModCog(Cog, name="AutoMod"):
         await ctx.send(embed=embed)
 
     @instantkick.command(name="disable", aliases=["d", "off"])
-    async def instantkick_mode(self, ctx: Context):
+    async def instantkick_disable(self, ctx: Context):
         """
         disable instantkick
         """
@@ -231,4 +231,4 @@ class AutoModCog(Cog, name="AutoMod"):
             title=translations.instantkick, description=translations.instantkick_role_configured, colour=Colours.AutoMod
         )
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_log_instantkick_role_configured(role.name, role.id))
+        await send_to_changelog(ctx.guild, translations.f_log_instantkick_role_configured(role.mention, role.id))
