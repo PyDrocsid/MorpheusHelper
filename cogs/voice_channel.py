@@ -404,18 +404,15 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 text += f"\n{await voice_channel.create_invite(unique=False)}"
             except Forbidden:
                 pass
+
+        reponse = translations.f_user_added_to_private_voice(member.mention)
         try:
             await member.send(text)
         except (Forbidden, HTTPException):
-            pass
+            reponse = translations.f_user_added_to_private_voice_no_dm(member.mention)
 
         if text_channel is not None:
-            await self.send_voice_msg(
-                text_channel,
-                group.public,
-                translations.voice_channel,
-                translations.f_user_added_to_private_voice(member.mention),
-            )
+            await self.send_voice_msg(text_channel, group.public, translations.voice_channel, reponse)
         if text_channel != ctx.channel:
             await ctx.send(translations.user_added_to_private_voice_response)
 
