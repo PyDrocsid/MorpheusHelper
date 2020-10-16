@@ -155,7 +155,9 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_created
         )
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role.id, msg.jump_url))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_rr_link_created(emoji, role.id, msg.jump_url, msg.channel.mention)
+        )
 
     @reactionrole.command(name="remove", aliases=["r", "del", "d", "-"])
     async def reactionrole_remove(self, ctx: Context, msg: Message, emoji: EmojiConverter):
@@ -176,4 +178,6 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_removed
         )
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_log_rr_link_removed(emoji, msg.jump_url))
+        await send_to_changelog(
+            ctx.guild, translations.f_log_rr_link_removed(emoji, link.role_id, msg.jump_url, msg.channel.mention)
+        )

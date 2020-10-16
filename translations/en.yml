@@ -30,7 +30,7 @@ prefix: Prefix
 invalid_prefix_length: Length of prefix must be between 1 and 16
 prefix_invalid_chars: Prefix contains invalid characters.
 prefix_updated: ":white_check_mark: Prefix has been updated."
-log_prefix_updated: Bot prefix has been changed to `{}`
+log_prefix_updated: "**Bot prefix** has been **changed** to `{}`"
 
 # auth
 authorized_roles_header: "The following roles are authorized to control this bot:"
@@ -111,14 +111,14 @@ topic_already_registered: Topic `{}` has already been registered.
 topic_not_registered_too_high: Topic could not be registered because `@{}` is higher than `@{}`.
 topic_not_registered_managed_role: Topic could not be registered because `@{}` cannot be assigned manually.
 cnt_topics_registered: ":white_check_mark: {} topics have been registered successfully."
-log_these_topics_registered: "These topics have been registered:"
+log_these_topics_registered: "These **topics** have been **registered**:"
 topic_registered: ":white_check_mark: Topic has been registered successfully."
-log_topic_registered: The new topic `{}` has been registered.
+log_topic_registered: The **new topic** `{}` has been **registered**.
 topic_not_registered: Topic `{}` has not been registered.
 cnt_topics_unregistered: ":white_check_mark: {} topics have been deleted successfully."
-log_these_topics_unregistered: "These topics have been removed:"
+log_these_topics_unregistered: "These **topics** have been **removed**:"
 topic_unregistered: ":white_check_mark: Topic has been deleted successfully."
-log_topic_unregistered: The topic `{}` has been removed.
+log_topic_unregistered: The **topic** `{}` has been **removed**.
 
 # server info
 info_description: Information about this Discord Server
@@ -144,10 +144,11 @@ illegal_invite_link: >
   :x: Illegal discord invite link!
   Please contact a team member to submit a request for whitelisting the invitation.
   Use the command `{}` to get a list of all allowed discord servers.
-log_illegal_invite: "Deleted a message of {} in {} because it contained one or more illegal discord invite links: {}"
+log_illegal_invite: |
+  **Deleted** a message of {} in {} because it contained one or more **illegal discord invite** links: {}
 log_illegal_invite_not_deleted: |
-  {} sent a message in {} which contained one or more illegal discord invite links: {}
-  The message could not be deleted because I don't have `manage_messages` permission in this channel.
+  {} sent a **message** in {} which contained one or more **illegal discord invite** links: {}
+  **The message could not be deleted** because I don't have `manage_messages` permission in this channel.
 allowed_servers_title: "Allowed discord servers (any link to these servers is allowed to post)"
 no_server_allowed: ":x: No discord servers allowed."
 invalid_invite: Invalid invite.
@@ -162,12 +163,12 @@ approver: Approver
 date: Date
 server_already_whitelisted: This server has already been whitelisted.
 server_whitelisted: ":white_check_mark: Server has been whitelisted successfully."
-log_server_whitelisted: ":white_check_mark: Discord Server `{}` has been added to the whitelist."
+log_server_whitelisted: ":white_check_mark: **Discord Server** `{}` has been **added** to the whitelist."
 server_not_whitelisted: Server is not whitelisted.
 server_removed: ":white_check_mark: Server has been removed from the whitelist successfully."
-log_server_removed: Discord Server `{}` has been removed from the whitelist.
+log_server_removed: "**Discord Server** `{}` has been **removed** from the whitelist."
 invite_updated: ":white_check_mark: Invite link for `{}` has been updated."
-log_invite_updated: "{} just updated the invite link for `{}`."
+log_invite_updated: "{} just **updated** the **invite link** for `{}`."
 invites: Invites
 
 # logging
@@ -189,19 +190,19 @@ changelog_off: "changelog: *disabled*"
 min_diff_gt_zero: Minimum distance must be greater than zero.
 edit_mindiff_updated: >
   :white_check_mark: Message edit events will now only be logged if the edit distance is at least {}.
-log_mindiff_updated: Minimum edit distance has been set to {}.
+log_mindiff_updated: "**Minimum edit distance** has been **set** to {}."
 log_not_changed_no_permissions: >
   Logging channel could not be changed because I don't have `send_messages` permission there.
-log_edit_updated: ":white_check_mark: Logs for message edit events will now be sent to {}."
-log_edit_disabled: ":white_check_mark: Logging for message edit events has been disabled."
-log_delete_updated: ":white_check_mark: Logs for message delete events will now be sent to {}."
-log_delete_disabled: ":white_check_mark: Logging for message delete events has been disabled."
-log_changelog_updated: ":white_check_mark: Changelog channel is now {}."
-log_changelog_disabled: ":white_check_mark: Changelog channel has been disabled."
+log_edit_updated: ":white_check_mark: **Logs** for **message edit** events will now be **sent** to {}."
+log_edit_disabled: ":white_check_mark: **Logging** for **message edit** events has been **disabled**."
+log_delete_updated: ":white_check_mark: **Logs** for **message delete** events will now be **sent** to {}."
+log_delete_disabled: ":white_check_mark: **Logging** for **message** delete events has been **disabled**."
+log_changelog_updated: ":white_check_mark: **Changelog** channel **is** now {}."
+log_changelog_disabled: ":white_check_mark: **Changelog** channel has been **disabled**."
 maxage_disabled: Automatic deletion of old log entries is disabled.
 maxage_enabled: Log entries older than {} days will be deleted automatically.
-maxage_set: ":white_check_mark: Maximum age of log entries has been set to {} days."
-maxage_set_disabled: ":white_check_mark: Automatic deletion of old log entries has been disabled."
+maxage_set: ":white_check_mark: **Maximum age** of log entries has been **set** to {} days."
+maxage_set_disabled: ":white_check_mark: **Automatic deletion** of old log entries has been **disabled**."
 logging: Logging
 msg_edit: ":pencil: Message Edit Channel"
 msg_delete: ":wastebasket: Message Delete Channel"
@@ -212,10 +213,10 @@ maxage: ":clock3: Maximum Age"
 x_days: "{} days"
 already_excluded: Channel is already excluded from logging.
 excluded: ":white_check_mark: Channel has been excluded from logging."
-log_excluded: Channel {} has been excluded from logging.
+log_excluded: "**Channel** {} has been **excluded** from logging."
 not_excluded: Channel is not excluded from logging.
 unexcluded: ":white_check_mark: Channel has been removed from logging exclude list."
-log_unexcluded: Channel {} has been removed from logging exclude list.
+log_unexcluded: "**Channel** {} has been **removed** from logging exclude list."
 excluded_channels: Logging - Excluded Channels
 no_channels_excluded: No Channels have been excluded from logging.
 
@@ -224,15 +225,15 @@ mediaonly: Mediaonly
 deleted_nomedia: >
   Only pictures are allowed in this channel.
   For conversations please use the channels designated for this purpose.
-log_deleted_nomedia: Deleted a message of {} in media only channel {} because it did not contain an image.
+log_deleted_nomedia: "**Deleted a message** of {} in **media only** channel {} because it did not contain an image."
 media_only_channels_header: "Media only channels"
 no_media_only_channels: ":x: No media only channels."
 channel_already_media_only: Channel is already a media only channel.
 channel_now_media_only: ":white_check_mark: Channel is now a media only channel."
-log_channel_now_media_only: Channel {} is now a media only channel.
+log_channel_now_media_only: "**Channel** {} **is** now a media only channel."
 channel_not_media_only: ":x: Channel is not a media only channel."
 channel_not_media_only_anymore: ":white_check_mark: Channel is not a media only channel anymore."
-log_channel_not_media_only_anymore: Channel {} is not a media only channel anymore.
+log_channel_not_media_only_anymore: "**Channel** {} is **not** a media only channel anymore."
 media_only_not_changed_no_permissions: >
   :x: Media only channel could not be added because I don't have `manage_messages` permission there.
 
@@ -293,14 +294,16 @@ whitelisted_channels_header: Whitelisted channels
 no_whitelisted_channels: No whitelisted channels.
 channel_already_whitelisted: Channel is already whitelisted.
 channel_whitelisted: ":white_check_mark: Channel has been whitelisted."
-log_channel_whitelisted_rp: Channel {} has been whitelisted for ReactionPin.
+log_channel_whitelisted_rp: "**Channel** {} has been **whitelisted** for ReactionPin."
 channel_not_whitelisted: ":x: Channel is not whitelisted."
 channel_removed: ":white_check_mark: Channel has been removed from the whitelist."
-log_channel_removed_rp: Channel {} has been removed from the ReactionPin whitelist.
+log_channel_removed_rp: "**Channel** {} has been **removed** from the ReactionPin **whitelist**."
 pin_messages_enabled: ":white_check_mark: Pin Messages are enabled."
 pin_messages_disabled: ":white_check_mark: Pin Messages are disabled."
 pin_messages_now_enabled: ":white_check_mark: Pin Messages have been enabled."
+log_pin_messages_now_enabled: "Pin Messages have been **enabled**."
 pin_messages_now_disabled: ":white_check_mark: Pin Messages have been disabled."
+log_pin_messages_now_disabled: "**Pin Messages** have been **disabled**."
 no_blocked_role: No blocked role configured.
 blocked_role: "Blocked role: `@{}`"
 blocked_role_updated: Blocked role has been updated.
@@ -313,10 +316,10 @@ rr_link_already_exists: A link already exists for this reaction on this message.
 rr_link_created: ":white_check_mark: Link has been created successfully."
 rr_link_not_created_no_permissions: >
   Link could not be created because I don't have `add_reactions` permission in this channel.
-log_rr_link_created: ReactionRole link for {} -> <@&{}> has been created on [message]({})
+log_rr_link_created: "**ReactionRole link** for {} -> <@&{}> has been **created** on [this message]({}) in {}"
 rr_link_not_found: Such a link does not exist.
 rr_link_removed: ":white_check_mark: Link has been removed successfully."
-log_rr_link_removed: ReactionRole link for {} has been deleted on [message]({})
+log_rr_link_removed: "**ReactionRole link** for {} -> <@&{}> has been **deleted** on [this message]({}) in {}"
 rr_link: "{} -> {}"
 rr_link_auto_remove: "{} -> {} (auto remove)"
 
@@ -347,19 +350,19 @@ link_already_exists: Link already exists.
 link_not_created_too_high: Link could not be created because <@&{}> is higher than <@&{}>.
 link_not_created_managed_role: Link could not be created because <@&{}> cannot be assigned manually.
 link_created: ":white_check_mark: Link has been created between voice channel `{}` and role <@&{}>."
-log_link_created: Link has been created between voice channel `{}` and role `@{}`.
+log_link_created: "**Link** has been **created** between voice channel `{}` and role `@{}`."
 link_not_found: Link does not exist.
 link_deleted: ":white_check_mark: Link has been deleted."
-log_link_deleted: Link has been deleted between voice channel `{}` and role `@{}`.
+log_link_deleted: "**Link** has been **deleted** between voice channel `{}` and role `@{}`."
 
 dyn_group_already_exists: This channel is already part of an existing voice channel group.
 dyn_group_created: ":white_check_mark: Dynamic voice channel group has been created successfully."
-log_dyn_group_created: Dynamic voice channel group `{}` has been created.
+log_dyn_group_created: "**Dynamic voice** channel group `{}` has been **created**."
 dyn_group_not_found: This channel is not part of any voice channel group.
 group_list_entry: "{} [{}] {} ({} active channels)"
 no_dyn_group: No dynamic voice channel groups have been created yet.
 dyn_group_removed: ":white_check_mark: Dynamic voice channel group has been removed successfully."
-log_dyn_group_removed: Dynamic voice channel group `{}` has been removed.
+log_dyn_group_removed: "**Dynamic voice** channel group `{}` has been **removed**."
 dyn_voice_created: Channel has been created by {}.
 dyn_voice_joined: "{} joined this channel."
 dyn_voice_left: "{} left this channel."
@@ -394,18 +397,18 @@ voice_channel: Voice Channel
 
 # cleverbot
 cleverbot: Cleverbot
-log_channel_whitelisted_cb: Channel {} has been whitelisted for CleverBot.
-log_channel_removed_cb: Channel {} has been removed from the CleverBot whitelist.
+log_channel_whitelisted_cb: "**Channel** {} has been **whitelisted** for CleverBot."
+log_channel_removed_cb: "**Channel** {} has been **removed** from the CleverBot whitelist."
 session_reset: Session for {} was successfully reset.
 
 # news
 news: News
 news_already_authorized: User is already authorized to send news in this channel.
 news_authorized: ":white_check_mark: User has been authorized to send news in this channel."
-log_news_authorized: User {} has been authorized to send news in {}.
+log_news_authorized: "User {} has been **authorized** to **send news** in {}."
 news_not_authorized: User is not authorized to send news in this channel.
 news_unauthorized: ":white_check_mark: User has been unauthorized to send news in this channel."
-log_news_unauthorized: User {} has been unauthorized to send news in {}.
+log_news_unauthorized: "User {} has been **unauthorized** to **send news** in {}."
 no_news_authorizations: No user has been authorized to send news yet.
 news_not_added_no_permissions: >
   User could not be authorized because I don't have `send_messages` permission in this channel.
@@ -421,11 +424,11 @@ role_team: Team
 role_mute: Mute
 role_not_set: ":x: Role not set."
 role_set: ":white_check_mark: Role has been set successfully."
-log_role_set_admin: "Administrator role has been set to `@{}` ({})"
-log_role_set_mod: "Moderator role has been set to `@{}` ({})"
-log_role_set_supp: "Supporter role has been set to `@{}` ({})"
-log_role_set_team: "Team role has been set to `@{}` ({})"
-log_role_set_mute: "Mute role has been set to `@{}` ({})"
+log_role_set_admin: "**Administrator** role has been **set** to `@{}` ({})"
+log_role_set_mod: "**Moderator** role has been **set** to `@{}` ({})"
+log_role_set_supp: "**Supporter** role has been **set** to `@{}` ({})"
+log_role_set_team: "**Team** role has been **set** to `@{}` ({})"
+log_role_set_mute: "**Mute** role has been **set** to `@{}` ({})"
 role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
 role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.
 
@@ -434,12 +437,12 @@ reason_too_long: "Reason is too long. :pencil:"
 report: Report
 cannot_report: This member cannot be reported.
 reported_response: ":white_check_mark: User reported."
-log_reported: "{} reported {} (`{}`) because of `{}`."
+log_reported: "{} **reported** {} (`{}`) because of `{}`."
 warn: Warn
 cannot_warn: This member cannot be warned.
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: ":white_check_mark: User warned."
-log_warned: "{} warned {} (`{}`) because of `{}`."
+log_warned: "{} **warned** {} (`{}`) because of `{}`."
 invalid_duration: Invalid duration.
 invalid_duration_inf: Invalid duration. Try `inf` instead.
 mute: Mute
@@ -449,16 +452,16 @@ already_muted: User is already muted for the given period of time.
 muted: "{} just muted you on {} for {} days:```\n{}\n```"
 muted_inf: "{} just muted you on {}:```\n{}\n```"
 muted_response: ":white_check_mark: User muted."
-log_muted: "{} muted {} (`{}`) for {} days because of `{}`."
-log_muted_inf: "{} muted {} (`{}`) because of `{}`."
-log_unmuted_expired: "Unmuted {} (`{}`) because the mute time for this user has expired."
+log_muted: "{} **muted** {} (`{}`) for {} days because of `{}`."
+log_muted_inf: "{} **muted** {} (`{}`) because of `{}`."
+log_unmuted_expired: "**Unmuted** {} (`{}`) because the mute time for this user has expired."
 unmuted_response: ":white_check_mark: User unmuted."
-log_unmuted: "{} unmuted {} (`{}`) because of `{}`."
+log_unmuted: "{} **unmuted** {} (`{}`) because of `{}`."
 not_muted: User is not muted.
 kick: Kick
 kicked: "{} just kicked you from {}:```\n{}\n```"
 kicked_response: ":white_check_mark: User kicked."
-log_kicked: "{} kicked {} (`{}`) because of `{}`."
+log_kicked: "{} **kicked** {} (`{}`) because of `{}`."
 cannot_kick: This member cannot be kicked.
 cannot_kick_permissions: User could not be kicked because I don't have `kick_members` permission on this server.
 ban: Ban
@@ -468,12 +471,12 @@ cannot_ban_permissions: User could not be banned because I don't have `ban_membe
 banned: "{} just banned you from {} for {} days:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
 banned_response: ":white_check_mark: User banned."
-log_banned: "{} banned {} (`{}`) for {} days because of `{}`."
-log_banned_inf: "{} banned {} (`{}`) because of `{}`."
-log_unbanned_expired: "Unbanned {} (`{}`) because the ban time for this user has expired."
+log_banned: "{} **banned** {} (`{}`) for {} days because of `{}`."
+log_banned_inf: "{} **banned** {} (`{}`) because of `{}`."
+log_unbanned_expired: "**Unbanned** {} (`{}`) because the ban time for this user has expired."
 not_banned: This member is not banned.
 unbanned_response: ":white_check_mark: User unbanned."
-log_unbanned: "{} unbanned {} (`{}`) because of `{}`."
+log_unbanned: "{} **unbanned** {} (`{}`) because of `{}`."
 cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
 user_not_found: User not found.
 init_join_log: Init join log
@@ -607,30 +610,30 @@ reddit_link_not_created_permission: >
   Reddit link could not be created because I don't have `send_messages` permission in this channel.
 reddit_link_already_exists: Reddit link already exists.
 reddit_link_created: Reddit link has been created.
-log_reddit_link_created: Reddit link `r/{}` -> {} has been created.
+log_reddit_link_created: "**Reddit link** `r/{}` -> {} has been **created**."
 reddit_link_not_found: Reddit link does not exist.
 reddit_link_removed: ":white_check_mark: Reddit link has been removed."
-log_reddit_link_removed: Reddit link `r/{}` -> {} has been removed.
+log_reddit_link_removed: "**Reddit link** `r/{}` -> {} has been **removed**."
 done: ":white_check_mark: Done"
 reddit_interval: "Reddit lookup interval: {} hours"
 invalid_interval: Invalid interval.
 reddit_interval_set: ":white_check_mark: Reddit lookup interval has been updated."
-log_reddit_interval_set: Reddit lookup interval has been set to {} hours.
+log_reddit_interval_set: "**Reddit lookup interval** has been **set** to {} hours."
 invalid_limit: Invalid limit.
 reddit_limit: "Reddit limit: {}"
 reddit_limit_set: ":white_check_mark: Reddit limit has been updated."
-log_reddit_limit_set: Reddit limit has been set to {}.
+log_reddit_limit_set: "**Reddit limit** has been **set** to {}."
 
 # autokick
 autokick: AutoKick
 autokick_mode_configured:
-  - ":white_check_mark: AutoKick has been disabled."
-  - ":white_check_mark: AutoKick mode has been set to normal."
-  - ":white_check_mark: AutoKick mode has been set to reverse."
+  - ":white_check_mark: **AutoKick** has been disabled."
+  - ":white_check_mark: **AutoKick mode** has been **set** to normal."
+  - ":white_check_mark: **AutoKick mode** has been **set** to reverse."
 autokick_delay_configured: ":white_check_mark: AutoKick delay has been configured."
-log_autokick_delay_configured: AutoKick delay has been set to {} seconds.
+log_autokick_delay_configured: "**AutoKick delay** has been **set** to {} seconds."
 autokick_role_configured: ":white_check_mark: AutoKick role has been configured."
-log_autokick_role_configured: "AutoKick role has been set to {} ({})"
+log_autokick_role_configured: "**AutoKick role** has been **set** to `@{}` ({})"
 autokick_disabled: AutoKick is disabled.
 autokick_mode:
   - Mode is set to normal.
@@ -645,24 +648,24 @@ log_autokicked: "Kicked automatically."
 instantkick: InstantKick
 instantkick_disabled: ":x: InstantKick is disabled."
 instantkick_enabled: ":white_check_mark: InstantKick is enabled."
-instantkick_set_disabled: ":white_check_mark: InstantKick has been disabled."
+instantkick_set_disabled: ":white_check_mark: **InstantKick** has been **disabled**."
 instantkick_role_configured: ":white_check_mark: InstantKick role has been configured."
-log_instantkick_role_configured: ":white_check_mark: InstantKick role has been set to {} ({})"
+log_instantkick_role_configured: ":white_check_mark: **InstantKick** role has been **set** to {} ({})"
 instantkick_cannot_kick: Members with this role cannot be kicked.
 
 # verification
 verification: Verification
 verification_role_added: ":white_check_mark: Verification role has been added."
-log_verification_role_added: "Verification role has been added: `@{}` ({}) (normal)"
-log_verification_role_added_reverse: "Verification role has been added: `@{}` ({}) (reverse)"
+log_verification_role_added: "**Verification role** has been **added**: `@{}` ({}) (normal)"
+log_verification_role_added_reverse: "**Verification role** has been **added**: `@{}` ({}) (reverse)"
 verification_role_removed: ":white_check_mark:  Verification role has been removed."
-log_verification_role_removed: "Verification role has been removed: `@{}` ({})"
+log_verification_role_removed: "**Verification role** has been **removed**: `@{}` ({})"
 password_too_long: Password is too long, sorry.
 verification_password_configured: ":white_check_mark: Verification password has been configured."
-log_verification_password_configured: Verification password has been set to `{}`
+log_verification_password_configured: "**Verification password** has been **set** to `{}`"
 verification_delay_configured: ":white_check_mark: Verification delay has been configured."
-verification_delay_disabled: ":white_check_mark: Verification delay has been disabled."
-log_verification_delay_configured: Verification delay has been set to {} seconds.
+verification_delay_disabled: ":white_check_mark: **Verification delay** has been **disabled**."
+log_verification_delay_configured: "**Verification delay** has been **set** to {} seconds."
 verification_disabled: Verification command is disabled.
 verification_enabled: Verification command is enabled.
 password: Password

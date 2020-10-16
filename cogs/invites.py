@@ -105,14 +105,16 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 await send_to_changelog(
                     message.guild,
                     translations.f_log_illegal_invite(
-                        message.author.mention, message.channel.mention, ", ".join(forbidden)
+                        f"{message.author.mention} ({str(message.author)} {message.author.id})",
+                        message.channel.mention, ", ".join(forbidden)
                     ),
                 )
             else:
                 await send_to_changelog(
                     message.guild,
                     translations.f_log_illegal_invite_not_deleted(
-                        message.author.mention, message.channel.mention, ", ".join(forbidden)
+                        f"{message.author.mention} ({str(message.author)} {message.author.id})",
+                        message.channel.mention, ", ".join(forbidden)
                     ),
                 )
             return False

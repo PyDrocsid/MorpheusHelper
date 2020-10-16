@@ -149,8 +149,8 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             await Settings.set(bool, "reactionpin_pin_message", enabled)
             if enabled:
                 embed.description = translations.pin_messages_now_enabled
-                await send_to_changelog(ctx.guild, translations.pin_messages_now_enabled)
+                await send_to_changelog(ctx.guild, translations.log_pin_messages_now_enabled)
             else:
                 embed.description = translations.pin_messages_now_disabled
-                await send_to_changelog(ctx.guild, translations.pin_messages_now_disabled)
+                await send_to_changelog(ctx.guild, translations.log_pin_messages_now_disabled)
         await ctx.send(embed=embed)

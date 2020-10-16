@@ -176,7 +176,7 @@ class AutoModCog(Cog, name="AutoMod"):
             title=translations.autokick, description=translations.autokick_role_configured, colour=Colours.AutoMod
         )
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.mention, role.id))
+        await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.name, role.id))
 
     @commands.group(aliases=["ik"])
     @Permission.manage_instantkick.check
