@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Your Configuration (please complete the following information):**
  - Exact MorpheusHelper Version (Found in `.version` command):
- - Hosting Method (Pipenv/Docker):
+ - Hosting Method (with/without Pipenv/Docker):
  - Database (MySQL/MariaDB/PostreSQL):
 
 **Additional context**
