@@ -14,7 +14,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Us
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from permissions import Permission
-from util import get_prefix, send_to_changelog
+from util import get_prefix, send_to_changelog, is_teamler
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -144,6 +144,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
             text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
             if text_chat is not None:
+                if not group.public:
+                    await channel.set_permissions(member, read_messages=True, connect=True)
                 await text_chat.set_permissions(member, read_messages=True)
                 await self.send_voice_msg(
                     text_chat, group.public, translations.voice_channel, translations.f_dyn_voice_joined(member.mention)
@@ -171,6 +173,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if (team_role := guild.get_role(await Settings.get(int, "team_role"))) is not None:
             overwrites[team_role] = PermissionOverwrite(read_messages=True, connect=True)
         text_chat: TextChannel = await category.create_text_channel(chan.name, overwrites=overwrites)
+
+        await text_chat.set_permissions(member, read_messages=True)
         await chan.edit(position=channel.position + number)
         if not group.public:
             await chan.edit(overwrites={**overwrites, member: PermissionOverwrite(read_messages=True, connect=True)})
@@ -216,7 +220,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         text_chat: Optional[TextChannel] = self.bot.get_channel(dyn_channel.text_chat_id)
         if text_chat is not None:
-            await text_chat.set_permissions(member, overwrite=None)
+            if group.public:
+                await text_chat.set_permissions(member, overwrite=None)
             await self.send_voice_msg(
                 text_chat, group.public, translations.voice_channel, translations.f_dyn_voice_left(member.mention)
             )
@@ -396,25 +401,24 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(translations.cannot_add_user)
 
         group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        await text_channel.set_permissions(member, read_messages=True)
         await voice_channel.set_permissions(member, read_messages=True, connect=True)
 
         text = translations.f_user_added_to_private_voice_dm(member.mention)
-        try:
-            text += f"\n{await voice_channel.create_invite(unique=False)}"
-        except Forbidden:
-            pass
+        if ctx.author.permissions_in(voice_channel).create_instant_invite:
+            try:
+                text += f"\n{await voice_channel.create_invite(unique=False)}"
+            except Forbidden:
+                pass
+
+        reponse = translations.f_user_added_to_private_voice(member.mention)
         try:
             await member.send(text)
         except (Forbidden, HTTPException):
-            pass
+            reponse = translations.f_user_added_to_private_voice_no_dm(member.mention)
 
         if text_channel is not None:
-            await self.send_voice_msg(
-                text_channel,
-                group.public,
-                translations.voice_channel,
-                translations.f_user_added_to_private_voice(member.mention),
-            )
+            await self.send_voice_msg(text_channel, group.public, translations.voice_channel, reponse)
         if text_channel != ctx.channel:
             await ctx.send(translations.user_added_to_private_voice_response)
 
@@ -428,9 +432,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if member in (ctx.author, self.bot.user):
             raise CommandError(translations.cannot_remove_member)
 
+        await text_channel.set_permissions(member, overwrite=None)
         await voice_channel.set_permissions(member, overwrite=None)
-        team_role = await Settings.get(int, "team_role")
-        if member.guild_permissions.administrator or any(role.id == team_role for role in member.roles):
+        if await is_teamler(member):
             raise CommandError(translations.member_could_not_be_kicked)
 
         if member.voice is not None and member.voice.channel == voice_channel:

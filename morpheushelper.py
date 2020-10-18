@@ -24,6 +24,7 @@ from discord.ext.commands import (
     check,
     CheckFailure,
 )
+from discord.utils import snowflake_time
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -120,6 +121,15 @@ async def ping(ctx: Context):
         await ctx.send(translations.f_pong_latency(latency * 1000))
     else:
         await ctx.send(translations.pong)
+
+
+@bot.command(aliases=["sf", "time"])
+async def snowflake(ctx: Context, arg: int):
+    """
+    display snowflake timestamp
+    """
+
+    await ctx.send(snowflake_time(arg).strftime("%d.%m.%Y %H:%M:%S"))
 
 
 @check
