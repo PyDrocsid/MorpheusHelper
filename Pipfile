@@ -11,7 +11,8 @@ sentry-sdk = "*"
 pyyaml = "*"
 pycryptodome = "*"
 aiohttp = "*"
-discord.py = "*"
+alembic = "*"
+discord = {py = "*"}
 pydrocsid = "*"
 
 [dev-packages]
@@ -23,3 +24,5 @@ python_version = "3.8"
 [scripts]
 bot = "python morpheushelper.py"
 flake8 = "flake8 . --count --max-line-length=120 --statistics --show-source"
+upgrade = "alembic upgrade"
+current = "alembic current"
