@@ -3,7 +3,7 @@ from typing import Union, Optional
 
 from sqlalchemy import Column, Integer, BigInteger, DateTime, Text, Boolean
 
-from database import db
+from PyDrocsid.database import db
 
 
 class Join(db.Base):
@@ -111,9 +111,11 @@ class Mute(db.Base):
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
     unmute_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
     unmute_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"), nullable=True)
+    upgraded: Union[Column, bool] = Column(Boolean, default=False)
+    is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Mute":
+    def create(member: int, member_name: str, mod: int, days: int, reason: str, is_upgrade: bool = False) -> "Mute":
         row = Mute(
             member=member,
             member_name=member_name,
@@ -125,17 +127,24 @@ class Mute(db.Base):
             deactivation_timestamp=None,
             unmute_mod=None,
             unmute_reason=None,
+            is_upgrade=is_upgrade,
         )
         db.add(row)
         return row
 
     @staticmethod
-    def deactivate(mute_id: int, unmute_mod: int = None, reason: str = None):
+    def deactivate(mute_id: int, unmute_mod: int = None, reason: str = None) -> "Mute":
         row: Mute = db.get(Mute, mute_id)
         row.active = False
         row.deactivation_timestamp = datetime.utcnow()
         row.unmute_mod = unmute_mod
         row.unmute_reason = reason
+        return row
+
+    @staticmethod
+    def upgrade(ban_id: int, mod: int):
+        mute = Mute.deactivate(ban_id, mod)
+        mute.upgraded = True
 
 
 class Kick(db.Base):
@@ -169,9 +178,11 @@ class Ban(db.Base):
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
     unban_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"), nullable=True)
     unban_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
+    upgraded: Union[Column, bool] = Column(Boolean, default=False)
+    is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, days: int, reason: str) -> "Ban":
+    def create(member: int, member_name: str, mod: int, days: int, reason: str, is_upgrade: bool = False) -> "Ban":
         row = Ban(
             member=member,
             member_name=member_name,
@@ -183,14 +194,21 @@ class Ban(db.Base):
             deactivation_timestamp=None,
             unban_reason=None,
             unban_mod=None,
+            is_upgrade=is_upgrade,
         )
         db.add(row)
         return row
 
     @staticmethod
-    def deactivate(ban_id: int, unban_mod: int = None, unban_reason: str = None):
+    def deactivate(ban_id: int, unban_mod: int = None, unban_reason: str = None) -> "Ban":
         row: Ban = db.get(Ban, ban_id)
         row.active = False
         row.deactivation_timestamp = datetime.utcnow()
         row.unban_mod = unban_mod
         row.unban_reason = unban_reason
+        return row
+
+    @staticmethod
+    def upgrade(ban_id: int, mod: int):
+        ban = Ban.deactivate(ban_id, mod)
+        ban.upgraded = True

@@ -1,27 +1,18 @@
 import os
-import re
 import string
+import sys
 import time
-from typing import Optional, Iterable, Dict, List
+from typing import Optional, Iterable
 
 import sentry_sdk
-from discord import (
-    Message,
-    Role,
-    Embed,
-    RawReactionActionEvent,
-    RawReactionClearEvent,
-    RawMessageUpdateEvent,
-    RawMessageDeleteEvent,
-    Member,
-    VoiceState,
-    TextChannel,
-    User,
-    NotFound,
-    Forbidden,
-    AllowedMentions,
-    Intents,
-)
+from PyDrocsid.command_edit import add_to_error_cache
+from PyDrocsid.database import db
+from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.events import listener, register_cogs, call_event_handlers
+from PyDrocsid.help import send_help
+from PyDrocsid.translations import translations
+from PyDrocsid.util import measure_latency, send_long_embed
+from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
 from discord.ext import tasks
 from discord.ext.commands import (
     Bot,
@@ -30,44 +21,30 @@ from discord.ext.commands import (
     guild_only,
     CommandNotFound,
     UserInputError,
+    check,
+    CheckFailure,
 )
+from discord.utils import snowflake_time
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from cogs.automod import AutoModCog
-from cogs.betheprofessional import BeTheProfessionalCog
-from cogs.cleverbot import CleverBotCog
-from cogs.info import InfoCog
-from cogs.invites import InvitesCog
-from cogs.logging import LoggingCog
-from cogs.mediaonly import MediaOnlyCog
-from cogs.metaquestion import MetaQuestionCog
-from cogs.mod import ModCog
-from cogs.news import NewsCog
-from cogs.permissions import PermissionsCog
-from cogs.random_stuff_enc import RandomStuffCog
-from cogs.reaction_pin import ReactionPinCog
-from cogs.reactionrole import ReactionRoleCog
-from cogs.reddit import RedditCog
-from cogs.rules import RulesCog
-from cogs.verification import VerificationCog
-from cogs.voice_channel import VoiceChannelCog
-from database import db
+from cogs import COGS
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
-from permission import Permission
-from translations import translations
-from util import (
-    permission_level,
-    make_error,
-    measure_latency,
-    send_to_changelog,
-    call_event_handlers,
-    register_cogs,
-    get_prefix,
-    set_prefix,
-    send_help,
-    send_long_embed,
-)
+from permissions import Permission, PermissionLevel, sudo_active
+from util import make_error, send_to_changelog, get_prefix, set_prefix
+
+banner = r"""
+
+        __  ___                 __                    __  __     __
+       /  |/  /___  _________  / /_  ___  __  _______/ / / /__  / /___  ___  _____
+      / /|_/ / __ \/ ___/ __ \/ __ \/ _ \/ / / / ___/ /_/ / _ \/ / __ \/ _ \/ ___/
+     / /  / / /_/ / /  / /_/ / / / /  __/ /_/ (__  ) __  /  __/ / /_/ /  __/ /
+    /_/  /_/\____/_/  / .___/_/ /_/\___/\__,_/____/_/ /_/\___/_/ .___/\___/_/
+                     /_/                                      /_/
+
+""".splitlines()
+print("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
+print(f"Starting MorpheusHelper v{VERSION} ({GITHUB_LINK})\n")
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
@@ -101,7 +78,7 @@ def get_owner() -> Optional[User]:
     return None
 
 
-@bot.event
+@listener
 async def on_ready():
     if (owner := get_owner()) is not None:
         try:
@@ -116,8 +93,6 @@ async def on_ready():
             status_loop.start()
         except RuntimeError:
             status_loop.restart()
-
-    await call_event_handlers("ready")
 
 
 @tasks.loop(seconds=20)
@@ -148,23 +123,55 @@ async def ping(ctx: Context):
         await ctx.send(translations.pong)
 
 
-@bot.command(aliases=["yn"])
-@guild_only()
-async def yesno(ctx: Context, message: Optional[Message] = None):
+@bot.command(aliases=["sf", "time"])
+async def snowflake(ctx: Context, arg: int):
     """
-    adds thumbsup and thumbsdown reactions to the message
+    display snowflake timestamp
     """
 
-    if message is None or message.guild is None:
-        message = ctx.message
+    await ctx.send(snowflake_time(arg).strftime("%d.%m.%Y %H:%M:%S"))
 
-    if message.channel.permissions_for(ctx.author).add_reactions:
-        await message.add_reaction(chr(0x1F44D))
-        await message.add_reaction(chr(0x1F44E))
+
+@check
+def is_sudoer(ctx: Context):
+    if ctx.author.id != 370876111992913922:
+        raise CheckFailure(f"{ctx.author.mention} is not in the sudoers file. This incident will be reported.")
+
+    return True
+
+
+@bot.command()
+@is_sudoer
+async def sudo(ctx: Context, *, cmd: str):
+    message: Message = ctx.message
+    message.content = ctx.prefix + cmd
+    sudo_active.set(True)
+    await bot.process_commands(message)
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def reload(ctx: Context):
+    await call_event_handlers("ready")
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def stop(ctx: Context):
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+    await bot.close()
+
+
+@bot.command()
+@PermissionLevel.OWNER.check
+async def kill(ctx: Context):
+    await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+    sys.exit(1)
 
 
 @bot.command(name="prefix")
-@permission_level(Permission.change_prefix)
+@Permission.change_prefix.check
 @guild_only()
 async def change_prefix(ctx: Context, new_prefix: str):
     """
@@ -196,7 +203,7 @@ async def build_info_embed(authorized: bool) -> Embed:
         inline=False,
     )
     embed.add_field(name=translations.author_title, value="<@370876111992913922>", inline=True)
-    embed.add_field(name=translations.contributors_title, value=", ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
+    embed.add_field(name=translations.contributors_title, value=" ".join(f"<@{c}>" for c in CONTRIBUTORS), inline=True)
     embed.add_field(name=translations.version_title, value=VERSION, inline=True)
     embed.add_field(name=translations.github_title, value=GITHUB_LINK, inline=False)
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
@@ -244,7 +251,7 @@ async def info(ctx: Context):
 
 
 @bot.command(name="admininfo", aliases=["admininfos"])
-@permission_level(Permission.admininfo)
+@Permission.admininfo.check
 async def admininfo(ctx: Context):
     """
     show information about the bot (admin view)
@@ -261,209 +268,46 @@ async def on_error(*_, **__):
         raise  # skipcq: PYL-E0704
 
 
-error_cache: Dict[int, Optional[Message]] = {}
-error_queue: List[Message] = []
-
-
 @bot.event
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
-        msg = None
+        messages = []
     elif isinstance(error, UserInputError):
-        msg = await send_help(ctx, ctx.command)
+        messages = await send_help(ctx, ctx.command)
     else:
-        msg = await ctx.send(
-            make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
-        )
-    error_cache[ctx.message.id] = msg
-    error_queue.append(ctx.message)
-    while len(error_queue) > 1000:
-        msg = error_queue.pop(0)
-        if msg.id in error_cache:
-            error_cache.pop(msg.id)
+        messages = [
+            await ctx.send(
+                make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
+            )
+        ]
+    add_to_error_cache(ctx.message, messages)
 
 
-async def handle_command_edit(message: Message):
-    if message.id not in error_cache:
-        return
-
-    msg = error_cache.pop(message.id)
-    if msg is not None:
-        try:
-            await msg.delete()
-        except NotFound:
-            pass
-    await bot.process_commands(message)
+@listener
+async def on_bot_ping(message: Message):
+    await message.channel.send(embed=await build_info_embed(False))
 
 
-async def extract_from_raw_reaction_event(event: RawReactionActionEvent):
-    channel: TextChannel = bot.get_channel(event.channel_id)
-    member: Member = channel.guild.get_member(event.user_id)
-    if not isinstance(channel, TextChannel) or member is None:
-        return None
+cog_blacklist = set(map(str.lower, os.getenv("DISABLED_COGS", "").split(",")))
+disabled_cogs = []
+enabled_cogs = []
+for cog_class in COGS:
+    if cog_class.__name__.lower() in cog_blacklist:
+        disabled_cogs.append(cog_class.__name__)
+        continue
 
-    try:
-        message = await channel.fetch_message(event.message_id)
-    except NotFound:
-        return None
+    enabled_cogs.append(cog_class)
 
-    return message, event.emoji, member
+register_cogs(bot, *enabled_cogs)
 
+if bot.cogs:
+    print(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
+    for cog in bot.cogs.values():
+        commands = ", ".join(cmd.name for cmd in cog.get_commands())
+        print(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+if disabled_cogs:
+    print(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
+    for name in disabled_cogs:
+        print(f" - {name}")
 
-@bot.event
-async def on_raw_reaction_add(event: RawReactionActionEvent):
-    async def prepare():
-        return await extract_from_raw_reaction_event(event)
-
-    await call_event_handlers("raw_reaction_add", identifier=event.message_id, prepare=prepare)
-
-
-@bot.event
-async def on_raw_reaction_remove(event: RawReactionActionEvent):
-    async def prepare():
-        return await extract_from_raw_reaction_event(event)
-
-    await call_event_handlers("raw_reaction_remove", identifier=event.message_id, prepare=prepare)
-
-
-@bot.event
-async def on_raw_reaction_clear(event: RawReactionClearEvent):
-    async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            return [await channel.fetch_message(event.message_id)]
-        except NotFound:
-            return
-
-    await call_event_handlers("raw_reaction_clear", identifier=event.message_id, prepare=prepare)
-
-
-@bot.event
-async def on_message_edit(before: Message, after: Message):
-    if after.guild is not None:
-        await call_event_handlers("message_edit", before, after, identifier=after.id)
-    await handle_command_edit(after)
-
-
-@bot.event
-async def on_raw_message_edit(event: RawMessageUpdateEvent):
-    if event.cached_message is not None:
-        return
-
-    prepared = []
-
-    async def prepare():
-        channel: TextChannel = bot.get_channel(event.channel_id)
-        if not isinstance(channel, TextChannel):
-            return
-        try:
-            message = await channel.fetch_message(event.message_id)
-        except NotFound:
-            return
-
-        prepared.append(message)
-        return channel, message
-
-    await call_event_handlers("raw_message_edit", identifier=event.message_id, prepare=prepare)
-
-    if prepared:
-        await handle_command_edit(prepared[0])
-
-
-@bot.event
-async def on_message_delete(message: Message):
-    if message.guild is None:
-        return
-    await call_event_handlers("message_delete", message, identifier=message.id)
-
-
-@bot.event
-async def on_raw_message_delete(event: RawMessageDeleteEvent):
-    if event.cached_message is not None or event.guild_id is None:
-        return
-
-    await call_event_handlers("raw_message_delete", event, identifier=event.message_id)
-
-
-@bot.event
-async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
-    await call_event_handlers("voice_state_update", member, before, after, identifier=member.id)
-
-
-@bot.event
-async def on_member_join(member: Member):
-    await call_event_handlers("member_join", member, identifier=member.id)
-
-
-@bot.event
-async def on_member_remove(member: Member):
-    await call_event_handlers("member_remove", member, identifier=member.id)
-
-
-@bot.event
-async def on_member_update(before: Member, after: Member):
-    if before.nick != after.nick:
-        await call_event_handlers("member_nick_update", before, after, identifier=before.id)
-
-    roles_before = set(before.roles)
-    roles_after = set(after.roles)
-    for role in roles_before:
-        if role not in roles_after:
-            await call_event_handlers("member_role_remove", after, role, identifier=before.id)
-    for role in roles_after:
-        if role not in roles_before:
-            await call_event_handlers("member_role_add", after, role, identifier=before.id)
-
-
-@bot.event
-async def on_user_update(before: User, after: User):
-    await call_event_handlers("user_update", before, after, identifier=before.id)
-
-
-@bot.event
-async def on_message(message: Message):
-    if message.author == bot.user:
-        await call_event_handlers("self_message", message, identifier=message.id)
-        return
-
-    if not await call_event_handlers("message", message, identifier=message.id):
-        return
-
-    match = re.match(r"^<@[&!]?(\d+)>$", message.content.strip())
-    if match:
-        mentions = [bot.user.id]
-        if message.guild is not None:
-            for role in message.guild.me.roles:  # type: Role
-                if role.managed:
-                    mentions.append(role.id)
-        if int(match.group(1)) in mentions:
-            await message.channel.send(embed=await build_info_embed(False))
-            return
-
-    await bot.process_commands(message)
-
-
-register_cogs(
-    bot,
-    VoiceChannelCog,
-    ReactionPinCog,
-    BeTheProfessionalCog,
-    LoggingCog,
-    MediaOnlyCog,
-    RulesCog,
-    InvitesCog,
-    MetaQuestionCog,
-    InfoCog,
-    ReactionRoleCog,
-    CleverBotCog,
-    NewsCog,
-    RandomStuffCog,
-    ModCog,
-    PermissionsCog,
-    RedditCog,
-    AutoModCog,
-    VerificationCog,
-)
 bot.run(os.environ["TOKEN"])

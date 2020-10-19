@@ -5,11 +5,12 @@ from discord import Role, Guild, Member
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from database import run_in_thread, db
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.translations import translations
+from PyDrocsid.util import calculate_edit_distance
 from models.btp_role import BTPRole
-from permission import Permission
-from translations import translations
-from util import permission_level, calculate_edit_distance, send_to_changelog
+from permissions import Permission
+from util import send_to_changelog
 
 
 def split_topics(topics: str) -> List[str]:
@@ -39,12 +40,46 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
 
 async def list_topics(guild: Guild) -> List[Role]:
     roles: List[Role] = []
-    for btp_role in await run_in_thread(db.all, BTPRole):
+    for btp_role in await db_thread(db.all, BTPRole):
         if (role := guild.get_role(btp_role.role_id)) is None:
-            await run_in_thread(db.delete, btp_role)
+            await db_thread(db.delete, btp_role)
         else:
             roles.append(role)
     return roles
+
+
+async def unregister_roles(ctx: Context, topics: str, *, delete_roles: bool):
+    guild: Guild = ctx.guild
+    roles: List[Role] = []
+    btp_roles: List[BTPRole] = []
+    names = split_topics(topics)
+    if not names:
+        raise UserInputError
+
+    for topic in names:
+        for role in guild.roles:
+            if role.name.lower() == topic.lower():
+                break
+        else:
+            raise CommandError(translations.f_topic_not_registered(topic))
+        if (btp_role := await db_thread(db.get, BTPRole, role.id)) is None:
+            raise CommandError(translations.f_topic_not_registered(topic))
+
+        roles.append(role)
+        btp_roles.append(btp_role)
+
+    for role, btp_role in zip(roles, btp_roles):
+        await db_thread(db.delete, btp_role)
+        if delete_roles:
+            await role.delete()
+    if len(roles) > 1:
+        await ctx.send(translations.f_cnt_topics_unregistered(len(roles)))
+        await send_to_changelog(
+            ctx.guild, translations.log_these_topics_unregistered + " " + ", ".join(f"`{r}`" for r in roles)
+        )
+    elif len(roles) == 1:
+        await ctx.send(translations.topic_unregistered)
+        await send_to_changelog(ctx.guild, translations.f_log_topic_unregistered(roles[0]))
 
 
 class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
@@ -106,7 +141,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await ctx.send(translations.no_topic_removed)
 
     @commands.command(name="*")
-    @permission_level(Permission.btp_manage)
+    @Permission.btp_manage.check
     @guild_only()
     async def register_role(self, ctx: Context, *, topics: str):
         """
@@ -132,7 +167,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
                 to_be_created.append(topic)
                 continue
 
-            if await run_in_thread(db.get, BTPRole, role.id) is not None:
+            if await db_thread(db.get, BTPRole, role.id) is not None:
                 raise CommandError(translations.f_topic_already_registered(topic))
             if role >= ctx.me.top_role:
                 raise CommandError(translations.f_topic_not_registered_too_high(role, ctx.me.top_role))
@@ -144,7 +179,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             roles.append(await guild.create_role(name=name, mentionable=True))
 
         for role in roles:
-            await run_in_thread(BTPRole.create, role.id)
+            await db_thread(BTPRole.create, role.id)
 
         if len(roles) > 1:
             await ctx.send(translations.f_cnt_topics_registered(len(roles)))
@@ -156,40 +191,21 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
             await send_to_changelog(ctx.guild, translations.f_log_topic_registered(roles[0]))
 
     @commands.command(name="/")
-    @permission_level(Permission.btp_manage)
+    @Permission.btp_manage.check
     @guild_only()
-    async def unregister_role(self, ctx: Context, *, topics: str):
+    async def delete_roles(self, ctx: Context, *, topics: str):
         """
         delete one or more topics
         """
 
-        guild: Guild = ctx.guild
-        roles: List[Role] = []
-        btp_roles: List[BTPRole] = []
-        names = split_topics(topics)
-        if not names:
-            raise UserInputError
+        await unregister_roles(ctx, topics, delete_roles=True)
 
-        for topic in names:
-            for role in guild.roles:
-                if role.name.lower() == topic.lower():
-                    break
-            else:
-                raise CommandError(translations.f_topic_not_registered(topic))
-            if (btp_role := await run_in_thread(db.get, BTPRole, role.id)) is None:
-                raise CommandError(translations.f_topic_not_registered(topic))
+    @commands.command(name="%")
+    @Permission.btp_manage.check
+    @guild_only()
+    async def unregister_roles(self, ctx: Context, *, topics: str):
+        """
+        unregister one or more topics without deleting the roles
+        """
 
-            roles.append(role)
-            btp_roles.append(btp_role)
-
-        for role, btp_role in zip(roles, btp_roles):
-            await run_in_thread(db.delete, btp_role)
-            await role.delete()
-        if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_unregistered(len(roles)))
-            await send_to_changelog(
-                ctx.guild, translations.log_these_topics_unregistered + " " + ", ".join(f"`{r}`" for r in roles)
-            )
-        elif len(roles) == 1:
-            await ctx.send(translations.topic_unregistered)
-            await send_to_changelog(ctx.guild, translations.f_log_topic_unregistered(roles[0]))
+        await unregister_roles(ctx, topics, delete_roles=False)

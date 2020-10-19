@@ -3,7 +3,7 @@ from typing import Union, Optional
 
 from sqlalchemy import Column, BigInteger, String, Boolean
 
-from database import db
+from PyDrocsid.database import db
 
 
 def encode(emoji: str) -> str:

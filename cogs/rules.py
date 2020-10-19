@@ -6,17 +6,17 @@ from discord import TextChannel, Message, Forbidden, Permissions, Color
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from permission import Permission
-from translations import translations
-from util import permission_level, read_normal_message, read_embed, read_complete_message
+from PyDrocsid.translations import translations
+from permissions import Permission
+from util import read_normal_message, read_embed, read_complete_message
 
 
 class RulesCog(Cog, name="Rule Commands"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.group(name="send")
-    @permission_level(Permission.send)
+    @commands.group()
+    @Permission.send.check
     @guild_only()
     async def send(self, ctx: Context):
         """
@@ -85,8 +85,8 @@ class RulesCog(Cog, name="Rule Commands"):
         else:
             await ctx.send(translations.msg_sent)
 
-    @commands.group(name="edit")
-    @permission_level(Permission.edit)
+    @commands.group()
+    @Permission.edit.check
     @guild_only()
     async def edit(self, ctx: Context):
         """
@@ -147,8 +147,8 @@ class RulesCog(Cog, name="Rule Commands"):
         await message.edit(content=content, embed=embed)
         await ctx.send(translations.msg_edited)
 
-    @commands.command(name="delete")
-    @permission_level(Permission.delete)
+    @commands.command()
+    @Permission.delete.check
     @guild_only()
     async def delete(self, ctx: Context, message: Message):
         """

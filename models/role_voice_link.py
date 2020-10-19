@@ -2,7 +2,7 @@ from typing import Union
 
 from sqlalchemy import Column, BigInteger
 
-from database import db
+from PyDrocsid.database import db
 
 
 class RoleVoiceLink(db.Base):
