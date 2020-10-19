@@ -11,7 +11,8 @@ sentry-sdk = "*"
 pyyaml = "*"
 pycryptodome = "*"
 aiohttp = "*"
-discord.py = "*"
+alembic = "*"
+discord = {py = "*"}
 pydrocsid = "*"
 
 [dev-packages]
