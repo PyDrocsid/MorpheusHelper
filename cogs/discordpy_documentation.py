@@ -199,7 +199,7 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
     @commands.command(aliases=["dpy"])
     async def dpy_docs(self, ctx: Context, *, obj: str = None):
         """
-        search the official python documentation
+        search the official discord.py documentation
         """
 
         await self.do_rtfm(ctx, "discord.py", obj)
@@ -207,7 +207,7 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
     @commands.command(aliases=["py"])
     async def py_docs(self, ctx: Context, *, obj: str = None):
         """
-        search the official discord.py documentation
+        search the official python documentation
         """
 
         await self.do_rtfm(ctx, "python", obj)
