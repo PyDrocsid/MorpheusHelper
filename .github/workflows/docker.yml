@@ -46,7 +46,7 @@ jobs:
           fi
           TAGS="$IMAGE_NAME:${VERSION}"
           if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            TAGS="$TAGS $IMAGE_NAME:latest"
+            TAGS="$TAGS,$IMAGE_NAME:latest"
           fi
           echo ::set-output name=image::${TAGS}
 
