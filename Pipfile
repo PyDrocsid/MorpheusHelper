@@ -9,7 +9,6 @@ pymysql = "*"
 requests = "*"
 sentry-sdk = "*"
 pyyaml = "*"
-pycryptodome = "*"
 aiohttp = "*"
 alembic = "*"
 discord = {py = "*"}
@@ -22,7 +21,7 @@ flake8 = "*"
 python_version = "3.8"
 
 [scripts]
-bot = "python morpheushelper.py"
+bot = "python morpheushelper/morpheushelper.py"
 flake8 = "flake8 . --count --max-line-length=120 --statistics --show-source"
 upgrade = "alembic upgrade"
 current = "alembic current"
