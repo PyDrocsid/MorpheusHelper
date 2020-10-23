@@ -106,7 +106,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     message.guild,
                     translations.f_log_illegal_invite(
                         f"{message.author.mention} ({str(message.author)} {message.author.id})",
-                        message.channel.mention, ", ".join(forbidden)
+                        message.channel.mention,
+                        ", ".join(forbidden),
                     ),
                 )
             else:
@@ -114,7 +115,8 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     message.guild,
                     translations.f_log_illegal_invite_not_deleted(
                         f"{message.author.mention} ({str(message.author)} {message.author.id})",
-                        message.channel.mention, ", ".join(forbidden)
+                        message.channel.mention,
+                        ", ".join(forbidden),
                     ),
                 )
             return False

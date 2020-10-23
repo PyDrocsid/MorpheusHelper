@@ -51,12 +51,12 @@ class PollsCog(Cog, name="Polls"):
 
     @commands.command(aliases=["yn"])
     @guild_only()
-    async def yesno(self, ctx: Context, message: Optional[Message] = None):
+    async def yesno(self, ctx: Context, message: Optional[Message] = None, text: Optional[str] = None):
         """
         adds thumbsup and thumbsdown reactions to the message
         """
 
-        if message is None or message.guild is None:
+        if message is None or message.guild is None or text:
             message = ctx.message
 
         if message.channel.permissions_for(ctx.author).add_reactions:

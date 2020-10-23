@@ -5,6 +5,13 @@ from datetime import datetime
 from typing import Optional, Iterable
 
 import sentry_sdk
+from PyDrocsid.command_edit import add_to_error_cache
+from PyDrocsid.database import db
+from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.events import listener, register_cogs, call_event_handlers
+from PyDrocsid.help import send_help
+from PyDrocsid.translations import translations
+from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
 from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
 from discord.ext import tasks
 from discord.ext.commands import (
@@ -17,16 +24,10 @@ from discord.ext.commands import (
     check,
     CheckFailure,
 )
+from discord.utils import snowflake_time
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from PyDrocsid.command_edit import add_to_error_cache
-from PyDrocsid.database import db
-from PyDrocsid.emojis import name_to_emoji
-from PyDrocsid.events import listener, register_cogs, call_event_handlers
-from PyDrocsid.help import send_help
-from PyDrocsid.translations import translations
-from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
 from cogs import COGS
 from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
@@ -133,6 +134,15 @@ async def ping(ctx: Context):
     if latency is not None:
         embed.description = translations.f_pong_latency(latency * 1000)
     await ctx.send(embed=embed)
+
+
+@bot.command(aliases=["sf", "time"])
+async def snowflake(ctx: Context, arg: int):
+    """
+    display snowflake timestamp
+    """
+
+    await ctx.send(snowflake_time(arg).strftime("%d.%m.%Y %H:%M:%S"))
 
 
 @check
