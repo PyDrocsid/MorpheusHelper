@@ -8,7 +8,6 @@ from PyDrocsid.events import StopEventHandling
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from discord import Embed, Message, PartialEmoji, Member, Forbidden
-from discord.embeds import EmbedProxy
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
@@ -20,13 +19,12 @@ MAX_OPTIONS = 20  # Discord reactions limit
 default_emojis = [name_to_emoji[f"regional_indicator_{x}"] for x in string.ascii_lowercase]
 
 
-async def get_teampoll_embed(message: Message) -> Tuple[Optional[Embed], Optional[EmbedProxy], Optional[int]]:
+async def get_teampoll_embed(message: Message) -> Tuple[Optional[Embed], Optional[int]]:
     for embed in message.embeds:
         for i, field in enumerate(embed.fields):
             if translations.status == field.name:
-                return embed, field, i
-    else:
-        return None, None, None
+                return embed, i
+    return None, None
 
 
 async def update_reacted_teamlers(message: Message) -> str:
@@ -38,9 +36,9 @@ async def update_reacted_teamlers(message: Message) -> str:
         if teamlers:
             end = [translations.one_teamler_missing, translations.multiple_teamlers_missing][len(teamlers) > 1]
             return " ,".join(map(lambda x: x.mention, teamlers)) + end
-        else:
-            return translations.teampoll_all_voted + " :white_check_mark:"
+        return translations.teampoll_all_voted + " :white_check_mark:"
     return translations.team_role_not_set
+
 
 class PollsCog(Cog, name="Polls"):
     def __init__(self, bot: Bot):
@@ -49,7 +47,7 @@ class PollsCog(Cog, name="Polls"):
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member):
         if member.bot or message.guild is None:
             return
-        embed, field, index = await get_teampoll_embed(message)
+        embed, index = await get_teampoll_embed(message)
         if embed is not None:
             if not await is_teamler(member):
                 try:
@@ -67,7 +65,7 @@ class PollsCog(Cog, name="Polls"):
     async def on_raw_reaction_remove(self, message: Message, _, member: Member):
         if member.bot or message.guild is None:
             return
-        embed, field, index = await get_teampoll_embed(message)
+        embed, index = await get_teampoll_embed(message)
         if embed is not None:
             user_reacted = False
             for reaction in message.reactions:
@@ -114,7 +112,8 @@ class PollsCog(Cog, name="Polls"):
     @guild_only()
     async def teampoll(self, ctx: Context, *, args: str):
         """
-        Starts a poll and shows, which teamler has not voted yet. Multiline options can be specified using a `\\` at the end of a line
+        Starts a poll and shows, which teamler has not voted yet.
+         Multiline options can be specified using a `\\` at the end of a line
         """
 
         question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n")]
