@@ -7,7 +7,7 @@ from PyDrocsid.emojis import name_to_emoji, emoji_to_name
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from discord import Embed, Message, PartialEmoji, Member, Forbidden
+from discord import Embed, Message, PartialEmoji, Member, Forbidden, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
@@ -27,40 +27,85 @@ async def get_teampoll_embed(message: Message) -> Tuple[Optional[Embed], Optiona
     return None, None
 
 
-async def update_reacted_teamlers(message: Message) -> str:
-    if (team_role := message.guild.get_role(await Settings.get(int, "team_role"))) is not None:
-        teamlers = {*team_role.members}
-        for reaction in message.reactions:
-            if reaction.me:
-                teamlers -= {*await reaction.users().flatten()}
-        if teamlers:
-            end = [translations.one_teamler_missing, translations.multiple_teamlers_missing][len(teamlers) > 1]
-            return " ,".join(map(lambda x: x.mention, teamlers)) + end
-        return translations.teampoll_all_voted + " :white_check_mark:"
-    return translations.team_role_not_set
+async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = None):
+    question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n")]
+
+    if not options:
+        raise CommandError(translations.missing_options)
+    if len(options) > MAX_OPTIONS:
+        raise CommandError(translations.f_too_many_options(MAX_OPTIONS))
+
+    options = [PollOption(ctx, line, i) for i, line in enumerate(options)]
+
+    embed = Embed(
+        title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
+    )
+    embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
+
+    for option in options:
+        embed.add_field(name="** **", value=str(option), inline=False)
+
+    if field:
+        embed.add_field(name=field[0], value=field[1], inline=False)
+
+    poll: Message = await ctx.send(embed=embed)
+
+    for option in options:
+        await poll.add_reaction(option.emoji)
 
 
 class PollsCog(Cog, name="Polls"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
+    async def get_reacted_teamlers(self, message: Optional[Message] = None) -> str:
+        guild: Guild = self.bot.guilds[0]
+
+        if (team_role := guild.get_role(await Settings.get(int, "team_role"))) is None:
+            return translations.team_role_not_set
+
+        teamlers = {member for member in team_role.members if not member.bot}
+        if message:
+            for reaction in message.reactions:
+                if reaction.me:
+                    teamlers.difference_update(await reaction.users().flatten())
+
+        if not teamlers:
+            return translations.teampoll_all_voted
+
+        *teamlers, last = (x.mention for x in teamlers)
+        if teamlers:
+            return translations.f_multiple_teamlers_missing(", ".join(teamlers), last)
+
+        return translations.f_one_teamler_missing(last)
+
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member):
         if member.bot or message.guild is None:
             return
+
         embed, index = await get_teampoll_embed(message)
-        if embed is not None:
-            if not await is_teamler(member):
-                try:
-                    await message.remove_reaction(emoji, member)
-                except Forbidden:
-                    pass
-                raise StopEventHandling
-            for reaction in message.reactions:
-                if reaction.emoji == emoji.name and reaction.me:
-                    value = await update_reacted_teamlers(message)
-                    embed.set_field_at(index, name=translations.status, value=value, inline=False)
-                    await message.edit(embed=embed)
-                    return
+        if embed is None:
+            return
+
+        if not await is_teamler(member):
+            try:
+                await message.remove_reaction(emoji, member)
+            except Forbidden:
+                pass
+            raise StopEventHandling
+
+        for reaction in message.reactions:
+            if reaction.emoji == emoji.name:
+                break
+        else:
+            return
+
+        if not reaction.me:
+            return
+
+        value = await self.get_reacted_teamlers(message)
+        embed.set_field_at(index, name=translations.status, value=value, inline=False)
+        await message.edit(embed=embed)
 
     async def on_raw_reaction_remove(self, message: Message, _, member: Member):
         if member.bot or message.guild is None:
@@ -73,7 +118,7 @@ class PollsCog(Cog, name="Polls"):
                     user_reacted = True
                     break
             if not user_reacted and await is_teamler(member):
-                value = await update_reacted_teamlers(message)
+                value = await self.get_reacted_teamlers(message)
                 embed.set_field_at(index, name=translations.status, value=value, inline=False)
                 await message.edit(embed=embed)
                 return
@@ -85,27 +130,7 @@ class PollsCog(Cog, name="Polls"):
         Starts a poll. Multiline options can be specified using a `\\` at the end of a line
         """
 
-        question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n")]
-
-        if not options:
-            raise CommandError(translations.missing_options)
-        if len(options) > MAX_OPTIONS:
-            raise CommandError(translations.f_too_many_options(MAX_OPTIONS))
-
-        options = [PollOption(ctx, line, i) for i, line in enumerate(options)]
-
-        embed = Embed(
-            title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
-        )
-        embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
-
-        for option in options:
-            embed.add_field(name="** **", value=str(option), inline=False)
-
-        poll: Message = await ctx.send(embed=embed)
-
-        for option in options:
-            await poll.add_reaction(option.emoji)
+        await send_poll(ctx, args)
 
     @commands.command(usage=translations.poll_usage, aliases=["teamvote", "tp"])
     @PermissionLevel.SUPPORTER.check
@@ -116,34 +141,7 @@ class PollsCog(Cog, name="Polls"):
          Multiline options can be specified using a `\\` at the end of a line
         """
 
-        question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n")]
-
-        if not options:
-            raise CommandError(translations.missing_options)
-        if len(options) > MAX_OPTIONS:
-            raise CommandError(translations.f_too_many_options(MAX_OPTIONS))
-
-        options = [PollOption(ctx, line, i) for i, line in enumerate(options)]
-
-        embed = Embed(
-            title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
-        )
-        embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
-
-        for option in options:
-            embed.add_field(name="** **", value=str(option), inline=False)
-        if (team_role := ctx.guild.get_role(await Settings.get(int, "team_role"))) is not None:
-            if (teamlers := " ,".join(map(lambda x: x.mention, team_role.members))) != "":
-                embed.add_field(name=translations.status, value=teamlers, inline=False)
-            else:
-                raise CommandError(translations.team_role_no_members)
-        else:
-            raise CommandError(translations.team_role_not_set)
-
-        poll: Message = await ctx.send(embed=embed)
-
-        for option in options:
-            await poll.add_reaction(option.emoji)
+        await send_poll(ctx, args, field=(translations.status, await self.get_reacted_teamlers()))
 
     @commands.command(aliases=["yn"])
     @guild_only()
