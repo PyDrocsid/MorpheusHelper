@@ -661,3 +661,8 @@ poll_usage: |
   <question>
   [emoji1] <option1>
   [emojiX] [optionX]
+team_role_not_set: Team role is not set.
+team_role_no_members: The team role has no members.
+teampoll_all_voted: "All teamlers voted :white_check_mark:"
+one_teamler_missing: "{} hasn't voted yet."
+multiple_teamlers_missing: "{} and {} haven't voted yet."
