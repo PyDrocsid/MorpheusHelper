@@ -30,9 +30,10 @@ class AllowedInvite(db.Base):
         return row
 
     @staticmethod
-    def update(guild_id: int, code: str):
-        row = db.get(AllowedInvite, guild_id)
+    def update(guild_id: int, code: str, guild_name: str):
+        row: AllowedInvite = db.get(AllowedInvite, guild_id)
         row.code = code
+        row.guild_name = guild_name
 
 
 class InviteLog(db.Base):
