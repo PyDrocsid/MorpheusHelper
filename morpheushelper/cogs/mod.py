@@ -65,7 +65,7 @@ async def send_to_changelog_mod(
     reason: str,
     *,
     duration: Optional[str] = None,
-    author: Union[Member, User, Bot] = None,
+    author: Union[Member, User] = None,
 ):
     embed = Embed(title=title, colour=colour, timestamp=datetime.utcnow())
 
