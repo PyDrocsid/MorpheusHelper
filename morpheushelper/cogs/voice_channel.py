@@ -1,5 +1,6 @@
 import random
 import re
+from datetime import datetime
 from typing import Optional, Union, Tuple, List, Dict, Set
 
 from PyDrocsid.database import db_thread, db
@@ -421,8 +422,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         user_embed = Embed(
             title=translations.voice_channel,
             colour=Colours.Voice,
-            description=translations.f_user_added_to_private_voice_dm(member.mention),
+            timestamp=datetime.utcnow(),
+            description=translations.f_user_added_to_private_voice_dm(ctx.author.mention),
         )
+        user_embed.set_footer(text=str(ctx.author), icon_url=ctx.author.avatar_url)
+
         invite = ""
         if ctx.author.permissions_in(voice_channel).create_instant_invite:
             try:
