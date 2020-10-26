@@ -453,7 +453,7 @@ reason_too_long: "Reason is too long. :pencil:"
 report: Report
 cannot_report: This member cannot be reported.
 reported_response: ":white_check_mark: User reported."
-log_reported: ":clipboard: Member reported"
+log_reported: ":speech_balloon: Member reported"
 warn: Warn
 cannot_warn: This member cannot be warned.
 warned: "{} just warned you on {}:```\n{}\n```"
@@ -486,11 +486,11 @@ cannot_ban_permissions: User could not be banned because I don't have `ban_membe
 banned: "{} just banned you from {} for {} days:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
 banned_response: ":white_check_mark: User banned."
-log_banned: ":hammer: Member Banned"
+log_banned: ":no_entry: Member Banned"
 log_unbanned_expired: "Unbanned automatically because the ban time for this user has expired."
 not_banned: This member is not banned.
 unbanned_response: ":white_check_mark: User unbanned."
-log_unbanned: ":hammer: Member Unbanned"
+log_unbanned: ":no_entry: Member Unbanned"
 cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
 user_not_found: User not found.
 init_join_log: Init join log
