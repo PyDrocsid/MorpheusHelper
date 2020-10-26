@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
 from permissions import PermissionLevel, Permission
-from util import is_teamler
+from util import is_teamler, check_wastebasket
 
 MAX_OPTIONS = 20  # Discord reactions limit
 
@@ -41,7 +41,8 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
         title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
     )
     embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
-    embed.set_footer(text=translations.f_created_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
+    if allow_delete:
+        embed.set_footer(text=translations.f_created_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
 
     for option in options:
         embed.add_field(name="** **", value=str(option), inline=False)
@@ -86,20 +87,9 @@ class PollsCog(Cog, name="Polls"):
         if member.bot or message.guild is None:
             return
 
-        if emoji.name == name_to_emoji["wastebasket"]:
-            for embed in message.embeds:
-                pattern = re.escape(translations.created_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
-                if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
-                    author_id = int(match.group(1))
-                    if not (author_id == member.id or await Permission.polls_delete.check_permissions(member)):
-                        try:
-                            await message.remove_reaction(emoji, member)
-                        except Forbidden:
-                            pass
-                        raise StopEventHandling
-
-                    await message.delete()
-                    raise StopEventHandling
+        if await check_wastebasket(message, member, emoji, translations.created_by, Permission.polls_delete):
+            await message.delete()
+            raise StopEventHandling
 
         embed, index = await get_teampoll_embed(message)
         if embed is None:

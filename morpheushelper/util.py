@@ -1,12 +1,14 @@
 import io
+import re
 from typing import Optional, Tuple, List
 
+from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from discord import Member, TextChannel, Guild, Message, File, Embed, Attachment
+from discord import Member, TextChannel, Guild, Message, File, Embed, Attachment, PartialEmoji, Forbidden
 from discord.ext.commands import Bot, CommandError
 
-from permissions import PermissionLevel
+from permissions import PermissionLevel, Permission
 
 
 def make_error(message) -> str:
@@ -60,3 +62,30 @@ async def read_complete_message(message: Message) -> Tuple[str, List[File], Opti
         embed = None
 
     return message.content, [await attachment_to_file(attachment) for attachment in message.attachments], embed
+
+
+async def check_wastebasket(
+    message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: Permission
+) -> Optional[int]:
+    if emoji.name != name_to_emoji["wastebasket"]:
+        return None
+
+    for embed in message.embeds:
+        if embed.footer.text == Embed.Empty:
+            continue
+
+        pattern = re.escape(footer).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
+        if (match := re.match("^" + pattern + "$", embed.footer.text)) is None:
+            continue
+
+        author_id = int(match.group(1))
+        if not (author_id == member.id or await permission.check_permissions(member)):
+            try:
+                await message.remove_reaction(emoji, member)
+            except Forbidden:
+                pass
+            return None
+
+        return author_id
+
+    return None

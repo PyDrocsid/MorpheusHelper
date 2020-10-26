@@ -568,6 +568,8 @@ permissions:
 
   manage_reddit: manage reddit integration
 
+  polls_delete: delete polls
+
 # reddit
 reddit: Reddit
 interval: Interval
