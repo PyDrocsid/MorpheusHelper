@@ -213,7 +213,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if not await Permission.invite_manage.check_permissions(ctx.author) and ctx.author.id != row.applicant:
             raise CommandError(translations.not_allowed)
 
-        await db_thread(AllowedInvite.update, guild.id, invite.code)
+        await db_thread(AllowedInvite.update, guild.id, invite.code, guild.name)
         await ctx.send(translations.f_invite_updated(row.guild_name))
         await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, row.guild_name))
 
