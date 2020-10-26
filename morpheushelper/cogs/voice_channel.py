@@ -320,8 +320,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if channel is None:
                 await db_thread(db.delete, group)
                 continue
-            e = ":small_orange_diamond:" if cnt > 0 else ":small_blue_diamond:"
-            out.append(translations.f_group_list_entry(e, ["private", "public"][group.public], group.name, cnt))
+            e = ":lock:" if group.public else ":closed_lock_with_key:"
+            out.append(translations.f_group_list_entry(e, group.name, cnt))
 
         embed = Embed(title=translations.voice_channel, colour=Colours.Voice)
         if out:
