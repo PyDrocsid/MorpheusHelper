@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -16,10 +16,13 @@ async def is_teamler(member: Member) -> bool:
     return await PermissionLevel.SUPPORTER.check_permissions(member)
 
 
-async def send_to_changelog(guild: Guild, message: str):
+async def send_to_changelog(guild: Guild, message: Union[str, Embed]):
     channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "logging_changelog", -1))
     if channel is not None:
-        embed = Embed(title=Embed.Empty, colour=Colours.changelog, description=message)
+        if type(message) is str:
+            embed = Embed(title=Embed.Empty, colour=Colours.changelog, description=message)
+        else:
+            embed = message
         await channel.send(embed=embed)
 
 

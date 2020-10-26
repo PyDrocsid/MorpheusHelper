@@ -434,17 +434,26 @@ log_role_set_mute: "**Mute** role has been **set** to `@{}` ({})"
 role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
 role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.
 
+log_field_member: "Member"
+log_field_member_id: "Member ID"
+log_field_channel: "Channel"
+log_field_duration: "Duration"
+log_field_reason: "Reason"
+log_field_days: "{} days"
+log_field_days_infinity: "Infinity"
+
+jump_url: "{} [[Jump]]({})"
 no_dm: ":warning: User does not allow direct messages."
 reason_too_long: "Reason is too long. :pencil:"
 report: Report
 cannot_report: This member cannot be reported.
 reported_response: ":white_check_mark: User reported."
-log_reported: "{} **reported** {} (`{}`) because of `{}`."
+log_reported: ":clipboard: Member reported"
 warn: Warn
 cannot_warn: This member cannot be warned.
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: ":white_check_mark: User warned."
-log_warned: "{} **warned** {} (`{}`) because of `{}`."
+log_warned: ":warning: Member warned"
 invalid_duration: Invalid duration.
 invalid_duration_inf: Invalid duration. Try `inf` instead.
 mute: Mute
@@ -454,16 +463,15 @@ already_muted: User is already muted for the given period of time.
 muted: "{} just muted you on {} for {} days:```\n{}\n```"
 muted_inf: "{} just muted you on {}:```\n{}\n```"
 muted_response: ":white_check_mark: User muted."
-log_muted: "{} **muted** {} (`{}`) for {} days because of `{}`."
-log_muted_inf: "{} **muted** {} (`{}`) because of `{}`."
-log_unmuted_expired: "**Unmuted** {} (`{}`) because the mute time for this user has expired."
+log_muted: ":mute: Member muted"
+log_unmuted_expired: "Unmuted automatically because the mute time for this user has expired."
 unmuted_response: ":white_check_mark: User unmuted."
-log_unmuted: "{} **unmuted** {} (`{}`) because of `{}`."
+log_unmuted: ":speaker: Member unmuted"
 not_muted: User is not muted.
 kick: Kick
 kicked: "{} just kicked you from {}:```\n{}\n```"
 kicked_response: ":white_check_mark: User kicked."
-log_kicked: "{} **kicked** {} (`{}`) because of `{}`."
+log_kicked: ":x: Member kicked"
 cannot_kick: This member cannot be kicked.
 cannot_kick_permissions: User could not be kicked because I don't have `kick_members` permission on this server.
 ban: Ban
@@ -473,12 +481,11 @@ cannot_ban_permissions: User could not be banned because I don't have `ban_membe
 banned: "{} just banned you from {} for {} days:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
 banned_response: ":white_check_mark: User banned."
-log_banned: "{} **banned** {} (`{}`) for {} days because of `{}`."
-log_banned_inf: "{} **banned** {} (`{}`) because of `{}`."
-log_unbanned_expired: "**Unbanned** {} (`{}`) because the ban time for this user has expired."
+log_banned: ":hammer: Member Banned"
+log_unbanned_expired: "Unbanned automatically because the ban time for this user has expired."
 not_banned: This member is not banned.
 unbanned_response: ":white_check_mark: User unbanned."
-log_unbanned: "{} **unbanned** {} (`{}`) because of `{}`."
+log_unbanned: ":hammer: Member Unbanned"
 cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
 user_not_found: User not found.
 init_join_log: Init join log

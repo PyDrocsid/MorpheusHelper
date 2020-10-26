@@ -36,7 +36,18 @@ class Colours(MaterialColours):
     )
 
     # Commands
-    changelog = MaterialColours.teal
+    changelog = NestedInt(
+        MaterialColours.teal,
+        {
+            "report": MaterialColours.yellow[800],
+            "warn": MaterialColours.yellow["a200"],
+            "mute": MaterialColours.yellow[600],
+            "unmute": MaterialColours.green["a700"],
+            "kick": MaterialColours.orange[700],
+            "ban": MaterialColours.red[500],
+            "unban": MaterialColours.green["a700"],
+        },
+    )
     github = MaterialColours.teal[800]
     info = MaterialColours.indigo
     ping = MaterialColours.green["a700"]
