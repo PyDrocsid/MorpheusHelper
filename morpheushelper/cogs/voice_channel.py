@@ -406,11 +406,15 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             )
             await ctx.send(embed=embed)
 
-    @voice.command(name="invite", aliases=["i", "add", "a", "+"])
+    @voice.command(name="invite", usage="<member> [members...]", aliases=["i", "add", "a", "+"])
     async def voice_invite(self, ctx: Context, members: Greedy[Member]):
         """
         invite a member (or multiple members) into a private voice channel
         """
+
+        if not members:
+            raise UserInputError
+
         for member in set(members):
             if self.bot.user == member:
                 raise CommandError(translations.cannot_add_user)
@@ -449,11 +453,15 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 )
                 await ctx.send(embed=embed)
 
-    @voice.command(name="remove", aliases=["r", "kick", "k", "-"])
+    @voice.command(name="remove", usage="<member> [members...]", aliases=["r", "kick", "k", "-"])
     async def voice_remove(self, ctx: Context, members: Greedy[Member]):
         """
         remove a member (or multiple members) from a private voice channel
         """
+
+        if not members:
+            raise UserInputError
+
         for member in set(members):
             group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
             if member in (ctx.author, self.bot.user):
