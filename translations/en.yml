@@ -568,6 +568,8 @@ permissions:
 
   manage_reddit: manage reddit integration
 
+  polls_delete: delete polls
+
 # reddit
 reddit: Reddit
 interval: Interval
@@ -666,3 +668,5 @@ team_role_no_members: The team role has no members.
 teampoll_all_voted: "All teamlers voted :white_check_mark:"
 one_teamler_missing: "{} hasn't voted yet."
 multiple_teamlers_missing: "{} and {} haven't voted yet."
+created_by: Created by @{} ({})
+can_not_use_wastebucket_as_option: "You can not use :wastebasket: as option"

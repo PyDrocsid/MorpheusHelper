@@ -11,8 +11,8 @@ from discord import Embed, Message, PartialEmoji, Member, Forbidden, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
-from permissions import PermissionLevel
-from util import is_teamler
+from permissions import PermissionLevel, Permission
+from util import is_teamler, check_wastebasket
 
 MAX_OPTIONS = 20  # Discord reactions limit
 
@@ -27,7 +27,7 @@ async def get_teampoll_embed(message: Message) -> Tuple[Optional[Embed], Optiona
     return None, None
 
 
-async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = None):
+async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = None, allow_delete: bool = True):
     question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n")]
 
     if not options:
@@ -41,6 +41,8 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
         title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
     )
     embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
+    if allow_delete:
+        embed.set_footer(text=translations.f_created_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
 
     for option in options:
         embed.add_field(name="** **", value=str(option), inline=False)
@@ -52,6 +54,8 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
 
     for option in options:
         await poll.add_reaction(option.emoji)
+    if allow_delete:
+        await poll.add_reaction(name_to_emoji["wastebasket"])
 
 
 class PollsCog(Cog, name="Polls"):
@@ -82,6 +86,10 @@ class PollsCog(Cog, name="Polls"):
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member):
         if member.bot or message.guild is None:
             return
+
+        if await check_wastebasket(message, member, emoji, translations.created_by, Permission.polls_delete):
+            await message.delete()
+            raise StopEventHandling
 
         embed, index = await get_teampoll_embed(message)
         if embed is None:
@@ -141,7 +149,7 @@ class PollsCog(Cog, name="Polls"):
          Multiline options can be specified using a `\\` at the end of a line
         """
 
-        await send_poll(ctx, args, field=(translations.status, await self.get_reacted_teamlers()))
+        await send_poll(ctx, args, field=(translations.status, await self.get_reacted_teamlers()), allow_delete=False)
 
     @commands.command(aliases=["yn"])
     @guild_only()
@@ -176,6 +184,9 @@ class PollOption:
         else:
             self.emoji = default_emojis[number]
             self.option = line
+
+        if name_to_emoji["wastebasket"] == self.emoji:
+            raise CommandError(translations.can_not_use_wastebucket_as_option)
 
     def __str__(self):
         return f"{self.emoji} {self.option}" if self.option else self.emoji
