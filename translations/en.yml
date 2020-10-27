@@ -389,8 +389,8 @@ user_added_to_private_voice_response: "User has been added to this private voice
 cannot_add_user: User could not be added.
 user_removed_from_private_voice: "{} has been removed from this private voice channel."
 user_removed_from_private_voice_response: "User has been removed from this private voice channel. :white_check_mark:"
-cannot_remove_member: This member could not be removed.
-member_could_not_be_kicked: You cannot remove a team member from this voice channel.
+cannot_remove_member: The member {} could not be removed.
+member_could_not_be_kicked: You cannot remove a team member ({}) from this voice channel.
 user_not_in_this_channel: User is not in the same private voice channel.
 owner_of_private_voice: "Owner of this private voice channel: {}"
 bot_no_owner_transfer: You cannot transfer ownership to a bot.

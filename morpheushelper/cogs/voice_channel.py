@@ -465,12 +465,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         for member in set(members):
             group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
             if member in (ctx.author, self.bot.user):
-                raise CommandError(translations.cannot_remove_member)
+                raise CommandError(translations.f_cannot_remove_member(member.mention))
 
             await text_channel.set_permissions(member, overwrite=None)
             await voice_channel.set_permissions(member, overwrite=None)
             if await is_teamler(member):
-                raise CommandError(translations.member_could_not_be_kicked)
+                raise CommandError(translations.f_member_could_not_be_kicked(member.mention))
 
             if member.voice is not None and member.voice.channel == voice_channel:
                 await member.move_to(None)
