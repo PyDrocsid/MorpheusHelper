@@ -1,5 +1,3 @@
-import re
-
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
@@ -11,6 +9,7 @@ from discord.ext.commands import Cog, Bot, Context, guild_only
 from colours import Colours
 from models.mediaonly_channel import MediaOnlyChannel
 from permissions import Permission
+from util import check_wastebasket
 
 
 def make_embed(requested_by: Member) -> Embed:
@@ -59,26 +58,12 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             msg: Message = await message.channel.send(message.author.mention, embed=make_embed(member))
             await msg.add_reaction(name_to_emoji["wastebasket"])
             raise StopEventHandling
-        if emoji.name == name_to_emoji["wastebasket"]:
-            for embed in message.embeds:
-                pattern = re.escape(translations.requested_by).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
-                if (match := re.match("^" + pattern + "$", embed.footer.text)) is not None:
-                    author_id = int(match.group(1))
-                    if not (author_id == member.id or await Permission.mq_reduce.check_permissions(member)):
-                        try:
-                            await message.remove_reaction(emoji, member)
-                        except Forbidden:
-                            pass
-                        raise StopEventHandling
-                    break
-            else:
-                return
 
+        if await check_wastebasket(message, member, emoji, translations.requested_by, Permission.mq_reduce):
             await message.clear_reactions()
-            await message.edit(
-                content=message.content + " " + translations.f_metaquestion_description_reduced(f"<@{author_id}>"),
-                embed=None,
-            )
+            message.embeds[0].clear_fields()
+            message.embeds[0].description = ""
+            await message.edit(embed=message.embeds[0])
             raise StopEventHandling
 
     @commands.command(aliases=["mf", "mq", "meta", "metafrage"])

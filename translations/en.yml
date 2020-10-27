@@ -250,7 +250,6 @@ metaquestion_description: >
   ignoriert oder der Fragende wird rüde darauf hingewiesen, dass ihm niemand bei seinem Problem
   helfen könne, ohne dies zu kennen. Grundsätzlich folgt auf eine Meta-Frage eine weitere Frage.
 requested_by: Requested by @{} ({})
-metaquestion_description_reduced: "http://metafrage.de/ (Requested by {})"
 mq_advantages_title: Vorteile von Metafragen
 mq_advantages:
   - als höfliche Floskel um Aufmerksamkeit zu gewinnen
@@ -612,6 +611,8 @@ permissions:
 
   manage_reddit: manage reddit integration
 
+  polls_delete: delete polls
+
 # reddit
 reddit: Reddit
 interval: Interval
@@ -710,3 +711,5 @@ team_role_no_members: The team role has no members.
 teampoll_all_voted: "All teamlers voted :white_check_mark:"
 one_teamler_missing: "{} hasn't voted yet."
 multiple_teamlers_missing: "{} and {} haven't voted yet."
+created_by: Created by @{} ({})
+can_not_use_wastebucket_as_option: "You can not use :wastebasket: as option"
