@@ -284,11 +284,11 @@ codeblocks_description: |
   ```python
   print("Hello World")
   ```
-  As language you can use all popular languages. E.g.:
+  You can use any popular language. E.g.:
   ```
   c, c++, css, diff, html, js, java, php, python, sql
   ```
-  See also [this](https://highlightjs.org/download/) link for all supported languages.
+  See also [this link](https://highlightjs.org/static/demo/) for a list of all supported languages.
 
 # reactionpin
 reactionpin: Reactionpin
