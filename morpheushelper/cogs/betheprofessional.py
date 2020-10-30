@@ -96,13 +96,16 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         list all registered topics
         """
 
-        out = [str(role.id) for role in sorted(await list_topics(ctx.guild), key=lambda x: x.name.lower())]
         embed = Embed(title=translations.available_topics_header, colour=Colours.BeTheProfessional)
-        if out:
-            embed.description = "<@&" + ">, <@&".join(out) + ">"
-        else:
+        out = [role.name for role in await list_topics(ctx.guild)]
+        if not out:
             embed.colour = Colours.error
             embed.description = translations.no_topics_registered
+            await ctx.send(embed=embed)
+            return
+
+        out.sort(key=str.lower)
+        embed.description = ", ".join(f"`{topic}`" for topic in out)
         await send_long_embed(ctx, embed)
 
     @commands.command(name="+")
