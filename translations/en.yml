@@ -226,17 +226,17 @@ mediaonly: Mediaonly
 deleted_nomedia: >
   Only pictures are allowed in this channel.
   For conversations please use the channels designated for this purpose.
-log_deleted_nomedia: "**Deleted a message** of {} in **media only** channel {} because it did not contain an image."
+log_deleted_nomedia: "**Deleted a message** of {} in **media only channel** {} because it did not contain an image."
 media_only_channels_header: "Media only channels"
 no_media_only_channels: ":x: No media only channels."
 channel_already_media_only: Channel is already a media only channel.
 channel_now_media_only: ":white_check_mark: Channel is now a media only channel."
-log_channel_now_media_only: "**Channel** {} **is** now a media only channel."
-channel_not_media_only: ":x: Channel is not a media only channel."
+log_channel_now_media_only: "**Channel** {} has been **added** to the list of **media only channels**."
+channel_not_media_only: Channel is not a media only channel.
 channel_not_media_only_anymore: ":white_check_mark: Channel is not a media only channel anymore."
-log_channel_not_media_only_anymore: "**Channel** {} is **not** a media only channel anymore."
+log_channel_not_media_only_anymore: "**Channel** {} has been **removed** from the list of **media only channels**."
 media_only_not_changed_no_permissions: >
-  :x: Media only channel could not be added because I don't have `manage_messages` permission there.
+  Media only channel could not be added because I don't have `manage_messages` permission there.
 
 # metaquestion
 metaquestion_title: Metafragen
