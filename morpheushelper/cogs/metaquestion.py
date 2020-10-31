@@ -1,8 +1,10 @@
+from typing import Optional
+
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
-from discord import Embed, Member, Message, PartialEmoji, Forbidden
+from discord import Embed, Member, Message, PartialEmoji, Forbidden, NotFound, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
 
@@ -61,17 +63,23 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         if await check_wastebasket(message, member, emoji, translations.requested_by, Permission.mq_reduce):
             await message.clear_reactions()
-            message.embeds[0].clear_fields()
-            message.embeds[0].description = ""
-            await message.edit(embed=message.embeds[0])
+            embed: Embed = message.embeds[0]
+            embed.title = embed.url
+            embed.description = ""
+            embed.clear_fields()
+            await message.edit(embed=embed)
             raise StopEventHandling
 
     @commands.command(aliases=["mf", "mq", "meta", "metafrage"])
     @guild_only()
-    async def metaquestion(self, ctx: Context):
+    async def metaquestion(self, ctx: Context, member: Optional[Member]):
         """
         display information about meta questions
         """
 
-        message: Message = await ctx.send(embed=make_embed(ctx.author))
+        message: Message = await ctx.send(embed=make_embed(ctx.author), content=member.mention if member else "")
         await message.add_reaction(name_to_emoji["wastebasket"])
+        try:
+            await ctx.message.delete()
+        except (Forbidden, NotFound, HTTPException):
+            pass
