@@ -64,9 +64,10 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         self.bot = bot
 
     async def check_message(self, message: Message) -> bool:
-        if message.guild is None or message.author.bot:
+        author: Member = message.author
+        if message.guild is None or author.bot:
             return True
-        if await Permission.invite_bypass.check_permissions(message.author):
+        if await Permission.invite_bypass.check_permissions(author):
             return True
 
         forbidden = []
@@ -100,23 +101,19 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 description=translations.f_illegal_invite_link(prefix + "invites list"),
                 color=Colours.error,
             )
-            await message.channel.send(content=message.author.mention, embed=embed, delete_after=30)
+            await message.channel.send(content=author.mention, embed=embed, delete_after=30)
             if can_delete:
                 await send_to_changelog(
                     message.guild,
                     translations.f_log_illegal_invite(
-                        f"{message.author.mention} ({str(message.author)} {message.author.id})",
-                        message.channel.mention,
-                        ", ".join(forbidden),
+                        f"{author.mention} (`@{author}`, {author.id})", message.channel.mention, ", ".join(forbidden),
                     ),
                 )
             else:
                 await send_to_changelog(
                     message.guild,
                     translations.f_log_illegal_invite_not_deleted(
-                        f"{message.author.mention} ({str(message.author)} {message.author.id})",
-                        message.channel.mention,
-                        ", ".join(forbidden),
+                        f"{author.mention} (`@{author}`, {author.id})", message.channel.mention, ", ".join(forbidden),
                     ),
                 )
             return False
@@ -158,9 +155,10 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         for row in sorted(await db_thread(db.all, AllowedInvite), key=lambda a: a.guild_name):
             out.append(f":small_orange_diamond: {row.guild_name} ({row.guild_id})")
         embed = Embed(title=translations.allowed_servers_title, colour=Colours.error)
+        embed.description = translations.allowed_servers_description
         if out:
             embed.colour = Colours.AllowedInvites
-            embed.description = "\n".join(out)
+            embed.description += "\n".join(out)
             await send_long_embed(ctx, embed)
         else:
             embed.description = translations.no_server_allowed
@@ -178,7 +176,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         invite_guild = await self.check_invite(invite.code)
         if invite_guild is not None:
             invite_title = translations.invite_link
-            embed.set_thumbnail(url=invite_guild.guild.icon_url_as(size=128))
+            embed.set_thumbnail(url=invite_guild.guild.icon_url)
         else:
             invite_title = translations.invite_link_expired
 

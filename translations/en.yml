@@ -149,7 +149,8 @@ log_illegal_invite: |
 log_illegal_invite_not_deleted: |
   {} sent a **message** in {} which contained one or more **illegal discord invite** links: {}
   **The message could not be deleted** because I don't have `manage_messages` permission in this channel.
-allowed_servers_title: "Allowed discord servers (any link to these servers is allowed to post)"
+allowed_servers_title: Allowed Discord Servers
+allowed_servers_description: "Any link to these servers is allowed to post:\n\n"
 no_server_allowed: ":x: No discord servers allowed."
 invalid_invite: Invalid invite.
 allowed_server_not_found: Allowed discord server not found.
