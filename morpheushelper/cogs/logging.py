@@ -5,12 +5,7 @@ from PyDrocsid.database import db_thread
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import calculate_edit_distance, send_long_embed
-from discord import (
-    TextChannel,
-    Message,
-    Embed,
-    RawMessageDeleteEvent,
-)
+from discord import TextChannel, Message, Embed, RawMessageDeleteEvent
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 

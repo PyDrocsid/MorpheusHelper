@@ -15,7 +15,7 @@ class Colours(MaterialColours):
     CodeBlocks = MaterialColours.grey[900]
     DiscordPy = Colour.blurple()  # discord colour
     Logging = NestedInt(
-        MaterialColours.blue["a700"], {"edit": MaterialColours.yellow["a200"], "delete": MaterialColours.yellow["a200"]}
+        MaterialColours.blue["a700"], {"edit": MaterialColours.yellow[800], "delete": MaterialColours.red[900]}
     )
     MediaOnly = MaterialColours.yellow["a200"]
     MetaQuestions = MaterialColours.purple["a400"]
