@@ -41,7 +41,9 @@ async def configure_role(ctx: Context, role_name: str, role: Role, check_assigna
     await Settings.set(int, role_name + "_role", role.id)
     embed = Embed(title=translations.roles, description=translations.role_set, color=Colours.ModTools)
     await ctx.send(embed=embed)
-    await send_to_changelog(ctx.guild, getattr(translations, "f_log_role_set_" + role_name)(role.name, role.id))
+    await send_to_changelog(
+        ctx.guild, translations.f_log_role_set(translations.role_name[role_name], role.mention, role.id)
+    )
 
 
 async def get_mute_role(guild: Guild) -> Role:
@@ -58,42 +60,42 @@ async def update_join_date(guild: Guild, user_id: int):
 
 
 async def send_to_changelog_mod(
-    ctx: Union[Context, Guild],
+    guild: Guild,
+    message: Optional[Message],
     colour: int,
     title: str,
-    member: Union[Member, User, Tuple],
+    member: Union[Member, User, Tuple[int, str]],
     reason: str,
     *,
     duration: Optional[str] = None,
-    author: Union[Member, User] = None,
 ):
     embed = Embed(title=title, colour=colour, timestamp=datetime.utcnow())
 
-    if type(member) is tuple:
-        embed.set_author(name=member[1])
-        embed.add_field(name=translations.log_field_member, value=f"<@{member[0]}>", inline=True)
-        embed.add_field(name=translations.log_field_member_id, value=member[0], inline=True)
+    if isinstance(member, tuple):
+        member_id, member_name = member
+        embed.set_author(name=member_name)
     else:
-        embed.set_author(name=str(member), icon_url=member.avatar_url)
-        embed.add_field(name=translations.log_field_member, value=member.mention, inline=True)
-        embed.add_field(name=translations.log_field_member_id, value=member.id, inline=True)
+        member_id: int = member.id
+        member_name: str = str(member)
+        embed.set_author(name=member_name, icon_url=member.avatar_url)
 
-    if type(ctx) is Context:
-        embed.set_footer(text=str(ctx.author), icon_url=ctx.author.avatar_url)
+    embed.add_field(name=translations.log_field_member, value=f"<@{member_id}>", inline=True)
+    embed.add_field(name=translations.log_field_member_id, value=str(member_id), inline=True)
+
+    if message:
+        embed.set_footer(text=str(message.author), icon_url=message.author.avatar_url)
         embed.add_field(
             name=translations.log_field_channel,
-            value=translations.f_jump_url(ctx.channel.mention, ctx.message.jump_url),
+            value=translations.f_jump_url(message.channel.mention, message.jump_url),
             inline=True,
         )
-    elif author:
-        embed.set_footer(text=str(author), icon_url=author.avatar_url)
 
     if duration:
         embed.add_field(name=translations.log_field_duration, value=duration, inline=True)
 
     embed.add_field(name=translations.log_field_reason, value=reason, inline=False)
 
-    await send_to_changelog(ctx.guild if type(ctx) is Context else ctx, embed)
+    await send_to_changelog(guild, embed)
 
 
 class ModCog(Cog, name="Mod Tools"):
@@ -120,18 +122,21 @@ class ModCog(Cog, name="Mod Tools"):
 
         for ban in await db_thread(db.all, Ban, active=True):
             if ban.days != -1 and datetime.utcnow() >= ban.timestamp + timedelta(days=ban.days):
-                user: Optional[User] = await self.bot.fetch_user(ban.member)
-                if user is not None:
-                    await guild.unban(user)
+                await db_thread(Ban.deactivate, ban.id)
+
+                try:
+                    await guild.unban(user := await self.bot.fetch_user(ban.member))
+                except NotFound:
+                    user = ban.member, ban.member_name
+
                 await send_to_changelog_mod(
                     guild,
+                    None,
                     Colours.changelog["unban"],
                     translations.log_unbanned,
-                    (ban.member, ban.member_name),
+                    user,
                     translations.log_unbanned_expired,
-                    author=self.bot.user,
                 )
-                await db_thread(Ban.deactivate, ban.id)
 
         mute_role: Optional[Role] = guild.get_role(await Settings.get(int, "mute_role"))
         if mute_role is None:
@@ -139,16 +144,18 @@ class ModCog(Cog, name="Mod Tools"):
 
         for mute in await db_thread(db.all, Mute, active=True):
             if mute.days != -1 and datetime.utcnow() >= mute.timestamp + timedelta(days=mute.days):
-                member: Optional[Member] = guild.get_member(mute.member)
-                if member is not None:
-                    await member.remove_roles(mute_role)
+                try:
+                    await (member := guild.get_member(mute.member)).remove_roles(mute_role)
+                except (Forbidden, HTTPException):
+                    member = mute.member, mute.member_name
+
                 await send_to_changelog_mod(
                     guild,
+                    None,
                     Colours.changelog["unmute"],
                     translations.log_unmuted,
-                    (mute.member, mute.member_name),
+                    member,
                     translations.log_unmuted_expired,
-                    author=self.bot.user,
                 )
                 await db_thread(Mute.deactivate, mute.id)
 
@@ -190,7 +197,7 @@ class ModCog(Cog, name="Mod Tools"):
         for role_name in ["admin", "mod", "supp", "team", "mute"]:
             role = ctx.guild.get_role(await Settings.get(int, role_name + "_role"))
             val = role.mention if role is not None else translations.role_not_set
-            embed.add_field(name=getattr(translations, f"role_{role_name}"), value=val, inline=False)
+            embed.add_field(name=translations.role_name[role_name], value=val, inline=False)
         await ctx.send(embed=embed)
 
     @roles.command(name="administrator", aliases=["admin"])
@@ -246,7 +253,9 @@ class ModCog(Cog, name="Mod Tools"):
         await db_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         embed = Embed(title=translations.report, description=translations.reported_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
-        await send_to_changelog_mod(ctx, Colours.changelog["report"], translations.log_reported, member, reason)
+        await send_to_changelog_mod(
+            ctx.guild, ctx.message, Colours.changelog["report"], translations.log_reported, member, reason
+        )
 
     @commands.command()
     @Permission.warn.check
@@ -271,11 +280,13 @@ class ModCog(Cog, name="Mod Tools"):
         try:
             await member.send(embed=user_embed)
         except (Forbidden, HTTPException):
-            server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
         await db_thread(Warn.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(embed=server_embed)
-        await send_to_changelog_mod(ctx, Colours.changelog["warn"], translations.log_warned, member, reason)
+        await send_to_changelog_mod(
+            ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warned, member, reason
+        )
 
     async def get_user(self, guild: Guild, user: Union[Member, User, int]) -> Union[Member, User]:
         if isinstance(user, Member):
@@ -332,7 +343,8 @@ class ModCog(Cog, name="Mod Tools"):
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, days, reason, bool(active_mutes))
             user_embed.description = translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason)
             await send_to_changelog_mod(
-                ctx,
+                ctx.guild,
+                ctx.message,
                 Colours.changelog["mute"],
                 translations.log_muted,
                 user,
@@ -343,7 +355,8 @@ class ModCog(Cog, name="Mod Tools"):
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, -1, reason, bool(active_mutes))
             user_embed.description = translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason)
             await send_to_changelog_mod(
-                ctx,
+                ctx.guild,
+                ctx.message,
                 Colours.changelog["mute"],
                 translations.log_muted,
                 user,
@@ -354,7 +367,7 @@ class ModCog(Cog, name="Mod Tools"):
         try:
             await user.send(embed=user_embed)
         except (Forbidden, HTTPException):
-            server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
 
         await ctx.send(embed=server_embed)
@@ -384,9 +397,11 @@ class ModCog(Cog, name="Mod Tools"):
         if not was_muted:
             raise CommandError(translations.not_muted)
 
-        embed = Embed(title=translations.mute, description=translations.unmuted_response, colour=Colours.ModTools)
+        embed = Embed(title=translations.unmute, description=translations.unmuted_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
-        await send_to_changelog_mod(ctx, Colours.changelog["unmute"], translations.log_unmuted, user, reason)
+        await send_to_changelog_mod(
+            ctx.guild, ctx.message, Colours.changelog["unmute"], translations.log_unmuted, user, reason
+        )
 
     @commands.command()
     @Permission.kick.check
@@ -409,7 +424,9 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.cannot_kick)
 
         await db_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
-        await send_to_changelog_mod(ctx, Colours.changelog["kick"], translations.log_kicked, member, reason)
+        await send_to_changelog_mod(
+            ctx.guild, ctx.message, Colours.changelog["kick"], translations.log_kicked, member, reason
+        )
 
         user_embed = Embed(
             title=translations.kick,
@@ -421,7 +438,7 @@ class ModCog(Cog, name="Mod Tools"):
         try:
             await member.send(embed=user_embed)
         except (Forbidden, HTTPException):
-            server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
 
         await member.kick(reason=reason)
@@ -482,7 +499,8 @@ class ModCog(Cog, name="Mod Tools"):
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, ban_days, reason, bool(active_bans))
             user_embed.description = translations.f_banned(ctx.author.mention, ctx.guild.name, ban_days, reason)
             await send_to_changelog_mod(
-                ctx,
+                ctx.guild,
+                ctx.message,
                 Colours.changelog["ban"],
                 translations.log_banned,
                 user,
@@ -493,7 +511,8 @@ class ModCog(Cog, name="Mod Tools"):
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason, bool(active_bans))
             user_embed.description = translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason)
             await send_to_changelog_mod(
-                ctx,
+                ctx.guild,
+                ctx.message,
                 Colours.changelog["ban"],
                 translations.log_banned,
                 user,
@@ -504,7 +523,7 @@ class ModCog(Cog, name="Mod Tools"):
         try:
             await user.send(embed=user_embed)
         except (Forbidden, HTTPException):
-            server_embed.description = translations.no_dm + f"\n\n{server_embed.description}"
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
 
         await ctx.guild.ban(user, delete_message_days=delete_days, reason=reason)
@@ -539,9 +558,11 @@ class ModCog(Cog, name="Mod Tools"):
         if not was_banned:
             raise CommandError(translations.not_banned)
 
-        embed = Embed(title=translations.ban, description=translations.unbanned_response, colour=Colours.ModTools)
+        embed = Embed(title=translations.unban, description=translations.unbanned_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
-        await send_to_changelog_mod(ctx, Colours.changelog["unban"], translations.log_unbanned, user, reason)
+        await send_to_changelog_mod(
+            ctx.guild, ctx.message, Colours.changelog["unban"], translations.log_unbanned, user, reason
+        )
 
     async def get_stats_user(
         self, ctx: Context, user: Optional[Union[User, int]]
@@ -707,10 +728,8 @@ class ModCog(Cog, name="Mod Tools"):
             value = row[1]
             embed.add_field(name=name, value=value, inline=False)
 
-        if out:
-            embed.set_footer(text=translations.utc_note)
-        else:
-            embed = Embed(title=translations.userlogs, description=translations.ulog_empty, color=Colours.error)
+        embed.set_footer(text=translations.utc_note)
+
         if arg_passed:
             await send_long_embed(ctx, embed)
         else:
