@@ -1,17 +1,16 @@
-import re
-from typing import Optional, Union
+from typing import Optional
 
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed, read_normal_message, attachment_to_file
-from discord import Member, TextChannel, Role, Guild, HTTPException, Forbidden, Embed, Color
+from discord import Member, TextChannel, Role, Guild, HTTPException, Forbidden, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from colours import Colours
 from models.news_authorization import NewsAuthorization
 from permissions import Permission
-from util import send_to_changelog
+from util import send_to_changelog, Color
 
 
 class NewsCog(Cog, name="News"):
@@ -105,7 +104,7 @@ class NewsCog(Cog, name="News"):
 
     @news.command(name="send", aliases=["s"])
     async def news_send(
-        self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None, *, message: Optional[str]
+        self, ctx: Context, channel: TextChannel, color: Optional[Color] = None, *, message: Optional[str]
     ):
         """
         send a news message
@@ -116,11 +115,6 @@ class NewsCog(Cog, name="News"):
         )
         if authorization is None:
             raise CommandError(translations.news_you_are_not_authorized)
-
-        if isinstance(color, str):
-            if not re.match(r"^[0-9a-fA-F]{6}$", color):
-                raise CommandError(translations.invalid_color)
-            color = int(color, 16)
 
         if message is None:
             message = ""
@@ -142,10 +136,9 @@ class NewsCog(Cog, name="News"):
             if role is not None:
                 content = role.mention
 
-        if color is not None:
-            send_embed.colour = color
+        send_embed.colour = color if color is not None else Colours.News
 
-        if files:
+        if files and any(files[0].filename.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "gif"]):
             send_embed.set_image(url="attachment://" + files[0].filename)
 
         try:
