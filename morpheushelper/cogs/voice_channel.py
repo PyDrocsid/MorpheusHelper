@@ -415,11 +415,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if not members:
             raise UserInputError
 
+        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         for member in set(members):
             if self.bot.user == member:
-                raise CommandError(translations.cannot_add_user)
+                raise CommandError(translations.f_cannot_add_user(member.mention))
 
-            group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
             await text_channel.set_permissions(member, read_messages=True)
             await voice_channel.set_permissions(member, read_messages=True, connect=True)
 
@@ -462,8 +462,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if not members:
             raise UserInputError
 
+        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
         for member in set(members):
-            group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
             if member in (ctx.author, self.bot.user):
                 raise CommandError(translations.f_cannot_remove_member(member.mention))
 

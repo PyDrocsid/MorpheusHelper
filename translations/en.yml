@@ -386,7 +386,7 @@ user_added_to_private_voice_no_dm: >
   {} has been invited to join this private voice channel but does not allow direct messages.
 user_added_to_private_voice_dm: "{} just invited you to join a private voice channel."
 user_added_to_private_voice_response: "User has been added to this private voice channel. :white_check_mark:"
-cannot_add_user: User could not be added.
+cannot_add_user: User {} could not be added.
 user_removed_from_private_voice: "{} has been removed from this private voice channel."
 user_removed_from_private_voice_response: "User has been removed from this private voice channel. :white_check_mark:"
 cannot_remove_member: The member {} could not be removed.
