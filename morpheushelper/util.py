@@ -34,8 +34,8 @@ async def is_teamler(member: Member) -> bool:
 async def send_to_changelog(guild: Guild, message: Union[str, Embed]):
     channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "logging_changelog", -1))
     if channel is not None:
-        if type(message) is str:
-            embed = Embed(title=Embed.Empty, colour=Colours.changelog, description=message)
+        if isinstance(message, str):
+            embed = Embed(colour=Colours.changelog, description=message)
         else:
             embed = message
         await channel.send(embed=embed)
