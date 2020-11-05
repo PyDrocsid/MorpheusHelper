@@ -13,7 +13,7 @@ quote_remove_mentions: >
 
 # ping
 pong: Pong!
-pong_latency: ":hourglass: ({:.0f} ms)"
+pong_latency: ":hourglass: {:.0f} ms"
 
 # status
 online_status: ":vertical_traffic_light: Online Status"
@@ -22,8 +22,7 @@ logged_in: ":robot: Logged in"
 heartbeat: ":heartbeat: Heartbeat"
 
 # error
-error: Error
-error_string: ":x: {}"
+error: ":x: Error"
 
 # prefix
 prefix: Prefix

@@ -12,7 +12,7 @@ from PyDrocsid.events import listener, register_cogs, call_event_handlers
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
-from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
+from discord import Message, Embed, User, Forbidden, Intents
 from discord.ext import tasks
 from discord.ext.commands import (
     Bot,
@@ -295,11 +295,7 @@ async def on_command_error(ctx: Context, error: CommandError):
     elif isinstance(error, UserInputError):
         messages = await send_help(ctx, ctx.command)
     else:
-        messages = [
-            await ctx.send(
-                embed=make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
-            )
-        ]
+        messages = [await ctx.send(embed=make_error(error))]
     add_to_error_cache(ctx.message, messages)
 
 

@@ -24,7 +24,7 @@ class Color(ColorConverter):
 
 
 def make_error(message) -> Embed:
-    return Embed(title=translations.error, colour=Colours.error, description=translations.f_error_string(message))
+    return Embed(title=translations.error, colour=Colours.error, description=str(message))
 
 
 async def is_teamler(member: Member) -> bool:
