@@ -362,12 +362,12 @@ log_link_deleted: "**Link** has been **deleted** between voice channel `{}` and 
 
 dyn_group_already_exists: This channel is already part of an existing voice channel group.
 dyn_group_created: "Dynamic voice channel group has been created successfully. :white_check_mark:"
-log_dyn_group_created: "**Dynamic voice** channel group `{}` has been **created**."
+log_dyn_group_created: "**Dynamic voice channel group** `{}` has been **created**."
 dyn_group_not_found: This channel is not part of any voice channel group.
 group_list_entry: "{} {} ({} active channels)"
 no_dyn_group: No dynamic voice channel groups have been created yet.
 dyn_group_removed: "Dynamic voice channel group has been removed successfully. :white_check_mark:"
-log_dyn_group_removed: "**Dynamic voice** channel group `{}` has been **removed**."
+log_dyn_group_removed: "**Dynamic voice channel group** `{}` has been **removed**."
 dyn_voice_created: Channel has been created by {}.
 dyn_voice_joined: "{} joined this channel."
 dyn_voice_left: "{} left this channel."

@@ -54,7 +54,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 await messages[0].edit(embed=embed)
                 return
 
-        embed = Embed(title=title, colour=[Colours.Voice["private"], Colours.Voice["public"]][public], description=msg)
+        embed = Embed(title=title, colour=Colours.Voice[["private", "public"][public]], description=msg)
         await channel.send(embed=embed)
 
     async def on_ready(self):
@@ -321,12 +321,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if channel is None:
                 await db_thread(db.delete, group)
                 continue
-            e = ":lock:" if group.public else ":closed_lock_with_key:"
+            e = ":globe_with_meridians:" if group.public else ":lock:"
             out.append(translations.f_group_list_entry(e, group.name, cnt))
 
         embed = Embed(title=translations.voice_channel, colour=Colours.Voice)
         if out:
-            embed.description = "\n".join(out)
+            embed.description = "\n".join(sorted(out))
         else:
             embed.colour = Colours.error
             embed.description = translations.no_dyn_group
@@ -427,16 +427,15 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         )
         user_embed.set_footer(text=str(ctx.author), icon_url=ctx.author.avatar_url)
 
-        invite = ""
         if ctx.author.permissions_in(voice_channel).create_instant_invite:
             try:
-                invite += f"\n{await voice_channel.create_invite(unique=False)}"
+                user_embed.description += f"\n{await voice_channel.create_invite(unique=False)}"
             except Forbidden:
                 pass
 
         reponse = translations.f_user_added_to_private_voice(member.mention)
         try:
-            await member.send(embed=user_embed, content=invite)
+            await member.send(embed=user_embed)
         except (Forbidden, HTTPException):
             reponse = translations.f_user_added_to_private_voice_no_dm(member.mention)
 
