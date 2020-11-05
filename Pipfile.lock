@@ -170,11 +170,11 @@
         },
         "pydrocsid": {
             "hashes": [
-                "sha256:3d659a1866eca03863aa9cb3b6d3c980a59d85f5e503b6ad2ee1e617bc2db841",
-                "sha256:ed6afc606d41c4861f76f1e6b3f424237acfbd679706a8d33d5d8159f15b99c2"
+                "sha256:0adf1b4774b13b8338da1a70d2b122ba8e31b0dd6024dce172ba419e0dd423b7",
+                "sha256:db7459e649dfc7cd3be60e5cd4e4aa022f8fbb9f14b9ca2db479d5fc5d9473da"
             ],
             "index": "pypi",
-            "version": "==1.4.3"
+            "version": "==1.4.4"
         },
         "pymysql": {
             "hashes": [
@@ -189,7 +189,7 @@
                 "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c",
                 "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==2.8.1"
         },
         "python-editor": {
@@ -240,7 +240,7 @@
                 "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
                 "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.15.0"
         },
         "sqlalchemy": {

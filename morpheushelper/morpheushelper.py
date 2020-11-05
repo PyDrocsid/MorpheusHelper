@@ -1,7 +1,7 @@
 import os
 import string
 import sys
-import time
+from datetime import datetime
 from typing import Optional, Iterable
 
 import sentry_sdk
@@ -11,8 +11,8 @@ from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import listener, register_cogs, call_event_handlers
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
-from PyDrocsid.util import measure_latency, send_long_embed
-from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
+from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
+from discord import Message, Embed, User, Forbidden, Intents
 from discord.ext import tasks
 from discord.ext.commands import (
     Bot,
@@ -29,7 +29,8 @@ from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
-from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
+from colours import Colours
+from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
 
@@ -69,6 +70,7 @@ intents = Intents.all()
 
 bot = Bot(command_prefix=fetch_prefix, case_insensitive=True, description=translations.bot_description, intents=intents)
 bot.remove_command("help")
+bot.initial = True
 
 
 def get_owner() -> Optional[User]:
@@ -82,7 +84,15 @@ def get_owner() -> Optional[User]:
 async def on_ready():
     if (owner := get_owner()) is not None:
         try:
-            await owner.send("logged in")
+            await send_editable_log(
+                owner,
+                translations.online_status,
+                translations.f_status_description(VERSION),
+                translations.logged_in,
+                datetime.utcnow().strftime("%d.%m.%Y %H:%M:%S UTC"),
+                force_resend=True,
+                force_new_embed=bot.initial,
+            )
         except Forbidden:
             pass
 
@@ -94,20 +104,23 @@ async def on_ready():
         except RuntimeError:
             status_loop.restart()
 
+    bot.initial = False
+
 
 @tasks.loop(seconds=20)
 async def status_loop():
     if (owner := get_owner()) is None:
         return
-    messages = await owner.history(limit=1).flatten()
-    content = "heartbeat: " + time.ctime()
-    if messages and messages[0].content.startswith("heartbeat: "):
-        await messages[0].edit(content=content)
-    else:
-        try:
-            await owner.send(content)
-        except Forbidden:
-            pass
+    try:
+        await send_editable_log(
+            owner,
+            translations.online_status,
+            translations.f_status_description(VERSION),
+            translations.heartbeat,
+            datetime.utcnow().strftime("%d.%m.%Y %H:%M:%S UTC"),
+        )
+    except Forbidden:
+        pass
 
 
 @bot.command()
@@ -117,10 +130,10 @@ async def ping(ctx: Context):
     """
 
     latency: Optional[float] = measure_latency()
+    embed = Embed(title=translations.pong, colour=Colours.ping)
     if latency is not None:
-        await ctx.send(translations.f_pong_latency(latency * 1000))
-    else:
-        await ctx.send(translations.pong)
+        embed.description = translations.f_pong_latency(latency * 1000)
+    await ctx.send(embed=embed)
 
 
 @bot.command(aliases=["sf", "time"])
@@ -186,12 +199,13 @@ async def change_prefix(ctx: Context, new_prefix: str):
         raise CommandError(translations.prefix_invalid_chars)
 
     await set_prefix(new_prefix)
-    await ctx.send(translations.prefix_updated)
+    embed = Embed(title=translations.prefix, description=translations.prefix_updated, colour=Colours.prefix)
+    await ctx.send(embed=embed)
     await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))
 
 
 async def build_info_embed(authorized: bool) -> Embed:
-    embed = Embed(title="MorpheusHelper", color=0x007700, description=translations.bot_description)
+    embed = Embed(title="MorpheusHelper", colour=Colours.info, description=translations.bot_description)
     embed.set_thumbnail(url=MORPHEUS_ICON)
     prefix = await get_prefix()
     features = translations.features
@@ -229,7 +243,12 @@ async def github(ctx: Context):
     return the github link
     """
 
-    await ctx.send(GITHUB_LINK)
+    embed = Embed(
+        title="Defelo/MorpheusHelper", description=GITHUB_DESCRIPTION, colour=Colours.github, url=GITHUB_LINK,
+    )
+    embed.set_author(name="GitHub", icon_url="https://github.com/fluidicon.png")
+    embed.set_thumbnail(url=AVATAR_URL)
+    await ctx.send(embed=embed)
 
 
 @bot.command(name="version")
@@ -238,7 +257,8 @@ async def version(ctx: Context):
     show version
     """
 
-    await ctx.send(f"MorpheusHelper v{VERSION}")
+    embed = Embed(title=f"MorpheusHelper v{VERSION}", colour=Colours.version)
+    await ctx.send(embed=embed)
 
 
 @bot.command(name="info", aliases=["infos", "about"])
@@ -275,11 +295,7 @@ async def on_command_error(ctx: Context, error: CommandError):
     elif isinstance(error, UserInputError):
         messages = await send_help(ctx, ctx.command)
     else:
-        messages = [
-            await ctx.send(
-                make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
-            )
-        ]
+        messages = [await ctx.send(embed=make_error(error))]
     add_to_error_cache(ctx.message, messages)
 
 

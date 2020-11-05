@@ -1,8 +1,7 @@
 from typing import Union
 
-from sqlalchemy import Column, Integer, String, BigInteger, Boolean
-
 from PyDrocsid.database import db
+from sqlalchemy import Column, Integer, String, BigInteger, Boolean
 
 
 class DynamicVoiceChannel(db.Base):

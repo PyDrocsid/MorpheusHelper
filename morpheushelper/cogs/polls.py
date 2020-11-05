@@ -11,6 +11,7 @@ from discord import Embed, Message, PartialEmoji, Member, Forbidden, Guild
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only, CommandError
 
+from colours import Colours
 from permissions import PermissionLevel, Permission
 from util import is_teamler, check_wastebasket
 
@@ -38,7 +39,7 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
     options = [PollOption(ctx, line, i) for i, line in enumerate(options)]
 
     embed = Embed(
-        title=question, description=translations.vote_explanation, color=0xFF1010, timestamp=datetime.utcnow()
+        title=question, description=translations.vote_explanation, color=Colours.Polls, timestamp=datetime.utcnow()
     )
     embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
     if allow_delete:

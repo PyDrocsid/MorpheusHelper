@@ -1,13 +1,14 @@
 import string
 from typing import List
 
-from discord import Role, Guild, Member
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.translations import translations
+from PyDrocsid.util import calculate_edit_distance, send_long_embed
+from discord import Role, Guild, Member, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from PyDrocsid.database import db_thread, db
-from PyDrocsid.translations import translations
-from PyDrocsid.util import calculate_edit_distance
+from colours import Colours
 from models.btp_role import BTPRole
 from permissions import Permission
 from util import send_to_changelog
@@ -72,14 +73,16 @@ async def unregister_roles(ctx: Context, topics: str, *, delete_roles: bool):
         await db_thread(db.delete, btp_role)
         if delete_roles:
             await role.delete()
+    embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
     if len(roles) > 1:
-        await ctx.send(translations.f_cnt_topics_unregistered(len(roles)))
+        embed.description = translations.f_cnt_topics_unregistered(len(roles))
         await send_to_changelog(
             ctx.guild, translations.log_these_topics_unregistered + " " + ", ".join(f"`{r}`" for r in roles)
         )
     elif len(roles) == 1:
-        await ctx.send(translations.topic_unregistered)
+        embed.description = translations.topic_unregistered
         await send_to_changelog(ctx.guild, translations.f_log_topic_unregistered(roles[0]))
+    await send_long_embed(ctx, embed)
 
 
 class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
@@ -93,12 +96,17 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         list all registered topics
         """
 
+        embed = Embed(title=translations.available_topics_header, colour=Colours.BeTheProfessional)
         out = [role.name for role in await list_topics(ctx.guild)]
+        if not out:
+            embed.colour = Colours.error
+            embed.description = translations.no_topics_registered
+            await ctx.send(embed=embed)
+            return
+
         out.sort(key=str.lower)
-        if out:
-            await ctx.send(translations.available_topics_header + "\n```\n" + ", ".join(out) + "```")
-        else:
-            await ctx.send(translations.no_topics_registered)
+        embed.description = ", ".join(f"`{topic}`" for topic in out)
+        await send_long_embed(ctx, embed)
 
     @commands.command(name="+")
     @guild_only()
@@ -111,12 +119,15 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
 
         await member.add_roles(*roles)
+        embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_added(len(roles)))
+            embed.description = translations.f_cnt_topics_added(len(roles))
         elif len(roles) == 1:
-            await ctx.send(translations.topic_added)
+            embed.description = translations.topic_added
         else:
-            await ctx.send(translations.no_topic_added)
+            embed.colour = Colours.error
+            embed.description = translations.no_topic_added
+        await ctx.send(embed=embed)
 
     @commands.command(name="-")
     @guild_only()
@@ -133,12 +144,14 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         roles = [r for r in roles if r in member.roles]
 
         await member.remove_roles(*roles)
+        embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_removed(len(roles)))
+            embed.description = translations.f_cnt_topics_removed(len(roles))
         elif len(roles) == 1:
-            await ctx.send(translations.topic_removed)
+            embed.description = translations.topic_removed
         else:
-            await ctx.send(translations.no_topic_removed)
+            embed.description = translations.no_topic_removed
+        await ctx.send(embed=embed)
 
     @commands.command(name="*")
     @Permission.btp_manage.check
@@ -181,14 +194,16 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         for role in roles:
             await db_thread(BTPRole.create, role.id)
 
+        embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
         if len(roles) > 1:
-            await ctx.send(translations.f_cnt_topics_registered(len(roles)))
+            embed.description = translations.f_cnt_topics_registered(len(roles))
             await send_to_changelog(
                 ctx.guild, translations.log_these_topics_registered + " " + ", ".join(f"`{r}`" for r in roles)
             )
         elif len(roles) == 1:
-            await ctx.send(translations.topic_registered)
+            embed.description = translations.topic_registered
             await send_to_changelog(ctx.guild, translations.f_log_topic_registered(roles[0]))
+        await ctx.send(embed=embed)
 
     @commands.command(name="/")
     @Permission.btp_manage.check
