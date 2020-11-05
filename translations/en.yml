@@ -314,7 +314,7 @@ blocked_role: "Blocked role: `@{}`"
 blocked_role_updated: Blocked role has been updated.
 
 # reactionrole
-reactionrole: Reactionrole
+reactionrole: ReactionRole
 no_reactionrole_links: No ReactionRole links have been created yet.
 no_reactionrole_links_for_msg: No ReactionRole links have been created yet for this message.
 rr_link_already_exists: A link already exists for this reaction on this message.

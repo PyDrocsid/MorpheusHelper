@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Set
 
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emoji_converter import EmojiConverter
@@ -68,67 +68,82 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         manage reactionrole
         """
 
-        if ctx.invoked_subcommand is None:
-            raise UserInputError
-
-    @reactionrole.command(name="list", aliases=["l", "?"])
-    async def reactionrole_list(self, ctx: Context, msg: Optional[Message] = None):
-        """
-        list configured reactionrole links
-        """
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
+            return
 
         embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole)
-        if msg is None:
-            channels = {}
-            for link in await db_thread(db.all, ReactionRole):  # type: ReactionRole
-                channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
-                if channel is None:
-                    await db_thread(db.delete, link)
-                    continue
+        channels: Dict[TextChannel, Dict[Message, Set[str]]] = {}
+        message_cache: Dict[Tuple[int, int], Message] = {}
+        for link in await db_thread(db.all, ReactionRole):  # type: ReactionRole
+            channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
+            if channel is None:
+                await db_thread(db.delete, link)
+                continue
+
+            key = link.channel_id, link.message_id
+            if key not in message_cache:
                 try:
-                    msg: Message = await channel.fetch_message(link.message_id)
+                    message_cache[key] = await channel.fetch_message(link.message_id)
                 except NotFound:
                     await db_thread(db.delete, link)
                     continue
-                if ctx.guild.get_role(link.role_id) is None:
-                    await db_thread(db.delete, link)
-                    continue
-                channels.setdefault(channel, {}).setdefault((msg.jump_url, msg.id), set())
-                channels[channel][(msg.jump_url, msg.id)].add(link.emoji)
+            msg = message_cache[key]
 
-            if not channels:
-                embed.colour = Colours.error
-                embed.description = translations.no_reactionrole_links
-            else:
-                out = []
-                for channel, messages in channels.items():
-                    value = channel.mention + "\n"
-                    for (url, msg_id), emojis in messages.items():
-                        value += f"[{msg_id}]({url}): {' '.join(emojis)}\n"
-                    out.append(value)
-                embed.description = "\n".join(out)
+            if ctx.guild.get_role(link.role_id) is None:
+                await db_thread(db.delete, link)
+                continue
+
+            channels.setdefault(channel, {}).setdefault(msg, set())
+            channels[channel][msg].add(link.emoji)
+
+        if not channels:
+            embed.colour = Colours.error
+            embed.description = translations.no_reactionrole_links
         else:
             out = []
-            for link in await db_thread(
-                db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
-            ):  # type: ReactionRole
-                channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
-                if channel is None or await channel.fetch_message(link.message_id) is None:
-                    await db_thread(db.delete, link)
-                    continue
-                role: Optional[Role] = ctx.guild.get_role(link.role_id)
-                if role is None:
-                    await db_thread(db.delete, link)
-                    continue
-                if link.auto_remove:
-                    out.append(translations.f_rr_link_auto_remove(link.emoji, role.mention))
-                else:
-                    out.append(translations.f_rr_link(link.emoji, role.mention))
-            if not out:
-                embed.colour = Colours.error
-                embed.description = translations.no_reactionrole_links_for_msg
+            for channel, messages in channels.items():
+                value = channel.mention + "\n"
+                for msg, emojis in messages.items():
+                    value += f"[{msg.id}]({msg.jump_url}): {' '.join(emojis)}\n"
+                out.append(value)
+            embed.description = "\n".join(out)
+
+        await send_long_embed(ctx, embed)
+
+    @reactionrole.command(name="list", aliases=["l", "?"])
+    async def reactionrole_list(self, ctx: Context, msg: Message):
+        """
+        list configured reactionrole links for a specific message
+        """
+
+        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole)
+        out = []
+        for link in await db_thread(
+            db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
+        ):  # type: ReactionRole
+            channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
+            if channel is None or await channel.fetch_message(link.message_id) is None:
+                await db_thread(db.delete, link)
+                continue
+
+            role: Optional[Role] = ctx.guild.get_role(link.role_id)
+            if role is None:
+                await db_thread(db.delete, link)
+                continue
+
+            if link.auto_remove:
+                out.append(translations.f_rr_link_auto_remove(link.emoji, role.mention))
             else:
-                embed.description = "\n".join(out)
+                out.append(translations.f_rr_link(link.emoji, role.mention))
+
+        if not out:
+            embed.colour = Colours.error
+            embed.description = translations.no_reactionrole_links_for_msg
+        else:
+            embed.description = "\n".join(out)
+
         await send_long_embed(ctx, embed)
 
     @reactionrole.command(name="add", aliases=["a", "+"])
