@@ -67,7 +67,7 @@ class CleverBotCog(Cog, name="CleverBot"):
                 out.append(f":small_orange_diamond: {text_channel.mention}")
                 if text_channel in self.states:
                     out[-1] += f" ({self.states[text_channel].cnt})"
-        embed = Embed(title=translations.whitelisted_channels_header, colour=Colours.CleverBot)
+        embed = Embed(title=translations.whitelisted_channels, colour=Colours.CleverBot)
         embed.set_thumbnail(url="https://upload.wikimedia.org/wikipedia/de/1/15/Cleverbot_Logo.jpg")
         if out:
             embed.description = "\n".join(out)
