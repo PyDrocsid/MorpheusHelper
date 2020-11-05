@@ -329,7 +329,7 @@ rr_link: "{} -> {}"
 rr_link_auto_remove: "{} -> {} (auto remove)"
 
 # rule commands
-rule: Send messages
+rule: Send Messages
 send_embed_title: Send me the title of the embed!
 send_embed_content: Ok, now send me the content of the embed!
 could_not_send_message: Message could not be sent because I don't have `send_messages` permission in this channel.

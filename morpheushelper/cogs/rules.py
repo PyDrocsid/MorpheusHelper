@@ -1,15 +1,15 @@
-import re
 from http.client import HTTPException
-from typing import Optional, Union
+from typing import Optional
 
 from PyDrocsid.translations import translations
 from PyDrocsid.util import read_normal_message, read_complete_message
-from discord import TextChannel, Message, Forbidden, Permissions, Color, Embed
+from discord import TextChannel, Message, Forbidden, Permissions, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from colours import Colours
 from permissions import Permission
+from util import Color
 
 
 class RulesCog(Cog, name="Rule Commands"):
@@ -48,15 +48,10 @@ class RulesCog(Cog, name="Rule Commands"):
             await ctx.send(embed=embed)
 
     @send.command(name="embed", aliases=["e"])
-    async def send_embed(self, ctx: Context, channel: TextChannel, color: Optional[Union[Color, str]] = None):
+    async def send_embed(self, ctx: Context, channel: TextChannel, color: Optional[Color] = None):
         """
         send an embed
         """
-
-        if isinstance(color, str):
-            if not re.match(r"^[0-9a-fA-F]{6}$", color):
-                raise CommandError(translations.invalid_color)
-            color = int(color, 16)
 
         permissions: Permissions = channel.permissions_for(channel.guild.me)
         if not permissions.send_messages:
@@ -69,19 +64,21 @@ class RulesCog(Cog, name="Rule Commands"):
         title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
         if len(title) > 256:
             raise CommandError(translations.title_too_long)
+
         embed.description = translations.send_embed_content
         await ctx.send(embed=embed)
         content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
 
         send_embed = Embed(title=title, description=content)
 
-        if files:
+        if files and any(files[0].filename.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "gif"]):
             send_embed.set_image(url="attachment://" + files[0].filename)
 
         if color is not None:
             send_embed.colour = color
+
         try:
-            await channel.send(embed=send_embed)
+            await channel.send(embed=send_embed, files=files)
         except (HTTPException, Forbidden):
             raise CommandError(translations.msg_could_not_be_sent)
         else:
@@ -128,12 +125,13 @@ class RulesCog(Cog, name="Rule Commands"):
         content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
         if files:
             raise CommandError(translations.cannot_edit_files)
+
         await message.edit(content=content, embed=None)
         embed.description = translations.msg_edited
         await ctx.send(embed=embed)
 
     @edit.command(name="embed", aliases=["e"])
-    async def edit_embed(self, ctx: Context, message: Message, color: Optional[Union[Color, str]] = None):
+    async def edit_embed(self, ctx: Context, message: Message, color: Optional[Color] = None):
         """
         edit an embed (specify message link)
         """
@@ -141,16 +139,12 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        if isinstance(color, str):
-            if not re.match(r"^[0-9a-fA-F]{6}$", color):
-                raise CommandError(translations.invalid_color)
-            color = int(color, 16)
-
         embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_embed_title)
         await ctx.send(embed=embed)
         title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
         if len(title) > 256:
             raise CommandError(translations.title_too_long)
+
         embed.description = translations.send_embed_content
         await ctx.send(embed=embed)
         content, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
@@ -159,6 +153,7 @@ class RulesCog(Cog, name="Rule Commands"):
 
         if color is not None:
             send_embed.colour = color
+
         await message.edit(content=None, files=[], embed=send_embed)
         embed.description = translations.msg_edited
         await ctx.send(embed=embed)
