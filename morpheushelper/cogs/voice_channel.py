@@ -383,6 +383,59 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_removed(group.name))
 
+    @voice.command(name="info")
+    async def voice_info(self, ctx: Context, *, channel: Optional[Union[VoiceChannel, Member]] = None):
+        """
+        list information of a voice channel
+        """
+
+        if not isinstance(channel, VoiceChannel):
+            member = channel or ctx.author
+            if not member.voice:
+                raise CommandError(translations.permission_denied if channel else translations.not_in_voice)
+            channel = member.voice.channel
+
+        dyn_channel: Optional[DynamicVoiceChannel] = await db_thread(
+            db.first, DynamicVoiceChannel, channel_id=channel.id
+        )
+        if not dyn_channel:
+            raise CommandError(translations.dyn_group_not_found)
+        group: DynamicVoiceGroup = await db_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+
+        if not channel.permissions_for(ctx.author).connect and not group.public:
+            raise CommandError(translations.permission_denied)
+
+        visibility = translations.public if group.public else translations.private
+
+        embed = Embed(
+            title=translations.voice_info,
+            timestamp=channel.created_at,
+            colour=Colours.Voice[["private", "public"][group.public]],
+        )
+        embed.set_footer(text=translations.voice_create_date)
+        embed.add_field(name=translations.voice_name, value=channel.name)
+        embed.add_field(name=translations.voice_visibility, value=visibility)
+        if not group.public:
+            embed.add_field(name=translations.voice_owner, value=f"<@{dyn_channel.owner}>")
+
+        out = []
+        members = set(channel.members)
+        for member in members:
+            out.append(f":small_orange_diamond: {member.mention}")
+        for member, overwrites in channel.overwrites.items():
+            if not isinstance(member, Member) or not overwrites.connect or member == self.bot.user:
+                continue
+            if member not in members:
+                out.append(f":small_blue_diamond: {member.mention}")
+        name = translations.voice_members
+        if len(members) < len(out):
+            name += f" ({len(members)}/{len(out)})"
+        else:
+            name += f" ({len(out)})"
+        embed.add_field(name=name, value="\n".join(out), inline=False)
+
+        await ctx.send(embed=embed)
+
     @voice.command(name="close", aliases=["c"])
     async def voice_close(self, ctx: Context):
         """

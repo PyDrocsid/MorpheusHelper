@@ -1,4 +1,5 @@
 not_allowed: You are not allowed to use this command.
+permission_denied: Permission denied!
 
 # profile
 profile_status:
@@ -375,9 +376,11 @@ private_dyn_voice_help_content: |
   `{prefix}vc invite <member>` - add a member to this voice channel
   `{prefix}vc remove <member>` - kick and remove a member from this voice channel
   `{prefix}vc owner [<member>]` - transfer ownership of this voice channel
+  `{prefix}vc info [<channel>]` - show information about a voice channel
   `{prefix}vc close` - manually close this voice channel
   Note that these commands can be used in any text channel.
 error_visibility: "`visibility` must either be `public` or `private`."
+not_in_voice: You have to be in a voice channel to use this command.
 not_in_private_voice: You have to be in a private voice channel to use this command.
 private_voice_owner_required: You are not the owner of this voice channel.
 private_voice_closed: "Private voice channel has been closed successfully. :white_check_mark:"
@@ -400,6 +403,16 @@ link_on_dynamic_channel_not_created: >
   Link could not be created for dynamic voice channel.
   Specify the parent channel instead.
 voice_channel: Voice Channel
+
+voice_info: "Voice Channel Information"
+voice_creator: "Creator"
+voice_owner: "Owner"
+voice_members: "Members"
+public : ":globe_with_meridians: Public"
+private: ":lock: Private"
+voice_visibility: "Visibility"
+voice_create_date: "Created at:"
+voice_name: "Name"
 
 # cleverbot
 cleverbot: Cleverbot
