@@ -401,6 +401,15 @@ link_on_dynamic_channel_not_created: >
   Specify the parent channel instead.
 voice_channel: Voice Channel
 
+voice_info: "Voice Channel Information"
+voice_type : "Type"
+voice_creator: "Creator"
+voice_owner: "Owner"
+voice_members: "Members"
+voice_type_public : "Public"
+voice_type_private: "Private"
+voice_create_date: "Created at"
+
 # cleverbot
 cleverbot: Cleverbot
 log_channel_whitelisted_cb: "**Channel** {} has been **whitelisted** for CleverBot."

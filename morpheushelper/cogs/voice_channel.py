@@ -383,6 +383,27 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_removed(group.name))
 
+    @voice.command(name="info")
+    async def voice_info(self, ctx: Context, *, channel: VoiceChannel):
+        """
+        list information of a voice channel
+        """
+        dyn_channel = await db_thread(db.first, DynamicVoiceChannel, channel_id=channel.id)
+        group: DynamicVoiceGroup = await db_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+        voice_channel = self.bot.get_channel(dyn_channel.channel_id)
+
+        if ctx.author not in channel.members and not group.public:
+            raise CommandError(translations.not_in_private_voice)
+
+        type = translations.voice_type_public if group.public else translations.voice_type_public
+
+        embed = Embed(title=translations.voice_info, timestamp=voice_channel.created_at)
+        embed.add_field(name=translations.voice_owner, value=f"<@{dyn_channel.owner}>")
+        embed.add_field(name=translations.voice_members, value="\n".join([m.mention for m in channel.members]))
+        embed.add_field(name=translations.voice_type, value=type)
+
+        await ctx.send(embed=embed)
+
     @voice.command(name="close", aliases=["c"])
     async def voice_close(self, ctx: Context):
         """
