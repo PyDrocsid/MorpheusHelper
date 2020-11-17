@@ -8,6 +8,7 @@ from cogs.invites import InvitesCog
 from cogs.logging import LoggingCog
 from cogs.mediaonly import MediaOnlyCog
 from cogs.metaquestion import MetaQuestionCog
+from cogs.minigames import MiniGamesCog
 from cogs.mod import ModCog
 from cogs.news import NewsCog
 from cogs.permissions import PermissionsCog
@@ -33,6 +34,7 @@ COGS = [
     CleverBotCog,
     CodeblocksCog,
     NewsCog,
+    MiniGamesCog,
     ModCog,
     PermissionsCog,
     RedditCog,

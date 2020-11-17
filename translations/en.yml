@@ -724,3 +724,15 @@ one_teamler_missing: "{} hasn't voted yet."
 multiple_teamlers_missing: "{} and {} haven't voted yet."
 created_by: Created by @{} ({})
 can_not_use_wastebucket_as_option: "You can not use :wastebasket: as option"
+
+# mini games cog
+mini_games_title: ":video_game: Mini Games"
+mini_games_description: |
+  The mini games are little games to play with spoilers on discord.
+
+  List of all games:
+mini_games:
+  - Minesweeper
+ms_title: Minesweeper *({}x{} with {} bombs)*
+to_big_ms_field: Too big game field. Maximum is {}x{}.
+to_many_bombs: Too many bombs for {}x{} field specified. Maximum is {} bombs.
