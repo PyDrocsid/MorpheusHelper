@@ -29,7 +29,7 @@ class MiniGamesCog(Cog, name="Mini Games Cog"):
             title=translations.mini_games_title,
             description=translations.mini_games_description
             + ":small_orange_diamond: "
-            + "\n :small_orange_diamond: ".join([g for g in translations.mini_games]),
+            + "\n :small_orange_diamond: ".join(g for g in translations.mini_games),
             colour=Colours.MiniGamesCog,
         )
         await ctx.send(embed=embed)
@@ -67,11 +67,13 @@ class MiniGamesCog(Cog, name="Mini Games Cog"):
             inc(x + 1, y + 1)
 
         game_field = ""
-        for li in f:
+        for line in f:
             game_field += (
                 "".join(
-                    "||:" + ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "boom"][x] + ":||"
-                    for x in li
+                    "||:"
+                    + ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "boom"][int(x)]
+                    + ":||"
+                    for x in line
                 )
                 + "\n"
             )
