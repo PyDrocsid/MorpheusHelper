@@ -19,6 +19,7 @@ class Colours(MaterialColours):
     )
     MediaOnly = MaterialColours.yellow["a200"]
     MetaQuestions = MaterialColours.purple["a400"]
+    MiniGamesCog = MaterialColours.green
     ModTools = MaterialColours.blue["a700"]
     News = MaterialColours.orange
     Permissions = MaterialColours.blue["a700"]
