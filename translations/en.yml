@@ -661,3 +661,11 @@ poll_usage: |
   <question>
   [emoji1] <option1>
   [emojiX] [optionX]
+
+# Advent of Code Integration
+aoc_join_instructions: |
+  **How to Join the Private Leaderboard**
+  1. Log in at https://adventofcode.com/
+  2. Go to https://adventofcode.com/leaderboard/private
+  3. Enter the code `{}`
+  Good Luck, Have Fun! :christmas_tree: :gift:

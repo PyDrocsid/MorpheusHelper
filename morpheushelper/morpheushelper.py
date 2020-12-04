@@ -29,6 +29,7 @@ from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
+from cogs.adventofcode import AOCConfig, AdventOfCodeCog
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
@@ -209,7 +210,9 @@ async def build_info_embed(authorized: bool) -> Embed:
     embed.add_field(name=translations.prefix_title, value=f"`{prefix}` or {bot.user.mention}", inline=True)
     embed.add_field(name=translations.help_command_title, value=f"`{prefix}help`", inline=True)
     embed.add_field(
-        name=translations.bugs_features_title, value=translations.bugs_features, inline=False,
+        name=translations.bugs_features_title,
+        value=translations.bugs_features,
+        inline=False,
     )
     return embed
 
@@ -292,7 +295,7 @@ cog_blacklist = set(map(str.lower, os.getenv("DISABLED_COGS", "").split(",")))
 disabled_cogs = []
 enabled_cogs = []
 for cog_class in COGS:
-    if cog_class.__name__.lower() in cog_blacklist:
+    if cog_class.__name__.lower() in cog_blacklist or (cog_class is AdventOfCodeCog and not AOCConfig.load()):
         disabled_cogs.append(cog_class.__name__)
         continue
 

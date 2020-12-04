@@ -50,7 +50,9 @@ def get_discord_invite(url) -> Optional[str]:
         return None
 
     if match := re.match(
-        r"^https?://discord\.com/(\.*/)*invite/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$", url, re.IGNORECASE,
+        r"^https?://discord\.com/(\.*/)*invite/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
+        url,
+        re.IGNORECASE,
     ):
         return match.group("code")
 
