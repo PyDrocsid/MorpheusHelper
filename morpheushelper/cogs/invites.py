@@ -10,6 +10,7 @@ from PyDrocsid.translations import translations
 from discord import Invite, Member, Guild, Embed, Message, NotFound, Forbidden, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
+from urllib3.exceptions import LocationParseError
 
 from models.allowed_invite import InviteLog, AllowedInvite
 from permissions import Permission
@@ -45,7 +46,7 @@ def get_discord_invite(url) -> Optional[str]:
         url = "https://" + url
     try:
         url = requests.head(url, allow_redirects=True, timeout=10).url
-    except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+    except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError, LocationParseError):
         print("URL could not be resolved:", url)
         return None
 
