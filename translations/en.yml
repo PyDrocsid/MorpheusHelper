@@ -669,3 +669,4 @@ aoc_join_instructions: |
   2. Go to https://adventofcode.com/leaderboard/private
   3. Enter the code `{}`
   Good Luck, Have Fun! :christmas_tree: :gift:
+aoc_leaderboard_header: "**Private Leaderboard (Advent of Code {})**"
