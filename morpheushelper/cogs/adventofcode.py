@@ -5,12 +5,15 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Union
 
 import requests
+from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
 from discord import Embed, Member, User
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, UserInputError, CommandError
 
+from models.aoc_link import AOCLink
 from permissions import Permission
 
 BASE_URL = "https://adventofcode.com/"
@@ -24,7 +27,7 @@ class AOCConfig:
     LEADERBOARD_URL = None
     REFRESH_INTERVAL = None
 
-    _last_leaderboard_ts = 0
+    last_update = 0
     _leaderboard = None
 
     @classmethod
@@ -50,10 +53,10 @@ class AOCConfig:
         return requests.get(url, cookies={"session": cls.SESSION})
 
     @classmethod
-    def get_leaderboard(cls) -> tuple[float, dict]:
+    def get_leaderboard(cls) -> dict:
         ts = time.time()
-        if ts - cls._last_leaderboard_ts >= cls.REFRESH_INTERVAL:
-            cls._last_leaderboard_ts = ts
+        if ts - cls.last_update >= cls.REFRESH_INTERVAL:
+            cls.last_update = ts
             cls._leaderboard = cls._request(cls.LEADERBOARD_URL).json()
 
             members = cls._leaderboard["members"] = dict(
@@ -66,28 +69,30 @@ class AOCConfig:
             for i, member in enumerate(members.values()):
                 member["rank"] = i + 1
 
-        return cls._last_leaderboard_ts, cls._leaderboard
+        return cls._leaderboard
 
     @classmethod
-    def get_member(cls, name: str) -> tuple[float, Optional[dict]]:
-        last_update, leaderboard = cls.get_leaderboard()
-        members = leaderboard["members"]
+    def get_member(cls, name: str) -> Optional[dict]:
+        members = cls.get_leaderboard()["members"]
 
         if name in members:
-            return last_update, members[name]
+            return members[name]
 
         for member in members.values():
             if member["name"] is not None and member["name"].lower().strip() == name.lower().strip():
-                return last_update, member
+                return member
 
-        return last_update, None
+        return None
 
     @classmethod
-    def find_member(cls, member: Union[User, Member]) -> tuple[float, Optional[dict]]:
+    async def find_member(cls, member: Union[User, Member]) -> tuple[Optional[dict], bool]:
+        if link := await db_thread(db.get, AOCLink, member.id):
+            return cls.get_member(link.aoc_id), True
+
         if isinstance(member, Member) and member.nick:
-            if (result := cls.get_member(member.nick))[1]:
-                return result
-        return cls.get_member(member.name)
+            if result := cls.get_member(member.nick):
+                return result, False
+        return cls.get_member(member.name), False
 
 
 def make_leaderboard(last_update: float, members: list[tuple[int, int, int, Optional[str]]]) -> str:
@@ -110,6 +115,31 @@ def escape_aoc_name(name: Optional[str]) -> str:
 class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    async def get_from_aoc(self, aoc_name: str) -> tuple[Optional[dict], Optional[User], bool]:
+        aoc_member = AOCConfig.get_member(aoc_name)
+        if not aoc_member:
+            return None, None, False
+
+        if link := await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"]):
+            if member := self.bot.get_user(link.discord_id):
+                return aoc_member, member, True
+        return aoc_member, None, False
+
+    async def get_from_discord(self, member: User, ignore_link: bool) -> tuple[Optional[dict], Optional[User], bool]:
+        aoc_member, verified = await AOCConfig.find_member(member)
+        if not aoc_member:
+            return None, None, False
+        if verified:
+            return aoc_member, member, verified
+
+        if link := await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"]):
+            if not ignore_link:
+                return None, None, False
+
+            return aoc_member, self.bot.get_user(link.discord_id), True
+
+        return aoc_member, member, verified
 
     @commands.group()
     async def aoc(self, ctx: Context):
@@ -134,11 +164,11 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         show the current state of the private leaderboard
         """
 
-        last_update, leaderboard = AOCConfig.get_leaderboard()
+        leaderboard = AOCConfig.get_leaderboard()
 
         out = translations.f_aoc_leaderboard_header(AOCConfig.YEAR) + "\n"
         out += make_leaderboard(
-            last_update,
+            AOCConfig.last_update,
             [
                 (m["rank"], m["local_score"], m["stars"], escape_aoc_name(m["name"]) or f"[anonymous user #{m['id']}]")
                 for i, m in enumerate(list(leaderboard["members"].values())[:20])
@@ -148,35 +178,44 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.send(out)
 
     @aoc.command(name="user")
-    async def aoc_user(self, ctx: Context, *, user: Optional[str]):
+    async def aoc_user(self, ctx: Context, *, user: Optional[Union[Member, str]]):
         """
         show stats of a specific user
         """
 
-        last_update, member = AOCConfig.get_member(user) if user else AOCConfig.find_member(ctx.author)
-        if not member:
+        if isinstance(user, str):
+            aoc_member, member, verified = await self.get_from_aoc(user)
+        else:
+            aoc_member, member, verified = await self.get_from_discord(user or ctx.author, user is not None)
+
+        if not aoc_member:
             raise CommandError(translations.user_not_found)
 
-        if member["name"]:
-            name = f"{member['name']} (#{member['id']})"
+        if aoc_member["name"]:
+            name = f"{aoc_member['name']} (#{aoc_member['id']})"
         else:
-            name = f"(anonymous user #{member['id']})"
+            name = f"(anonymous user #{aoc_member['id']})"
 
-        rank = str(member["rank"]) + {1: "st", 2: "nd", 3: "rd"}.get(
-            member["rank"] % 10 * (member["rank"] // 10 % 10 != 1), "th"
+        rank = str(aoc_member["rank"]) + {1: "st", 2: "nd", 3: "rd"}.get(
+            aoc_member["rank"] % 10 * (aoc_member["rank"] // 10 % 10 != 1), "th"
         )
-        if member["rank"] <= 10:
+        if aoc_member["rank"] <= 10:
             rank = f"**{rank}**"
 
         embed = Embed(title=f"Advent of Code {AOCConfig.YEAR}", colour=0x0F0F23)
-        embed.set_author(name=name, icon_url="https://adventofcode.com/favicon.png")
-        embed.add_field(name=":star: Stars", value=member["stars"], inline=True)
-        embed.add_field(name=":trophy: Local Score", value=f"{member['local_score']} ({rank})", inline=True)
-        embed.add_field(name=":globe_with_meridians: Global Score", value=member["global_score"], inline=True)
+        icon_url = member.avatar_url if member else "https://adventofcode.com/favicon.png"
+        embed.set_author(name=name, icon_url=icon_url)
+
+        linked = f"<@{member.id}>" + " (unverified)" * (not verified) if member else "Not Linked"
+        embed.add_field(name=":link: Member", value=linked, inline=True)
+
+        embed.add_field(name=":star: Stars", value=aoc_member["stars"], inline=True)
+        embed.add_field(name=":trophy: Local Score", value=f"{aoc_member['local_score']} ({rank})", inline=True)
+        embed.add_field(name=":globe_with_meridians: Global Score", value=aoc_member["global_score"], inline=True)
 
         stars = ["Day  Part #1          Part #2"]
         for i in range(25):
-            day = member["completion_day_level"].get(str(i + 1))
+            day = aoc_member["completion_day_level"].get(str(i + 1))
             if not day:
                 continue
 
@@ -195,7 +234,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         embed.add_field(name="** **", value="```hs\n" + "\n".join(stars) + "\n```", inline=False)
         embed.set_footer(text="Last Update:")
-        embed.timestamp = datetime.utcfromtimestamp(last_update)
+        embed.timestamp = datetime.utcfromtimestamp(AOCConfig.last_update)
 
         await ctx.send(embed=embed)
 
@@ -206,5 +245,75 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         clear the leaderboard cache to force a refresh on the next request
         """
 
-        AOCConfig._last_leaderboard_ts = 0
+        AOCConfig.last_update = 0
         await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
+
+    @aoc.group(name="link", aliases=["l"])
+    @Permission.aoc_link.check
+    async def aoc_link(self, ctx: Context):
+        """
+        manage links between discord members and aoc users on the private leaderboard
+        """
+
+        if len(ctx.message.content.lstrip(ctx.prefix).split()) > 2:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
+            return
+
+        embed = Embed(title=translations.aoc_links, colour=0x0F0F23)
+        leaderboard = AOCConfig.get_leaderboard()
+        out = []
+        for link in await db_thread(db.all, AOCLink):  # type: AOCLink
+            if link.aoc_id not in leaderboard["members"]:
+                continue
+            if not (user := self.bot.get_user(link.discord_id)):
+                continue
+
+            member = leaderboard["members"][link.aoc_id]
+            if member["name"]:
+                name = f"{member['name']} (#{member['id']})"
+            else:
+                name = f"(anonymous user #{member['id']})"
+
+            out.append(f"{name} = <@{link.discord_id}> (`@{user}`)")
+
+        if not out:
+            embed.description = translations.aoc_no_links
+            embed.colour = 0xCF0606
+        else:
+            embed.description = "\n".join(out)
+        await send_long_embed(ctx, embed)
+
+    @aoc_link.command(name="add", aliases=["a", "+"])
+    async def aoc_link_add(self, ctx: Context, member: Member, *, aoc_user: str):
+        """
+        add a new link
+        """
+
+        aoc_member = AOCConfig.get_member(aoc_user)
+        if not aoc_member:
+            raise CommandError(translations.user_not_found)
+
+        if await db_thread(db.get, AOCLink, member.id) or await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"]):
+            raise CommandError(translations.aoc_link_already_exists)
+
+        await db_thread(AOCLink.create, member.id, aoc_member["id"])
+        await ctx.send(translations.aoc_link_created)
+
+    @aoc_link.command(name="remove", aliases=["r", "del", "d", "-"])
+    async def aoc_link_remove(self, ctx: Context, *, member: Union[Member, str]):
+        """
+        remove a link
+        """
+
+        if isinstance(member, Member):
+            link = await db_thread(db.get, AOCLink, member.id)
+        else:
+            aoc_member = AOCConfig.get_member(member)
+            link = aoc_member and await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"])
+
+        if not link:
+            raise CommandError(translations.aoc_link_not_found)
+
+        await db_thread(db.delete, link)
+        await ctx.send(translations.aoc_link_removed)

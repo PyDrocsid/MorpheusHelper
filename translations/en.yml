@@ -569,6 +569,7 @@ permissions:
   manage_reddit: manage reddit integration
 
   aoc_clear: clear aoc leaderboard cache
+  aoc_link: link discord members to aoc users
 
 # reddit
 reddit: Reddit
@@ -672,3 +673,9 @@ aoc_join_instructions: |
   3. Enter the code `{}`
   Good Luck, Have Fun! :christmas_tree: :gift:
 aoc_leaderboard_header: "**Private Leaderboard (Advent of Code {})**"
+aoc_links: Advent of Code - User Links
+aoc_no_links: No member has been linked yet.
+aoc_link_already_exists: A link already exists for this user.
+aoc_link_created: Link has been created.
+aoc_link_not_found: Link not found.
+aoc_link_removed: Link has been removed.
