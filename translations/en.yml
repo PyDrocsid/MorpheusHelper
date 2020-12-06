@@ -568,6 +568,8 @@ permissions:
 
   manage_reddit: manage reddit integration
 
+  aoc_clear: clear aoc leaderboard cache
+
 # reddit
 reddit: Reddit
 interval: Interval

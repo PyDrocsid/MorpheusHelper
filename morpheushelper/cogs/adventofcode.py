@@ -5,10 +5,13 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Union
 
 import requests
+from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.translations import translations
 from discord import Embed, Member, User
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, UserInputError, CommandError
+
+from permissions import Permission
 
 BASE_URL = "https://adventofcode.com/"
 
@@ -110,6 +113,10 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
     @commands.group()
     async def aoc(self, ctx: Context):
+        """
+        Advent of Code Integration
+        """
+
         if ctx.invoked_subcommand is None:
             raise UserInputError
 
@@ -191,3 +198,13 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         embed.timestamp = datetime.utcfromtimestamp(last_update)
 
         await ctx.send(embed=embed)
+
+    @aoc.command(name="clear_cache", aliases=["clear", "cc"])
+    @Permission.aoc_clear.check
+    async def aoc_clear_cache(self, ctx: Context):
+        """
+        clear the leaderboard cache to force a refresh on the next request
+        """
+
+        AOCConfig._last_leaderboard_ts = 0
+        await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
