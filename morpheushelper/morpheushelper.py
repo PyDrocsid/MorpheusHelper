@@ -12,7 +12,7 @@ from PyDrocsid.events import listener, register_cogs, call_event_handlers
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency, send_long_embed
-from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents
+from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents, TextChannel
 from discord.ext import tasks
 from discord.ext.commands import (
     Bot,
@@ -141,11 +141,18 @@ def is_sudoer(ctx: Context):
     return True
 
 
+sudo_cache: dict[TextChannel, Message] = {}
+
+
 @bot.command()
 @is_sudoer
 async def sudo(ctx: Context, *, cmd: str):
     message: Message = ctx.message
     message.content = ctx.prefix + cmd
+
+    if cmd == "!!" and ctx.channel in sudo_cache:
+        message.content = sudo_cache.pop(ctx.channel).content
+
     sudo_active.set(True)
     await bot.process_commands(message)
 
@@ -283,6 +290,10 @@ async def on_command_error(ctx: Context, error: CommandError):
                 make_error(error), allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False)
             )
         ]
+
+    if ctx.author.id == 370876111992913922:
+        sudo_cache[ctx.channel] = ctx.message
+
     add_to_error_cache(ctx.message, messages)
 
 
