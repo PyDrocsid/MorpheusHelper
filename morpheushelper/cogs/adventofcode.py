@@ -108,6 +108,45 @@ def make_leaderboard(last_update: float, members: list[tuple[int, int, int, Opti
     return "```css\n" + "\n".join(out) + "\n```"
 
 
+def make_member_stats(member: dict) -> tuple[int, list[str]]:
+    stars = ["Day  Part #1          Part #2"]
+    completed = 0
+    part_avg = [[], []]
+    for i in range(25):
+        day = member["completion_day_level"].get(str(i + 1))
+        if not day:
+            continue
+
+        line = f" {i + 1:02}"
+        for part, avg in zip("12", part_avg):
+            if part not in day:
+                break
+
+            completed += 1
+            delta = timedelta(
+                seconds=int(day[part]["get_star_ts"])
+                - datetime(AOCConfig.YEAR, 12, i + 1, 5, 0, 0, tzinfo=timezone.utc).timestamp()
+            )
+            avg.append(delta.total_seconds())
+            d, h, m, s = delta.days, delta.seconds // 3600, delta.seconds // 60 % 60, delta.seconds % 60
+            line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
+        stars.append(line)
+
+    if completed:
+        stars.append("-" * 37)
+        line = "Avg"
+        for part in part_avg:
+            if not part:
+                break
+
+            delta = timedelta(seconds=sum(part) / len(part))
+            d, h, m, s = delta.days, delta.seconds // 3600, delta.seconds // 60 % 60, delta.seconds % 60
+            line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
+        stars.append(line)
+
+    return completed, stars
+
+
 def escape_aoc_name(name: Optional[str]) -> str:
     return "".join(c for c in name if c.isalnum() or c in " _-") if name else ""
 
@@ -196,11 +235,24 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         else:
             name = f"(anonymous user #{aoc_member['id']})"
 
+        trophy = "trophy"
         rank = str(aoc_member["rank"]) + {1: "st", 2: "nd", 3: "rd"}.get(
             aoc_member["rank"] % 10 * (aoc_member["rank"] // 10 % 10 != 1), "th"
         )
         if aoc_member["rank"] <= 10:
             rank = f"**{rank}**"
+            trophy = "medal"
+        if aoc_member["rank"] <= 3:
+            trophy = ["first", "second", "third"][aoc_member["rank"] - 1] + "_place"
+
+        completed, stars = make_member_stats(aoc_member)
+        unlocked = (datetime.now(tz=timezone.utc) - datetime(AOCConfig.YEAR, 12, 1, 5, 0, 0, tzinfo=timezone.utc)).days
+        unlocked = max(0, min(25, unlocked + 1)) * 2
+        if not unlocked:
+            progress = "N/A"
+        else:
+            full = "**" * (unlocked == completed)
+            progress = f"{completed}/{unlocked} ({full}{completed/unlocked*100:.1f}%{full})"
 
         embed = Embed(title=f"Advent of Code {AOCConfig.YEAR}", colour=0x0F0F23)
         icon_url = member.avatar_url if member else "https://adventofcode.com/favicon.png"
@@ -208,29 +260,11 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         linked = f"<@{member.id}>" + " (unverified)" * (not verified) if member else "Not Linked"
         embed.add_field(name=":link: Member", value=linked, inline=True)
+        embed.add_field(name=":chart_with_upwards_trend: Progress", value=progress, inline=True)
 
         embed.add_field(name=":star: Stars", value=aoc_member["stars"], inline=True)
-        embed.add_field(name=":trophy: Local Score", value=f"{aoc_member['local_score']} ({rank})", inline=True)
+        embed.add_field(name=f":{trophy}: Local Score", value=f"{aoc_member['local_score']} ({rank})", inline=True)
         embed.add_field(name=":globe_with_meridians: Global Score", value=aoc_member["global_score"], inline=True)
-
-        stars = ["Day  Part #1          Part #2"]
-        for i in range(25):
-            day = aoc_member["completion_day_level"].get(str(i + 1))
-            if not day:
-                continue
-
-            line = f" {i + 1:02}"
-            for part in "12":
-                if part not in day:
-                    break
-
-                delta = timedelta(
-                    seconds=int(day[part]["get_star_ts"])
-                    - datetime(AOCConfig.YEAR, 12, i + 1, 5, 0, 0, tzinfo=timezone.utc).timestamp()
-                )
-                d, h, m, s = delta.days, delta.seconds // 3600, delta.seconds // 60 % 60, delta.seconds % 60
-                line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
-            stars.append(line)
 
         embed.add_field(name="** **", value="```hs\n" + "\n".join(stars) + "\n```", inline=False)
         embed.set_footer(text="Last Update:")
