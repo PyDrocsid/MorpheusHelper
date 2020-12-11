@@ -570,6 +570,7 @@ permissions:
 
   aoc_clear: clear aoc leaderboard cache
   aoc_link: link discord members to aoc users
+  aoc_role: manage aoc role
 
 # reddit
 reddit: Reddit
@@ -679,3 +680,12 @@ aoc_link_already_exists: A link already exists for this user.
 aoc_link_created: Link has been created.
 aoc_link_not_found: Link not found.
 aoc_link_removed: Link has been removed.
+aoc_role: Advent of Code - Role
+aoc_min_rank: Minimum Rank
+aoc_role_set: Advent of Code role has been configured.
+log_aoc_role_set: "Advent of Code role has been set to `@{}` ({})."
+aoc_role_disabled: Advent of Code role has been disabled.
+aoc_rank_set: Minimum rank for Advent of Code role has been configured.
+log_aoc_rank_set: Minimum rank for Advent of Code role has been set to {}.
+aoc_invalid_rank: Invalid rank.
+members: Members

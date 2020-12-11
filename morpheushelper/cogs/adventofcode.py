@@ -7,14 +7,16 @@ from typing import Optional, Union
 import requests
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from discord import Embed, Member, User
-from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, UserInputError, CommandError
+from discord import Embed, Member, User, Role, Guild
+from discord.ext import commands, tasks
+from discord.ext.commands import Cog, Bot, Context, UserInputError, CommandError, guild_only
 
 from models.aoc_link import AOCLink
 from permissions import Permission
+from util import send_to_changelog
 
 BASE_URL = "https://adventofcode.com/"
 
@@ -29,6 +31,8 @@ class AOCConfig:
 
     last_update = 0
     _leaderboard = None
+
+    update_hook = None
 
     @classmethod
     def load(cls) -> bool:
@@ -53,7 +57,7 @@ class AOCConfig:
         return requests.get(url, cookies={"session": cls.SESSION})
 
     @classmethod
-    def get_leaderboard(cls) -> dict:
+    async def get_leaderboard(cls, disable_hook: bool = False) -> dict:
         ts = time.time()
         if ts - cls.last_update >= cls.REFRESH_INTERVAL:
             cls.last_update = ts
@@ -69,11 +73,14 @@ class AOCConfig:
             for i, member in enumerate(members.values()):
                 member["rank"] = i + 1
 
+            if cls.update_hook and not disable_hook:
+                await cls.update_hook(cls._leaderboard)
+
         return cls._leaderboard
 
     @classmethod
-    def get_member(cls, name: str) -> Optional[dict]:
-        members = cls.get_leaderboard()["members"]
+    async def get_member(cls, name: str) -> Optional[dict]:
+        members = (await cls.get_leaderboard())["members"]
 
         if name in members:
             return members[name]
@@ -87,12 +94,12 @@ class AOCConfig:
     @classmethod
     async def find_member(cls, member: Union[User, Member]) -> tuple[Optional[dict], bool]:
         if link := await db_thread(db.get, AOCLink, member.id):
-            return cls.get_member(link.aoc_id), True
+            return await cls.get_member(link.aoc_id), True
 
         if isinstance(member, Member) and member.nick:
-            if result := cls.get_member(member.nick):
+            if result := await cls.get_member(member.nick):
                 return result, False
-        return cls.get_member(member.name), False
+        return await cls.get_member(member.name), False
 
 
 def make_leaderboard(last_update: float, members: list[tuple[int, int, int, Optional[str]]]) -> str:
@@ -154,9 +161,40 @@ def escape_aoc_name(name: Optional[str]) -> str:
 class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
     def __init__(self, bot: Bot):
         self.bot = bot
+        AOCConfig.update_hook = self.update_roles
+
+    async def on_ready(self):
+        self.aoc_loop.cancel()
+        try:
+            self.aoc_loop.start()
+        except RuntimeError:
+            self.aoc_loop.restart()
+
+    @tasks.loop(minutes=1)
+    async def aoc_loop(self):
+        await AOCConfig.get_leaderboard()
+
+    async def update_roles(self, leaderboard: dict):
+        guild: Guild = self.bot.guilds[0]
+        role: Optional[Role] = guild.get_role(await Settings.get(int, "aoc_role", -1))
+        if not role:
+            return
+        rank: int = await Settings.get(int, "aoc_rank", 10)
+
+        new_members: set[Member] = set()
+        for member in list(leaderboard["members"].values())[:rank]:
+            if link := await db_thread(db.first, AOCLink, aoc_id=member["id"]):
+                if member := guild.get_member(link.discord_id):
+                    new_members.add(member)
+        old_members: set[Member] = set(role.members)
+
+        for member in old_members - new_members:
+            await member.remove_roles(role)
+        for member in new_members - old_members:
+            await member.add_roles(role)
 
     async def get_from_aoc(self, aoc_name: str) -> tuple[Optional[dict], Optional[User], bool]:
-        aoc_member = AOCConfig.get_member(aoc_name)
+        aoc_member = await AOCConfig.get_member(aoc_name)
         if not aoc_member:
             return None, None, False
 
@@ -203,7 +241,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         show the current state of the private leaderboard
         """
 
-        leaderboard = AOCConfig.get_leaderboard()
+        leaderboard = await AOCConfig.get_leaderboard()
 
         out = translations.f_aoc_leaderboard_header(AOCConfig.YEAR) + "\n"
         out += make_leaderboard(
@@ -239,7 +277,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         rank = str(aoc_member["rank"]) + {1: "st", 2: "nd", 3: "rd"}.get(
             aoc_member["rank"] % 10 * (aoc_member["rank"] // 10 % 10 != 1), "th"
         )
-        if aoc_member["rank"] <= 10:
+        if aoc_member["rank"] <= await Settings.get(int, "aoc_rank", 10):
             rank = f"**{rank}**"
             trophy = "medal"
         if aoc_member["rank"] <= 3:
@@ -295,7 +333,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
             return
 
         embed = Embed(title=translations.aoc_links, colour=0x0F0F23)
-        leaderboard = AOCConfig.get_leaderboard()
+        leaderboard = await AOCConfig.get_leaderboard()
         out = []
         for link in await db_thread(db.all, AOCLink):  # type: AOCLink
             if link.aoc_id not in leaderboard["members"]:
@@ -324,7 +362,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         add a new link
         """
 
-        aoc_member = AOCConfig.get_member(aoc_user)
+        aoc_member = await AOCConfig.get_member(aoc_user)
         if not aoc_member:
             raise CommandError(translations.user_not_found)
 
@@ -343,7 +381,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         if isinstance(member, Member):
             link = await db_thread(db.get, AOCLink, member.id)
         else:
-            aoc_member = AOCConfig.get_member(member)
+            aoc_member = await AOCConfig.get_member(member)
             link = aoc_member and await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"])
 
         if not link:
@@ -351,3 +389,84 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         await db_thread(db.delete, link)
         await ctx.send(translations.aoc_link_removed)
+
+    @aoc.group(name="role", aliases=["r"])
+    @Permission.aoc_role.check
+    @guild_only()
+    async def aoc_role(self, ctx: Context):
+        """
+        manage aoc role
+        """
+
+        if len(ctx.message.content.lstrip(ctx.prefix).split()) > 2:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
+            return
+
+        embed = Embed(title=translations.aoc_role)
+
+        role: Optional[Role] = ctx.guild.get_role(await Settings.get(int, "aoc_role", -1))
+        rank: int = await Settings.get(int, "aoc_rank", 10)
+
+        if not role:
+            embed.colour = 0xCF0606
+            embed.add_field(name=translations.role, value=translations.disabled)
+        else:
+            embed.colour = role.colour
+            embed.add_field(name=translations.role, value=role.mention)
+        embed.add_field(name=translations.aoc_min_rank, value=str(rank))
+
+        if role:
+            embed.add_field(name=translations.members, value="\n".join(m.mention for m in role.members), inline=False)
+
+        await send_long_embed(ctx, embed)
+
+    @aoc_role.command(name="set", aliases=["s", "="])
+    async def aoc_role_set(self, ctx: Context, role: Role):
+        """
+        configure aoc role
+        """
+
+        old_role: Optional[Role] = ctx.guild.get_role(await Settings.get(int, "aoc_role", -1))
+
+        await Settings.set(int, "aoc_role", role.id)
+
+        if old_role:
+            for member in old_role.members:
+                await member.remove_roles(old_role)
+        await self.update_roles(await AOCConfig.get_leaderboard(disable_hook=True))
+
+        await ctx.send(translations.aoc_role_set)
+        await send_to_changelog(ctx.guild, translations.f_log_aoc_role_set(role.name, role.id))
+
+    @aoc_role.command(name="disable", aliases=["d", "off"])
+    async def aoc_role_disable(self, ctx: Context):
+        """
+        disable aoc role
+        """
+
+        role: Optional[Role] = ctx.guild.get_role(await Settings.get(int, "aoc_role", -1))
+
+        await Settings.set(int, "aoc_role", -1)
+
+        if role:
+            for member in role.members:
+                await member.remove_roles(role)
+
+        await ctx.send(translations.aoc_role_disabled)
+        await send_to_changelog(ctx.guild, translations.aoc_role_disabled)
+
+    @aoc_role.command(name="rank", aliases=["r"])
+    async def aoc_role_rank(self, ctx: Context, rank: int):
+        """
+        set the minimum rank users need to get the role
+        """
+
+        if not 1 <= rank <= 200:
+            raise CommandError(translations.aoc_invalid_rank)
+
+        await Settings.set(int, "aoc_rank", rank)
+        await self.update_roles(await AOCConfig.get_leaderboard(disable_hook=True))
+
+        await ctx.send(translations.aoc_rank_set)
+        await send_to_changelog(ctx.guild, translations.f_log_aoc_rank_set(rank))
