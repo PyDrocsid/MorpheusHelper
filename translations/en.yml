@@ -689,3 +689,8 @@ aoc_rank_set: Minimum rank for Advent of Code role has been configured.
 log_aoc_rank_set: Minimum rank for Advent of Code role has been set to {}.
 aoc_invalid_rank: Invalid rank.
 members: Members
+aoc_not_verified: You have to be verified to use this command.
+aoc_invalid_url: Invalid URL. Only GitHub repositories are allowed.
+aoc_published: Repository has been published successfully.
+aoc_not_published: No repository has been published yet.
+aoc_unpublished: Repository has been removed from your profile.

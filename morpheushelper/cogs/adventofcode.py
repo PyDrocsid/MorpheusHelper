@@ -92,14 +92,14 @@ class AOCConfig:
         return None
 
     @classmethod
-    async def find_member(cls, member: Union[User, Member]) -> tuple[Optional[dict], bool]:
+    async def find_member(cls, member: Union[User, Member]) -> tuple[Optional[dict], Optional[AOCLink]]:
         if link := await db_thread(db.get, AOCLink, member.id):
-            return await cls.get_member(link.aoc_id), True
+            return await cls.get_member(link.aoc_id), link
 
         if isinstance(member, Member) and member.nick:
             if result := await cls.get_member(member.nick):
-                return result, False
-        return await cls.get_member(member.name), False
+                return result, None
+        return await cls.get_member(member.name), None
 
 
 def make_leaderboard(last_update: float, members: list[tuple[int, int, int, Optional[str]]]) -> str:
@@ -158,6 +158,18 @@ def escape_aoc_name(name: Optional[str]) -> str:
     return "".join(c for c in name if c.isalnum() or c in " _-") if name else ""
 
 
+def get_github_repo(url: str) -> Optional[str]:
+    if not (match := re.match(r"^(https?://)?github.com/([a-zA-Z0-9.\-_]+)/([a-zA-Z0-9.\-_]+)(/.*)?$", url)):
+        return None
+    _, user, repo, path = match.groups()
+    if not (response := requests.get(f"https://api.github.com/repos/{user}/{repo}")).ok:
+        return None
+    url = response.json()["html_url"] + (path or "")
+    if not requests.head(url).ok:
+        return None
+    return url
+
+
 class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -193,30 +205,32 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         for member in new_members - old_members:
             await member.add_roles(role)
 
-    async def get_from_aoc(self, aoc_name: str) -> tuple[Optional[dict], Optional[User], bool]:
+    async def get_from_aoc(self, aoc_name: str) -> tuple[Optional[dict], Optional[User], Optional[AOCLink]]:
         aoc_member = await AOCConfig.get_member(aoc_name)
         if not aoc_member:
-            return None, None, False
+            return None, None, None
 
         if link := await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"]):
             if member := self.bot.get_user(link.discord_id):
-                return aoc_member, member, True
-        return aoc_member, None, False
+                return aoc_member, member, link
+        return aoc_member, None, None
 
-    async def get_from_discord(self, member: User, ignore_link: bool) -> tuple[Optional[dict], Optional[User], bool]:
-        aoc_member, verified = await AOCConfig.find_member(member)
+    async def get_from_discord(
+        self, member: User, ignore_link: bool
+    ) -> tuple[Optional[dict], Optional[User], Optional[AOCLink]]:
+        aoc_member, link = await AOCConfig.find_member(member)
         if not aoc_member:
-            return None, None, False
-        if verified:
-            return aoc_member, member, verified
+            return None, None, None
+        if link:
+            return aoc_member, member, link
 
         if link := await db_thread(db.first, AOCLink, aoc_id=aoc_member["id"]):
             if not ignore_link:
-                return None, None, False
+                return None, None, None
 
-            return aoc_member, self.bot.get_user(link.discord_id), True
+            return aoc_member, self.bot.get_user(link.discord_id), link
 
-        return aoc_member, member, verified
+        return aoc_member, member, None
 
     @commands.group()
     async def aoc(self, ctx: Context):
@@ -261,9 +275,9 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         """
 
         if isinstance(user, str):
-            aoc_member, member, verified = await self.get_from_aoc(user)
+            aoc_member, member, link = await self.get_from_aoc(user)
         else:
-            aoc_member, member, verified = await self.get_from_discord(user or ctx.author, user is not None)
+            aoc_member, member, link = await self.get_from_discord(user or ctx.author, user is not None)
 
         if not aoc_member:
             raise CommandError(translations.user_not_found)
@@ -296,9 +310,12 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         icon_url = member.avatar_url if member else "https://adventofcode.com/favicon.png"
         embed.set_author(name=name, icon_url=icon_url)
 
-        linked = f"<@{member.id}>" + " (unverified)" * (not verified) if member else "Not Linked"
+        linked = f"<@{member.id}>" + " (unverified)" * (not link) if member else "Not Linked"
         embed.add_field(name=":link: Member", value=linked, inline=True)
         embed.add_field(name=":chart_with_upwards_trend: Progress", value=progress, inline=True)
+
+        if link and link.solutions:
+            embed.add_field(name=":package: Solutions", value=f"[[GitHub]]({link.solutions})", inline=True)
 
         embed.add_field(name=":star: Stars", value=aoc_member["stars"], inline=True)
         embed.add_field(name=f":{trophy}: Local Score", value=f"{aoc_member['local_score']} ({rank})", inline=True)
@@ -470,3 +487,34 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         await ctx.send(translations.aoc_rank_set)
         await send_to_changelog(ctx.guild, translations.f_log_aoc_rank_set(rank))
+
+    @aoc.command(name="publish")
+    async def aoc_publish(self, ctx: Context, url: str):
+        """
+        publish a github repository containing solutions for the current advent of code round
+        """
+
+        if not await db_thread(db.get, AOCLink, ctx.author.id):
+            raise CommandError(translations.aoc_not_verified)
+
+        url: Optional[str] = get_github_repo(url)
+        if not url or len(url) > 128:
+            raise CommandError(translations.aoc_invalid_url)
+
+        await db_thread(AOCLink.publish, ctx.author.id, url)
+        await ctx.send(translations.aoc_published)
+
+    @aoc.command(name="unpublish")
+    async def aoc_unpublish(self, ctx: Context):
+        """
+        unpublish a previously published repository
+        """
+
+        link: Optional[AOCLink] = await db_thread(db.get, AOCLink, ctx.author.id)
+        if not link:
+            raise CommandError(translations.aoc_not_verified)
+        if not link.solutions:
+            raise CommandError(translations.aoc_not_published)
+
+        await db_thread(AOCLink.unpublish, ctx.author.id)
+        await ctx.send(translations.aoc_unpublished)
