@@ -170,6 +170,11 @@ def get_github_repo(url: str) -> Optional[str]:
     return url
 
 
+def parse_github_url(url: str) -> tuple[str, str]:
+    user, repo = re.match(r"^https://github.com/([^/]+)/([^/]+).*", url).groups()
+    return user, repo
+
+
 class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -315,7 +320,8 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         embed.add_field(name=":chart_with_upwards_trend: Progress", value=progress, inline=True)
 
         if link and link.solutions:
-            embed.add_field(name=":package: Solutions", value=f"[[GitHub]]({link.solutions})", inline=True)
+            user, repo = parse_github_url(link.solutions)
+            embed.add_field(name=":package: Solutions", value=f"[[{user}/{repo}]]({link.solutions})", inline=True)
 
         embed.add_field(name=":star: Stars", value=aoc_member["stars"], inline=True)
         embed.add_field(name=f":{trophy}: Local Score", value=f"{aoc_member['local_score']} ({rank})", inline=True)
@@ -518,3 +524,27 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         await db_thread(AOCLink.unpublish, ctx.author.id)
         await ctx.send(translations.aoc_unpublished)
+
+    @aoc.command(name="solutions", aliases=["repos"])
+    async def aoc_solutions(self, ctx: Context):
+        """
+        list published solution repositories
+        """
+
+        embed = Embed(title=translations.aoc_solutions, colour=0x0F0F23)
+        members = (await AOCConfig.get_leaderboard())["members"]
+        out = []
+        for link in await db_thread(db.all, AOCLink):  # type: AOCLink
+            if not link.solutions or link.aoc_id not in members:
+                continue
+
+            user, repo = parse_github_url(link.solutions)
+            out.append(f"<@{link.discord_id}> ({members[link.aoc_id]['name']}): [[{user}/{repo}]]({link.solutions})")
+
+        if not out:
+            embed.description = translations.aoc_no_solutions
+            embed.colour = 0xCF0606
+        else:
+            embed.description = "\n".join(out)
+
+        await send_long_embed(ctx, embed)

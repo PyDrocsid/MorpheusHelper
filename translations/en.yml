@@ -694,3 +694,5 @@ aoc_invalid_url: Invalid URL. Only GitHub repositories are allowed.
 aoc_published: Repository has been published successfully.
 aoc_not_published: No repository has been published yet.
 aoc_unpublished: Repository has been removed from your profile.
+aoc_solutions: Advent of Code - Solution Repositories
+aoc_no_solutions: No solutions have been published yet.
