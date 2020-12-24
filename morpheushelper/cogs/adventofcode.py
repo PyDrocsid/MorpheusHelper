@@ -139,17 +139,17 @@ def make_member_stats(member: dict) -> tuple[int, list[str]]:
             line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
         stars.append(line)
 
-    if completed:
-        stars.append("-" * 37)
-        line = "Avg"
-        for part in part_avg:
-            if not part:
-                break
-
-            delta = timedelta(seconds=sum(part) / len(part))
-            d, h, m, s = delta.days, delta.seconds // 3600, delta.seconds // 60 % 60, delta.seconds % 60
-            line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
-        stars.append(line)
+#    if completed:
+#        stars.append("-" * 37)
+#        line = "Avg"
+#        for part in part_avg:
+#            if not part:
+#                break
+#
+#            delta = timedelta(seconds=sum(part) / len(part))
+#            d, h, m, s = delta.days, delta.seconds // 3600, delta.seconds // 60 % 60, delta.seconds % 60
+#            line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
+#        stars.append(line)
 
     return completed, stars
 
