@@ -49,7 +49,7 @@ class AOCConfig:
         cls.INVITE_CODE, cls.USER_ID = re.search(r"<code>((\d+)-[\da-f]+)</code>", response.text).groups()
         cls.LEADERBOARD_URL = BASE_URL + f"{cls.YEAR}/leaderboard/private/view/{cls.USER_ID}.json"
 
-        cls.REFRESH_INTERVAL = int(os.getenv("AOC_REFRESH_INTERVAL", 900))
+        cls.REFRESH_INTERVAL = int(os.getenv("AOC_REFRESH_INTERVAL", "900"))
 
         return True
 
@@ -104,7 +104,7 @@ class AOCConfig:
 
 
 def make_leaderboard(last_update: float, members: list[tuple[int, int, int, Optional[str]]]) -> str:
-    rank_len, score_len, stars_len, name_len = [max(len(str(e)) for e in column) for column in zip(*map(list, members))]
+    rank_len, score_len, stars_len, _ = [max(len(str(e)) for e in column) for column in zip(*map(list, members))]
     score_len = max(score_len, 3)
     stars_len = max(stars_len, 5)
 
