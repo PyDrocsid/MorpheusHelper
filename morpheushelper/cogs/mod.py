@@ -144,9 +144,9 @@ class ModCog(Cog, name="Mod Tools"):
 
         for mute in await db_thread(db.all, Mute, active=True):
             if mute.days != -1 and datetime.utcnow() >= mute.timestamp + timedelta(days=mute.days):
-                try:
-                    await (member := guild.get_member(mute.member)).remove_roles(mute_role)
-                except (Forbidden, HTTPException):
+                if member := guild.get_member(mute.member):
+                    await member.remove_roles(mute_role)
+                else:
                     member = mute.member, mute.member_name
 
                 await send_to_changelog_mod(
