@@ -568,6 +568,7 @@ invalid_permission_level: Invalid permission level.
 invalid_permission: Invalid permission.
 cannot_manage_permission_level: You are not allowed to manage this permission level.
 permission_set: "Permission `{}` has been granted to `>= {}` :white_check_mark:"
+log_permission_set: "**Permission** `{}` has been **granted** to `>= {}` :white_check_mark:"
 permissions_title: Permissions
 my_permissions_title: My Permissions
 

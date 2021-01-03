@@ -8,6 +8,7 @@ from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadAr
 
 from colours import Colours
 from permissions import Permission, PermissionLevel  # skipcq: PYL-W0406
+from util import send_to_changelog
 
 
 async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel):
@@ -101,9 +102,12 @@ class PermissionsCog(Cog, name="Permissions"):
             raise CommandError(translations.cannot_manage_permission_level)
 
         await permission.set(level)
+
+        description = permission.name, translations.permission_levels[level.value]
         embed = Embed(
             title=translations.permissions_title,
             colour=Colours.Permissions,
-            description=translations.f_permission_set(permission.name, translations.permission_levels[level.value]),
+            description=translations.f_permission_set(*description),
         )
         await ctx.send(embed=embed)
+        await send_to_changelog(ctx.guild, translations.f_log_permission_set(*description))
