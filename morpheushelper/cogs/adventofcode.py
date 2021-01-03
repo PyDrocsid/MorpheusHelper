@@ -14,6 +14,7 @@ from discord import Embed, Member, User, Role, Guild
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, Context, UserInputError, CommandError, guild_only
 
+from colours import Colours
 from models.aoc_link import AOCLink
 from permissions import Permission
 from util import send_to_changelog
@@ -252,7 +253,13 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         request instructions on how to join the private leaderboard
         """
 
-        await ctx.send(translations.f_aoc_join_instructions(AOCConfig.INVITE_CODE))
+        await ctx.send(
+            embed=Embed(
+                title=translations.aoc_join_title,
+                colour=Colours.AdventOfCode,
+                description=translations.f_aoc_join_instructions(AOCConfig.INVITE_CODE),
+            )
+        )
 
     @aoc.command(name="leaderboard", aliases=["lb", "ranking"])
     async def aoc_leaderboard(self, ctx: Context):
@@ -311,7 +318,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
             full = "**" * (unlocked == completed)
             progress = f"{completed}/{unlocked} ({full}{completed/unlocked*100:.1f}%{full})"
 
-        embed = Embed(title=f"Advent of Code {AOCConfig.YEAR}", colour=0x0F0F23)
+        embed = Embed(title=f"Advent of Code {AOCConfig.YEAR}", colour=Colours.AdventOfCode)
         icon_url = member.avatar_url if member else "https://adventofcode.com/favicon.png"
         embed.set_author(name=name, icon_url=icon_url)
 
@@ -355,7 +362,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.aoc_links, colour=0x0F0F23)
+        embed = Embed(title=translations.aoc_links, colour=Colours.AdventOfCode)
         leaderboard = await AOCConfig.get_leaderboard()
         out = []
         for link in await db_thread(db.all, AOCLink):  # type: AOCLink
@@ -374,7 +381,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         if not out:
             embed.description = translations.aoc_no_links
-            embed.colour = 0xCF0606
+            embed.colour = Colours.error
         else:
             embed.description = "\n".join(out)
         await send_long_embed(ctx, embed)
@@ -432,7 +439,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         rank: int = await Settings.get(int, "aoc_rank", 10)
 
         if not role:
-            embed.colour = 0xCF0606
+            embed.colour = Colours.error
             embed.add_field(name=translations.role, value=translations.disabled)
         else:
             embed.colour = role.colour
@@ -531,7 +538,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         list published solution repositories
         """
 
-        embed = Embed(title=translations.aoc_solutions, colour=0x0F0F23)
+        embed = Embed(title=translations.aoc_solutions, colour=Colours.AdventOfCode)
         members = (await AOCConfig.get_leaderboard())["members"]
         out = []
         for link in await db_thread(db.all, AOCLink):  # type: AOCLink
@@ -543,7 +550,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         if not out:
             embed.description = translations.aoc_no_solutions
-            embed.colour = 0xCF0606
+            embed.colour = Colours.error
         else:
             embed.description = "\n".join(out)
 

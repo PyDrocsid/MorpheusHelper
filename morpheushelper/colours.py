@@ -9,9 +9,10 @@ class Colours(MaterialColours):
     warning = MaterialColours.yellow[700]
 
     # Cogs
+    AdventOfCode = 0x009900  # advent of code colour
     AllowedInvites = MaterialColours.lightgreen["a700"]
     AutoMod = MaterialColours.blue["a700"]
-    CleverBot = 0x8EBBF6  # clever bot color
+    CleverBot = 0x8EBBF6  # clever bot colour
     CodeBlocks = MaterialColours.grey[900]
     DiscordPy = Colour.blurple()  # discord colour
     Logging = NestedInt(

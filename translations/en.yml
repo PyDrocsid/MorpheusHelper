@@ -731,8 +731,8 @@ created_by: Created by @{} ({})
 can_not_use_wastebucket_as_option: "You can not use :wastebasket: as option"
 
 # Advent of Code Integration
+aoc_join_title: How to Join the Private Leaderboard
 aoc_join_instructions: |
-  **How to Join the Private Leaderboard**
   1. Log in at https://adventofcode.com/
   2. Go to https://adventofcode.com/leaderboard/private
   3. Enter the code `{}`
