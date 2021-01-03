@@ -39,7 +39,9 @@ class InfoCog(Cog, name="Server Information"):
                 role_mentions.difference_update(mentions)
         if role_mentions & quote_mentions:
             embed = Embed(
-                title=translations.warning, description=translations.quote_remove_mentions, colour=Colours.warning,
+                title=translations.warning,
+                description=translations.quote_remove_mentions,
+                colour=Colours.warning,
             )
             await message.channel.send(message.author.mention, embed=embed)
 

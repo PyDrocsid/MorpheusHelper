@@ -12,7 +12,7 @@ from PyDrocsid.events import listener, register_cogs, call_event_handlers
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency, send_long_embed, send_editable_log
-from discord import Message, Embed, User, Forbidden, AllowedMentions, Intents, TextChannel
+from discord import Message, Embed, User, Forbidden, Intents, TextChannel
 from discord.ext import tasks
 from discord.ext.commands import (
     Bot,
@@ -29,8 +29,8 @@ from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from cogs import COGS
-from colours import Colours
 from cogs.adventofcode import AOCConfig, AdventOfCodeCog
+from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
@@ -254,7 +254,10 @@ async def github(ctx: Context):
     """
 
     embed = Embed(
-        title="Defelo/MorpheusHelper", description=GITHUB_DESCRIPTION, colour=Colours.github, url=GITHUB_LINK,
+        title="Defelo/MorpheusHelper",
+        description=GITHUB_DESCRIPTION,
+        colour=Colours.github,
+        url=GITHUB_LINK,
     )
     embed.set_author(name="GitHub", icon_url="https://github.com/fluidicon.png")
     embed.set_thumbnail(url=AVATAR_URL)
