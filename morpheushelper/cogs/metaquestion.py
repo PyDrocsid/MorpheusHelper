@@ -1,5 +1,3 @@
-from typing import Optional
-
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
@@ -41,8 +39,8 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
         if emoji.name == "metaquestion":
             media_only = (
-                not await Permission.mo_bypass.check_permissions(member)
-                and await db_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
+                    not await Permission.mo_bypass.check_permissions(member)
+                    and await db_thread(db.get, MediaOnlyChannel, message.channel.id) is not None
             )
             if message.author.bot or not message.channel.permissions_for(member).send_messages or media_only:
                 try:
@@ -72,12 +70,12 @@ class MetaQuestionCog(Cog, name="Metafragen"):
 
     @commands.command(aliases=["mf", "mq", "meta", "metafrage"])
     @guild_only()
-    async def metaquestion(self, ctx: Context, member: Optional[Member]):
+    async def metaquestion(self, ctx: Context):
         """
         display information about meta questions
         """
 
-        message: Message = await ctx.send(embed=make_embed(ctx.author), content=member.mention if member else "")
+        message: Message = await ctx.send(embed=make_embed(ctx.author))
         await message.add_reaction(name_to_emoji["wastebasket"])
         try:
             await ctx.message.delete()
