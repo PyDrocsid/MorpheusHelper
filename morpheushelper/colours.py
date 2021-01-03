@@ -18,7 +18,7 @@ class Colours(MaterialColours):
         MaterialColours.blue["a700"], {"edit": MaterialColours.yellow[800], "delete": MaterialColours.red[900]}
     )
     MediaOnly = MaterialColours.yellow["a200"]
-    MetaQuestions = MaterialColours.purple["a400"]
+    MetaQuestions = MaterialColours.bluegrey
     ModTools = MaterialColours.blue["a700"]
     News = MaterialColours.orange
     Permissions = MaterialColours.blue["a700"]
