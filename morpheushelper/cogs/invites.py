@@ -11,6 +11,7 @@ from PyDrocsid.util import send_long_embed
 from discord import Invite, Member, Guild, Embed, Message, NotFound, Forbidden, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
+from urllib3.exceptions import LocationParseError
 
 from colours import Colours
 from models.allowed_invite import InviteLog, AllowedInvite
@@ -47,12 +48,14 @@ def get_discord_invite(url) -> Optional[str]:
         url = "https://" + url
     try:
         url = requests.head(url, allow_redirects=True, timeout=10).url
-    except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError):
+    except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError, LocationParseError):
         print("URL could not be resolved:", url)
         return None
 
     if match := re.match(
-        r"^https?://discord\.com/(\.*/)*invite/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$", url, re.IGNORECASE,
+        r"^https?://discord\.com/(\.*/)*invite/(\.*/)*(?P<code>[a-zA-Z0-9\-]+).*$",
+        url,
+        re.IGNORECASE,
     ):
         return match.group("code")
 
