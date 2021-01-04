@@ -1,9 +1,9 @@
+import hashlib
+import http
 import string
 from urllib.parse import urlencode
 
 import requests
-import hashlib
-import http
 
 
 def md5(data):

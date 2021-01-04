@@ -2,14 +2,16 @@ import re
 from typing import Optional
 
 import requests
-from discord import Guild, TextChannel, Message
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.events import StopEventHandling
+from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
+from discord import Guild, TextChannel, Message, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 from requests import RequestException
 
-from PyDrocsid.database import db_thread, db
-from PyDrocsid.events import StopEventHandling
-from PyDrocsid.translations import translations
+from colours import Colours
 from models.mediaonly_channel import MediaOnlyChannel
 from permissions import Permission
 from util import send_to_changelog
@@ -40,7 +42,8 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         channel: TextChannel = message.channel
         await message.delete()
-        await channel.send(translations.f_deleted_nomedia(message.author.mention), delete_after=30)
+        embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia, colour=Colours.error)
+        await channel.send(content=message.author.mention, embed=embed, delete_after=30)
         await send_to_changelog(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
         )
@@ -68,13 +71,17 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         for channel in await db_thread(db.all, MediaOnlyChannel):
             text_channel: Optional[TextChannel] = guild.get_channel(channel.channel)
             if text_channel is not None:
-                out.append(f"- {text_channel.mention}")
+                out.append(f":small_orange_diamond: {text_channel.mention}")
             else:
                 await db_thread(db.delete, channel)
+        embed = Embed(title=translations.media_only_channels_header, colour=Colours.error)
         if out:
-            await ctx.send(translations.media_only_channels_header + "\n" + "\n".join(out))
+            embed.colour = Colours.MediaOnly
+            embed.description = "\n".join(out)
+            await send_long_embed(ctx, embed)
         else:
-            await ctx.send(translations.no_media_only_channels)
+            embed.description = translations.no_media_only_channels
+            await ctx.send(embed=embed)
 
     @mediaonly.command(name="add", aliases=["a", "+"])
     async def mediaonly_add(self, ctx: Context, channel: TextChannel):
@@ -88,7 +95,12 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             raise CommandError(translations.media_only_not_changed_no_permissions)
 
         await db_thread(MediaOnlyChannel.create, channel.id)
-        await ctx.send(translations.channel_now_media_only)
+        embed = Embed(
+            title=translations.media_only_channels_header,
+            description=translations.channel_now_media_only,
+            colour=Colours.MediaOnly,
+        )
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_now_media_only(channel.mention))
 
     @mediaonly.command(name="remove", aliases=["del", "r", "d", "-"])
@@ -101,5 +113,10 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
             raise CommandError(translations.channel_not_media_only)
 
         await db_thread(db.delete, row)
-        await ctx.send(translations.channel_not_media_only_anymore)
+        embed = Embed(
+            title=translations.media_only_channels_header,
+            description=translations.channel_not_media_only_anymore,
+            colour=Colours.MediaOnly,
+        )
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_not_media_only_anymore(channel.mention))

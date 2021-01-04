@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Union
 
-from sqlalchemy import Column, String, BigInteger, DateTime, Boolean, Integer
-
 from PyDrocsid.database import db
+from sqlalchemy import Column, String, BigInteger, DateTime, Boolean, Integer
 
 
 class AllowedInvite(db.Base):
@@ -30,9 +29,10 @@ class AllowedInvite(db.Base):
         return row
 
     @staticmethod
-    def update(guild_id: int, code: str):
-        row = db.get(AllowedInvite, guild_id)
+    def update(guild_id: int, code: str, guild_name: str):
+        row: AllowedInvite = db.get(AllowedInvite, guild_id)
         row.code = code
+        row.guild_name = guild_name
 
 
 class InviteLog(db.Base):

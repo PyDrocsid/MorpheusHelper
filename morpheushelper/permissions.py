@@ -60,6 +60,12 @@ class Permission(BasePermission):
 
     manage_reddit = auto()
 
+    polls_delete = auto()
+
+    aoc_clear = auto()
+    aoc_link = auto()
+    aoc_role = auto()
+
     @property
     def default_permission_level(self) -> "BasePermissionLevel":
         return PermissionLevel.ADMINISTRATOR

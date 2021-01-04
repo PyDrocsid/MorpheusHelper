@@ -33,8 +33,11 @@ from typing import Dict, Iterable, Optional, Callable
 import aiohttp
 import discord
 from PyDrocsid.translations import translations
+from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
+
+from colours import Colours
 
 
 def finder(text: str, collection: Iterable, *, key: Optional[Callable[..., str]] = None):
@@ -165,8 +168,12 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
         page_types = {"discord.py": "https://discordpy.readthedocs.io/en/latest", "python": "https://docs.python.org/3"}
 
         if obj is None:
-            await ctx.send(page_types[key])
-            return
+            embed = Embed(
+                title=translations.f_dpy_documentation(key.capitalize()),
+                description=page_types[key],
+                colour=Colours.DiscordPy,
+            )
+            return await ctx.send(embed=embed)
 
         if not self._cache:
             await ctx.trigger_typing()
@@ -189,9 +196,14 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
         matches = finder(obj, cache, key=lambda t: t[0])[:10]
 
         if not matches:
-            return await ctx.send(translations.dpy_no_results)
+            embed = Embed(
+                title=translations.f_dpy_documentation(key.capitalize()),
+                description=translations.dpy_no_results,
+                colour=Colours.error,
+            )
+            return await ctx.send(embed=embed)
 
-        e = discord.Embed(colour=discord.Colour.blurple(), title=translations.f_dpy_documentation(key))
+        e = discord.Embed(colour=Colours.DiscordPy, title=translations.f_dpy_documentation(key.capitalize()))
         e.description = "\n".join(f"[`{key}`]({url})" for key, url in matches)
         e.set_footer(text=translations.f_requested_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
         await ctx.send(embed=e)

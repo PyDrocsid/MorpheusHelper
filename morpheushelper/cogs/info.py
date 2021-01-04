@@ -1,14 +1,15 @@
 import re
 from typing import Optional, List
 
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 from discord import Embed, Guild, Status, Game, Member, Message
 from discord import Role
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, UserInputError
 
-from PyDrocsid.database import db_thread, db
-from PyDrocsid.settings import Settings
-from PyDrocsid.translations import translations
+from colours import Colours
 from models.allowed_invite import AllowedInvite
 from models.btp_role import BTPRole
 
@@ -37,7 +38,12 @@ class InfoCog(Cog, name="Server Information"):
             else:
                 role_mentions.difference_update(mentions)
         if role_mentions & quote_mentions:
-            await message.channel.send(translations.f_quote_remove_mentions(message.author.mention))
+            embed = Embed(
+                title=translations.warning,
+                description=translations.quote_remove_mentions,
+                colour=Colours.warning,
+            )
+            await message.channel.send(message.author.mention, embed=embed)
 
     @tasks.loop(seconds=20)
     async def status_loop(self):
@@ -59,7 +65,7 @@ class InfoCog(Cog, name="Server Information"):
             return
 
         guild: Guild = ctx.guild
-        embed = Embed(title=guild.name, description=translations.info_description, color=0x005180)
+        embed = Embed(title=guild.name, description=translations.info_description, color=Colours.ServerInformation)
         embed.set_thumbnail(url=guild.icon_url)
         created = guild.created_at.date()
         embed.add_field(name=translations.creation_date, value=f"{created.day}.{created.month}.{created.year}")
@@ -109,7 +115,7 @@ class InfoCog(Cog, name="Server Information"):
         """
 
         guild: Guild = ctx.guild
-        embed = Embed(title=translations.bots, color=0x005180)
+        embed = Embed(title=translations.bots, color=Colours.ServerInformation)
         online: List[Member] = []
         offline: List[Member] = []
         for member in guild.members:  # type: Member
@@ -117,7 +123,7 @@ class InfoCog(Cog, name="Server Information"):
                 [offline, online][member.status != Status.offline].append(member)
 
         if not online + offline:
-            embed.colour = 0xCF0606
+            embed.colour = Colours.error
             embed.description = translations.no_bots
             await ctx.send(embed=embed)
             return

@@ -1,6 +1,6 @@
-FROM python:3.8-alpine AS builder
+FROM python:3.9-alpine AS builder
 
-RUN apk add --no-cache gcc=9.3.0-r2 musl-dev=1.1.24-r9 git=2.26.2-r0
+RUN apk add --no-cache gcc=9.3.0-r2 musl-dev=1.1.24-r10 git=2.26.2-r0
 
 WORKDIR /build
 
@@ -16,7 +16,7 @@ RUN pipenv install --deploy --ignore-pipfile
 COPY .git /build/.git/
 RUN git describe > VERSION
 
-FROM python:3.8-alpine
+FROM python:3.9-alpine
 
 RUN set -x \
     && apk add --no-cache bash=5.0.17-r0 \

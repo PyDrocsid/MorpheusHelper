@@ -1,16 +1,19 @@
 import random
 import re
+from datetime import datetime
 from typing import Optional, Union, Tuple, List, Dict, Set
 
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
 from discord import CategoryChannel, PermissionOverwrite, NotFound, Message, Embed, Forbidden
 from discord import Member, VoiceState, Guild, VoiceChannel, Role, HTTPException, TextChannel
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError, Greedy
 
+from colours import Colours
 from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from permissions import Permission
@@ -51,7 +54,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 await messages[0].edit(embed=embed)
                 return
 
-        embed = Embed(title=title, color=[0x256BE6, 0x03AD28][public], description=msg)
+        embed = Embed(title=title, colour=Colours.Voice[["private", "public"][public]], description=msg)
         await channel.send(embed=embed)
 
     async def on_ready(self):
@@ -318,13 +321,16 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if channel is None:
                 await db_thread(db.delete, group)
                 continue
+            e = ":globe_with_meridians:" if group.public else ":lock:"
+            out.append(translations.f_group_list_entry(e, group.name, cnt))
 
-            out.append(f"- [{['private', 'public'][group.public]}] " + translations.f_group_list_entry(group.name, cnt))
-
+        embed = Embed(title=translations.voice_channel, colour=Colours.Voice)
         if out:
-            await ctx.send("\n".join(out))
+            embed.description = "\n".join(sorted(out))
         else:
-            await ctx.send(translations.no_dyn_group)
+            embed.colour = Colours.error
+            embed.description = translations.no_dyn_group
+        await send_long_embed(ctx, embed)
 
     @voice_dynamic.command(name="add", aliases=["a", "+"])
     async def voice_dynamic_add(self, ctx: Context, visibility: str, *, voice_channel: VoiceChannel):
@@ -344,7 +350,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1) or voice_channel.name
         await db_thread(DynamicVoiceGroup.create, name, voice_channel.id, public)
         await voice_channel.edit(name=f"New {name}")
-        await ctx.send(translations.dyn_group_created)
+        embed = Embed(
+            title=translations.voice_channel, colour=Colours.Voice, description=translations.dyn_group_created
+        )
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_created(name))
 
     @voice_dynamic.command(name="remove", aliases=["del", "d", "r", "-"])
@@ -368,8 +377,68 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 await text_channel.delete()
 
         await voice_channel.edit(name=group.name)
-        await ctx.send(translations.dyn_group_removed)
+        embed = Embed(
+            title=translations.voice_channel, colour=Colours.Voice, description=translations.dyn_group_removed
+        )
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_removed(group.name))
+
+    @voice.command(name="info")
+    async def voice_info(self, ctx: Context, *, channel: Optional[Union[VoiceChannel, Member]] = None):
+        """
+        list information of a voice channel
+        """
+
+        if not isinstance(channel, VoiceChannel):
+            member = channel or ctx.author
+            if not member.voice:
+                if not channel:
+                    raise CommandError(translations.not_in_voice)
+                if await is_teamler(ctx.author):
+                    raise CommandError(translations.user_not_in_voice)
+                raise CommandError(translations.permission_denied)
+            channel = member.voice.channel
+
+        dyn_channel: Optional[DynamicVoiceChannel] = await db_thread(
+            db.first, DynamicVoiceChannel, channel_id=channel.id
+        )
+        if not dyn_channel:
+            raise CommandError(translations.dyn_group_not_found)
+        group: DynamicVoiceGroup = await db_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
+
+        if not channel.permissions_for(ctx.author).connect:
+            raise CommandError(translations.permission_denied)
+
+        visibility = translations.public if group.public else translations.private
+
+        embed = Embed(
+            title=translations.voice_info,
+            timestamp=channel.created_at,
+            colour=Colours.Voice[["private", "public"][group.public]],
+        )
+        embed.set_footer(text=translations.voice_create_date)
+        embed.add_field(name=translations.voice_name, value=channel.name)
+        embed.add_field(name=translations.voice_visibility, value=visibility)
+        if not group.public:
+            embed.add_field(name=translations.voice_owner, value=f"<@{dyn_channel.owner}>")
+
+        out = []
+        members = set(channel.members)
+        for member in members:
+            out.append(f":small_orange_diamond: {member.mention}")
+        for member, overwrites in channel.overwrites.items():
+            if not isinstance(member, Member) or not overwrites.connect or member == self.bot.user:
+                continue
+            if member not in members:
+                out.append(f":small_blue_diamond: {member.mention}")
+        name = translations.voice_members
+        if len(members) < len(out):
+            name += f" ({len(members)}/{len(out)})"
+        else:
+            name += f" ({len(out)})"
+        embed.add_field(name=name, value="\n".join(out), inline=False)
+
+        await ctx.send(embed=embed)
 
     @voice.command(name="close", aliases=["c"])
     async def voice_close(self, ctx: Context):
@@ -389,65 +458,93 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await voice_channel.delete()
         await self.update_dynamic_voice_group(group)
         if text_channel != ctx.channel:
-            await ctx.send(translations.private_voice_closed)
-
-    @voice.command(name="invite", aliases=["i", "add", "a", "+"])
-    async def voice_invite(self, ctx: Context, member: Member):
-        """
-        invite a member into a private voice channel
-        """
-
-        if self.bot.user == member:
-            raise CommandError(translations.cannot_add_user)
-
-        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
-        await text_channel.set_permissions(member, read_messages=True)
-        await voice_channel.set_permissions(member, read_messages=True, connect=True)
-
-        text = translations.f_user_added_to_private_voice_dm(member.mention)
-        if ctx.author.permissions_in(voice_channel).create_instant_invite:
-            try:
-                text += f"\n{await voice_channel.create_invite(unique=False)}"
-            except Forbidden:
-                pass
-
-        reponse = translations.f_user_added_to_private_voice(member.mention)
-        try:
-            await member.send(text)
-        except (Forbidden, HTTPException):
-            reponse = translations.f_user_added_to_private_voice_no_dm(member.mention)
-
-        if text_channel is not None:
-            await self.send_voice_msg(text_channel, group.public, translations.voice_channel, reponse)
-        if text_channel != ctx.channel:
-            await ctx.send(translations.user_added_to_private_voice_response)
-
-    @voice.command(name="remove", aliases=["r", "kick", "k", "-"])
-    async def voice_remove(self, ctx: Context, member: Member):
-        """
-        remove a member from a private voice channel
-        """
-
-        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
-        if member in (ctx.author, self.bot.user):
-            raise CommandError(translations.cannot_remove_member)
-
-        await text_channel.set_permissions(member, overwrite=None)
-        await voice_channel.set_permissions(member, overwrite=None)
-        if await is_teamler(member):
-            raise CommandError(translations.member_could_not_be_kicked)
-
-        if member.voice is not None and member.voice.channel == voice_channel:
-            await member.move_to(None)
-        if text_channel is not None:
-            await self.send_voice_msg(
-                text_channel,
-                group.public,
-                translations.voice_channel,
-                translations.f_user_removed_from_private_voice(member.mention),
+            embed = Embed(
+                title=translations.voice_channel, colour=Colours.Voice, description=translations.private_voice_closed
             )
-        if text_channel != ctx.channel:
-            await ctx.send(translations.user_removed_from_private_voice_response)
+            await ctx.send(embed=embed)
+
+    @voice.command(name="invite", usage="<member> [members...]", aliases=["i", "add", "a", "+"])
+    async def voice_invite(self, ctx: Context, members: Greedy[Member]):
+        """
+        invite a member (or multiple members) into a private voice channel
+        """
+
+        if not members:
+            raise UserInputError
+
+        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        for member in set(members):
+            if self.bot.user == member:
+                raise CommandError(translations.f_cannot_add_user(member.mention))
+
+            await text_channel.set_permissions(member, read_messages=True)
+            await voice_channel.set_permissions(member, read_messages=True, connect=True)
+
+            user_embed = Embed(
+                title=translations.voice_channel,
+                colour=Colours.Voice,
+                timestamp=datetime.utcnow(),
+                description=translations.f_user_added_to_private_voice_dm(ctx.author.mention),
+            )
+            user_embed.set_footer(text=str(ctx.author), icon_url=ctx.author.avatar_url)
+
+            if ctx.author.permissions_in(voice_channel).create_instant_invite:
+                try:
+                    user_embed.description += f"\n{await voice_channel.create_invite(unique=False)}"
+                except Forbidden:
+                    pass
+
+            response = translations.f_user_added_to_private_voice(member.mention)
+            try:
+                await member.send(embed=user_embed)
+            except (Forbidden, HTTPException):
+                response = translations.f_user_added_to_private_voice_no_dm(member.mention)
+
+            if text_channel is not None:
+                await self.send_voice_msg(text_channel, group.public, translations.voice_channel, response)
+            if text_channel != ctx.channel:
+                embed = Embed(
+                    title=translations.voice_channel,
+                    colour=Colours.Voice,
+                    description=translations.user_added_to_private_voice_response,
+                )
+                await ctx.send(embed=embed)
+
+    @voice.command(name="remove", usage="<member> [members...]", aliases=["r", "kick", "k", "-"])
+    async def voice_remove(self, ctx: Context, members: Greedy[Member]):
+        """
+        remove a member (or multiple members) from a private voice channel
+        """
+
+        if not members:
+            raise UserInputError
+
+        group, _, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, True)
+        for member in set(members):
+            if member in (ctx.author, self.bot.user):
+                raise CommandError(translations.f_cannot_remove_member(member.mention))
+
+            await text_channel.set_permissions(member, overwrite=None)
+            await voice_channel.set_permissions(member, overwrite=None)
+            if await is_teamler(member):
+                raise CommandError(translations.f_member_could_not_be_kicked(member.mention))
+
+            if member.voice is not None and member.voice.channel == voice_channel:
+                await member.move_to(None)
+            if text_channel is not None:
+                await self.send_voice_msg(
+                    text_channel,
+                    group.public,
+                    translations.voice_channel,
+                    translations.f_user_removed_from_private_voice(member.mention),
+                )
+            if text_channel != ctx.channel:
+                embed = Embed(
+                    title=translations.voice_channel,
+                    colour=Colours.Voice,
+                    description=translations.user_removed_from_private_voice_response,
+                )
+                await ctx.send(embed=embed)
 
     @voice.command(name="owner", aliases=["o"])
     async def voice_owner(self, ctx: Context, member: Optional[Member]):
@@ -459,7 +556,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         group, dyn_channel, voice_channel, text_channel = await self.get_dynamic_voice_channel(ctx.author, change)
 
         if not change:
-            await ctx.send(translations.f_owner_of_private_voice(f"<@{dyn_channel.owner}>"))
+            embed = Embed(
+                title=translations.voice_channel,
+                colour=Colours.Voice,
+                description=translations.f_owner_of_private_voice(f"<@{dyn_channel.owner}>"),
+            )
+            await ctx.send(embed=embed)
             return
 
         if member not in voice_channel.members:
@@ -476,7 +578,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 translations.f_private_voice_owner_changed(member.mention),
             )
         if text_channel != ctx.channel:
-            await ctx.send(translations.private_voice_owner_changed_response)
+            embed = Embed(
+                title=translations.voice_channel,
+                colour=Colours.Voice,
+                description=translations.private_voice_owner_changed_response,
+            )
+            await ctx.send(embed=embed)
 
     @voice.group(name="link", aliases=["l"])
     @Permission.vc_manage_link.check
@@ -502,9 +609,15 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if role is None or voice is None:
                 await db_thread(db.delete, link)
             else:
-                out.append(f"`{voice}` (`{voice.id}`) -> `@{role}` (`{role.id}`)")
+                out.append(f"`{voice}` (`{voice.id}`) -> <@&{role.id}> (`{role.id}`)")
 
-        await ctx.send("\n".join(out) or translations.no_links_created)
+        embed = Embed(title=translations.voice_channel, colour=Colours.Voice)
+        if out:
+            embed.description = "\n".join(out)
+        else:
+            embed.colour = Colours.error
+            embed.description = translations.no_links_created
+        await send_long_embed(ctx, embed)
 
     @voice_link.command(name="add", aliases=["a", "+"])
     async def voice_link_add(self, ctx: Context, channel: VoiceChannel, *, role: Role):
@@ -534,8 +647,13 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     for member in dchannel.members:
                         await member.add_roles(role)
 
-        await ctx.send(translations.f_link_created(channel, role))
-        await send_to_changelog(ctx.guild, translations.f_link_created(channel, role))
+        embed = Embed(
+            title=translations.voice_channel,
+            colour=Colours.Voice,
+            description=translations.f_link_created(channel, role.id),
+        )
+        await ctx.send(embed=embed)
+        await send_to_changelog(ctx.guild, translations.f_log_link_created(channel, role))
 
     @voice_link.command(name="remove", aliases=["del", "r", "d", "-"])
     async def voice_link_remove(self, ctx: Context, channel: VoiceChannel, *, role: Role):
@@ -558,5 +676,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     for member in dchannel.members:
                         await member.remove_roles(role)
 
-        await ctx.send(translations.link_deleted)
+        embed = Embed(title=translations.voice_channel, colour=Colours.Voice, description=translations.link_deleted)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_link_deleted(channel, role))

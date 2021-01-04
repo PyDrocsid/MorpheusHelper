@@ -1,3 +1,4 @@
+from cogs.adventofcode import AdventOfCodeCog
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
@@ -40,4 +41,5 @@ COGS = [
     VerificationCog,
     PollsCog,
     DiscordpyDocumentationCog,
+    AdventOfCodeCog,
 ]

@@ -1,15 +1,16 @@
-import io
 from typing import Optional
-
-from discord import Member, TextChannel, Role, Guild, File, HTTPException, Forbidden
-from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed, read_normal_message, attachment_to_file
+from discord import Member, TextChannel, Role, Guild, HTTPException, Forbidden, Embed
+from discord.ext import commands
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
+
+from colours import Colours
 from models.news_authorization import NewsAuthorization
 from permissions import Permission
-from util import send_to_changelog, read_normal_message
+from util import send_to_changelog, Color
 
 
 class NewsCog(Cog, name="News"):
@@ -50,18 +51,21 @@ class NewsCog(Cog, name="News"):
             if text_channel is None or member is None:
                 await db_thread(db.delete, authorization)
                 continue
-            line = f"- `@{member}` -> {text_channel.mention}"
+            line = f":small_orange_diamond: {member.mention} -> {text_channel.mention}"
             if authorization.notification_role_id is not None:
                 role: Optional[Role] = guild.get_role(authorization.notification_role_id)
                 if role is None:
                     await db_thread(db.delete, authorization)
                     continue
-                line += f" (`@{role}`)"
+                line += f" ({role.mention})"
             out.append(line)
+        embed = Embed(title=translations.news, colour=Colours.News)
         if out:
-            await ctx.send("\n".join(out))
+            embed.description = "\n".join(out)
         else:
-            await ctx.send(translations.no_news_authorizations)
+            embed.colour = Colours.error
+            embed.description = translations.no_news_authorizations
+        await send_long_embed(ctx, embed)
 
     @news_auth.command(name="add", aliases=["a", "+"])
     async def news_auth_add(self, ctx: Context, user: Member, channel: TextChannel, notification_role: Optional[Role]):
@@ -77,7 +81,8 @@ class NewsCog(Cog, name="News"):
         role_id = notification_role.id if notification_role is not None else None
 
         await db_thread(NewsAuthorization.create, user.id, channel.id, role_id)
-        await ctx.send(translations.news_authorized)
+        embed = Embed(title=translations.news, colour=Colours.News, description=translations.news_authorized)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_news_authorized(user.mention, channel.mention))
 
     @news_auth.command(name="remove", aliases=["del", "r", "d", "-"])
@@ -93,11 +98,14 @@ class NewsCog(Cog, name="News"):
             raise CommandError(translations.news_not_authorized)
 
         await db_thread(db.delete, authorization)
-        await ctx.send(translations.news_unauthorized)
+        embed = Embed(title=translations.news, colour=Colours.News, description=translations.news_unauthorized)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_news_unauthorized(user.mention, channel.mention))
 
     @news.command(name="send", aliases=["s"])
-    async def news_send(self, ctx: Context, channel: TextChannel, *, message: Optional[str]):
+    async def news_send(
+        self, ctx: Context, channel: TextChannel, color: Optional[Color] = None, *, message: Optional[str]
+    ):
         """
         send a news message
         """
@@ -111,24 +119,32 @@ class NewsCog(Cog, name="News"):
         if message is None:
             message = ""
 
+        embed = Embed(title=translations.news, colour=Colours.News, description="")
         if not message and not ctx.message.attachments:
-            await ctx.send(translations.send_message)
+            embed.description = translations.send_message
+            await ctx.send(embed=embed)
             message, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
         else:
-            files = []
-            for attachment in ctx.message.attachments:
-                file = io.BytesIO()
-                await attachment.save(file)
-                files.append(File(file, filename=attachment.filename, spoiler=attachment.is_spoiler()))
+            files = [await attachment_to_file(attachment) for attachment in ctx.message.attachments]
+
+        content = ""
+        send_embed = Embed(title=translations.news, description=message, colour=Colours.News)
+        send_embed.set_footer(text=translations.f_sent_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
 
         if authorization.notification_role_id is not None:
             role: Optional[Role] = ctx.guild.get_role(authorization.notification_role_id)
             if role is not None:
-                message = role.mention + " " + message
+                content = role.mention
+
+        send_embed.colour = color if color is not None else Colours.News
+
+        if files and any(files[0].filename.lower().endswith(ext) for ext in ["jpg", "jpeg", "png", "gif"]):
+            send_embed.set_image(url="attachment://" + files[0].filename)
 
         try:
-            await channel.send(content=message, files=files)
+            await channel.send(content=content, embed=send_embed, files=files)
         except (HTTPException, Forbidden):
             raise CommandError(translations.msg_could_not_be_sent)
         else:
-            await ctx.send(translations.msg_sent)
+            embed.description = translations.msg_sent
+            await ctx.send(embed=embed)
