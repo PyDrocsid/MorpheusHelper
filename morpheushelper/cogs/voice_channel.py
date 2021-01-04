@@ -394,10 +394,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if not member.voice:
                 if not channel:
                     raise CommandError(translations.not_in_voice)
-                elif await is_teamler(ctx.author):
+                if await is_teamler(ctx.author):
                     raise CommandError(translations.user_not_in_voice)
-                else:
-                    raise CommandError(translations.permission_denied)
+                raise CommandError(translations.permission_denied)
             channel = member.voice.channel
 
         dyn_channel: Optional[DynamicVoiceChannel] = await db_thread(
