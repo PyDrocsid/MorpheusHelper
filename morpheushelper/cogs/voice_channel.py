@@ -392,7 +392,12 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if not isinstance(channel, VoiceChannel):
             member = channel or ctx.author
             if not member.voice:
-                raise CommandError(translations.permission_denied if channel else translations.not_in_voice)
+                if not channel:
+                    raise CommandError(translations.not_in_voice)
+                elif await is_teamler(ctx.author):
+                    raise CommandError(translations.user_not_in_voice)
+                else:
+                    raise CommandError(translations.permission_denied)
             channel = member.voice.channel
 
         dyn_channel: Optional[DynamicVoiceChannel] = await db_thread(
@@ -402,7 +407,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(translations.dyn_group_not_found)
         group: DynamicVoiceGroup = await db_thread(db.get, DynamicVoiceGroup, dyn_channel.group_id)
 
-        if not channel.permissions_for(ctx.author).connect and not group.public:
+        if not channel.permissions_for(ctx.author).connect:
             raise CommandError(translations.permission_denied)
 
         visibility = translations.public if group.public else translations.private

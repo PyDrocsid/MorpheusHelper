@@ -381,6 +381,7 @@ private_dyn_voice_help_content: |
   Note that these commands can be used in any text channel.
 error_visibility: "`visibility` must either be `public` or `private`."
 not_in_voice: You have to be in a voice channel to use this command.
+user_not_in_voice: User is not in a dynamic voice channel.
 not_in_private_voice: You have to be in a private voice channel to use this command.
 private_voice_owner_required: You are not the owner of this voice channel.
 private_voice_closed: "Private voice channel has been closed successfully. :white_check_mark:"
