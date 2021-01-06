@@ -14,6 +14,8 @@ from models.mod import Kick
 from permissions import Permission
 from util import send_to_changelog
 
+pending_kicks: set[int] = set()
+
 
 async def kick(member: Member) -> bool:
     if not member.guild.me.guild_permissions.kick_members:
@@ -31,6 +33,8 @@ async def kick(member: Member) -> bool:
         await member.send(embed=embed)
     except (Forbidden, HTTPException):
         pass
+
+    pending_kicks.add(member.id)
     await member.kick(reason=translations.log_autokicked)
     await db_thread(Kick.create, member.id, str(member), None, None)
     return True
@@ -76,6 +80,10 @@ class AutoModCog(Cog, name="AutoMod"):
         self.kick_tasks[member].add_done_callback(lambda _: self.cancel_task(member))
 
     async def on_member_remove(self, member: Member):
+        if member.id in pending_kicks:
+            pending_kicks.remove(member.id)
+            return
+
         self.cancel_task(member)
 
     async def on_member_role_add(self, member: Member, role: Role):
