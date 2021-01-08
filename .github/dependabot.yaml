@@ -11,13 +11,19 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "Defelo"
 
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "Defelo"
   
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "Defelo"
