@@ -214,11 +214,11 @@
         },
         "pymysql": {
             "hashes": [
-                "sha256:1ebdce36061c61fe32d3156825768236ac19b62b23180e1667032b2c690921c7",
-                "sha256:b2508a7dc6b626210e52f711d2c2361d102d8d9b8b144e63b2512e748de1a49b"
+                "sha256:b46be62180008086fa9365a91c39a8853066ea5e8cde3a1e24491fb7de4b9286",
+                "sha256:e651185cc1785c7c9e81a88329664b16c23f2f3d073b9ea6816406b351296ac8"
             ],
             "index": "pypi",
-            "version": "==1.0.0"
+            "version": "==1.0.1"
         },
         "python-dateutil": {
             "hashes": [
