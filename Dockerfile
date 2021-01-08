@@ -18,6 +18,8 @@ RUN git describe --tags > VERSION
 
 FROM python:3.9-alpine
 
+LABEL org.opencontainers.image.source https://github.com/Defelo/MorpheusHelper
+
 RUN set -x \
     && apk add --no-cache bash=5.0.17-r0 \
     && addgroup -g 1000 bot \

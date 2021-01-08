@@ -11,8 +11,8 @@ sentry-sdk = "*"
 pyyaml = "*"
 aiohttp = "*"
 alembic = "*"
-discord = {py = "*"}
 pydrocsid = "*"
+"discord.py" = "*"
 
 [dev-packages]
 flake8 = "*"
