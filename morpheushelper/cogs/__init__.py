@@ -3,6 +3,7 @@ from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
 from cogs.codeblocks import CodeblocksCog
+from cogs.cryptocurrencies import CryptoCurrenciesCog
 from cogs.discordpy_documentation import DiscordpyDocumentationCog
 from cogs.info import InfoCog
 from cogs.invites import InvitesCog
@@ -21,6 +22,7 @@ from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
 
 COGS = [
+
     VoiceChannelCog,
     ReactionPinCog,
     BeTheProfessionalCog,
@@ -42,4 +44,5 @@ COGS = [
     PollsCog,
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
+    CryptoCurrenciesCog
 ]
