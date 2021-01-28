@@ -29,6 +29,25 @@ Inside the project you can find all bot commands like the modtools in the direct
 The database is represented by the models, which can be found in the `models` directory. 
 For translations we use a `.yml` file which can be found in the translations `directory`.
 
+```
+Project
+│
+└───morpheushelper  
+│   └───cogs
+│   │    │   adventofcode.py
+│   │    │   automod.py
+│   │        ...
+|   |
+│   └───models
+│        │   allowed_invite.py
+│        │   aoc_link.py
+│            ...
+|
+└───translations
+    │   en.yml
+        ...
+```
+
 ### PyCharm configuration 
 
 * Open Pycharm and go to Settings/Python Interpreter
