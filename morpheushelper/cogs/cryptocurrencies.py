@@ -30,10 +30,10 @@ class CryptoCurrenciesCog(Cog):
     @crypto.command(name="prices")
     async def crypto_currencies_prices(self, ctx: Context):
         try:
-            response = coin_market_cap.get_cryptocurrencies_list()
-            if response.status_code != 200:
+            response = await coin_market_cap.get_cryptocurrencies_list()
+            if "data" not in response:
                 raise CommandError(translations.price_query_error)
-            embed = Embed(description=f"```{get_prices(json.loads(response.text)['data'])}```", colour=Colours.crypto)
+            embed = Embed(description=f"```{get_prices(json.loads(response)['data'])}```", colour=Colours.crypto)
             await ctx.send(embed=embed)
         except RequestException:
             raise CommandError(translations.price_query_error)
