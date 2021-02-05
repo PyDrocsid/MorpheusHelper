@@ -1,10 +1,10 @@
 FROM python:3.9-alpine AS builder
 
-RUN apk add --no-cache gcc=9.3.0-r2 musl-dev=1.1.24-r10 git=2.26.2-r0
+RUN apk add --no-cache gcc~=10.2 musl-dev~=1.2 git~=2.30
 
 WORKDIR /build
 
-RUN pip install pipenv==2020.8.13
+RUN pip install pipenv==2020.11.15
 
 COPY Pipfile /build/
 COPY Pipfile.lock /build/
@@ -21,7 +21,7 @@ FROM python:3.9-alpine
 LABEL org.opencontainers.image.source https://github.com/Defelo/MorpheusHelper
 
 RUN set -x \
-    && apk add --no-cache bash=5.0.17-r0 \
+    && apk add --no-cache bash~=5.1 \
     && addgroup -g 1000 bot \
     && adduser -G bot -u 1000 -s /bin/bash -D -H bot
 
