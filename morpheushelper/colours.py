@@ -35,6 +35,7 @@ class Colours(MaterialColours):
         MaterialColours.blue["a700"],
         {"public": MaterialColours.lightgreen["a700"], "private": MaterialColours.blue["a700"]},
     )
+    crypto = MaterialColours.green
 
     # Commands
     changelog = NestedInt(
