@@ -22,6 +22,7 @@ class RunCodeCog(Cog):
             markdown = ["awk", "bash", "brainfuck", "c", "cpp", "crystal",
                         "csharp", "d", "go", "haskell", "java", "js" "julia", "kotlin", "lisp", "lua",
                         "nim", "perl", "php", "py", "python", "ruby", "rust", "swift", "typescript", "`"]
+
             for item in markdown:
                 source = source.replace(item, "")
             api_result = json.loads(await Emekc.run_code({'language': language, 'source': source}))
