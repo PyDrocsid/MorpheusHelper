@@ -766,3 +766,8 @@ aoc_no_solutions: No solutions have been published yet.
 # run code
 error_run_code: An error occurred while executing the code
 error_unsupported_language: "Unsupported language: {}"
+run_usage: |
+  `​`​`language
+  your code
+  `​`​`
+run_output: Run Output
