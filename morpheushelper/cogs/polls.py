@@ -29,7 +29,7 @@ async def get_teampoll_embed(message: Message) -> Tuple[Optional[Embed], Optiona
 
 
 async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = None, allow_delete: bool = True):
-    question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n")]
+    question, *options = [line.replace("\x00", "\n") for line in args.replace("\\\n", "\x00").split("\n") if line]
 
     if not options:
         raise CommandError(translations.missing_options)
@@ -44,6 +44,9 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
     embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
     if allow_delete:
         embed.set_footer(text=translations.f_created_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
+
+    if len(set(map(lambda x: x.emoji, options))) < len(options):
+        raise CommandError(translations.option_duplicated)
 
     for option in options:
         embed.add_field(name="** **", value=str(option), inline=False)
@@ -172,7 +175,7 @@ class PollOption:
         if not line:
             raise CommandError(translations.empty_option)
 
-        emoji_candidate, *text = line.split(" ")
+        emoji_candidate, *text = line.lstrip().split(" ")
         text = " ".join(text)
 
         custom_emoji_match = re.fullmatch(r"<a?:[a-zA-Z0-9_]+:(\d+)>", emoji_candidate)
@@ -180,6 +183,9 @@ class PollOption:
             self.emoji = custom_emoji
             self.option = text.strip()
         elif (unicode_emoji := emoji_candidate) in emoji_to_name:
+            self.emoji = unicode_emoji
+            self.option = text.strip()
+        elif unicode_emoji := name_to_emoji.get(emoji_candidate.replace(":", "")):
             self.emoji = unicode_emoji
             self.option = text.strip()
         else:

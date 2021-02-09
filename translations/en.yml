@@ -718,6 +718,7 @@ disabled: ":x: Disabled"
 vote_explanation: Vote using the reactions below!
 too_many_options: You specified too many options. The maximum amount is {}.
 missing_options: Missing options
+option_duplicated: You may not use the same emoji twice!
 empty_option: Empty option
 poll_usage: |
   <question>
