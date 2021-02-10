@@ -22,7 +22,7 @@ class WikipediaCog(Cog, name="Wikipedia"):
     @commands.cooldown(5, 10, commands.BucketType.user)
     async def wikipedia(self, ctx: Context, *, title: str):
         """
-        display wikipedia summary about a topic 
+        display wikipedia summary about a topic
         """
         try:
             await ctx.send(embed=make_embed(title=title, content=wikipedia.summary(title), color=Colours.default))
