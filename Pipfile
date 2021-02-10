@@ -13,6 +13,7 @@ aiohttp = "*"
 alembic = "*"
 pydrocsid = "*"
 "discord.py" = "*"
+wikipedia = "*"
 
 [dev-packages]
 flake8 = "*"
