@@ -19,6 +19,7 @@ from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
+from cogs.wikipedia import WikipediaCog
 
 COGS = [
     VoiceChannelCog,
@@ -42,4 +43,5 @@ COGS = [
     PollsCog,
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
+    WikipediaCog
 ]
