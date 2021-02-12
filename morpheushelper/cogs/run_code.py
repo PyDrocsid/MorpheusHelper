@@ -12,11 +12,13 @@ from emkc_api import Emkc, EmkcAPIException
 
 N_CHARS = 1000
 
-LANGUAGES = (
-    "awk,bash,brainfuck,c,cpp,crystal,csharp,d,dash,deno,elixir,emacs,go,haskell,java,jelly,julia,"
-    "kotlin,lisp,lua,nasm,nasm64,nim,node,osabie,paradoc,perl,php,python2,python3,ruby,rust,swift,"
-    "typescript,zig"
-).split(",")
+# fmt: off
+LANGUAGES = [
+    "awk", "bash", "brainfuck", "c", "cpp", "crystal", "csharp", "d", "dash", "deno", "elixir", "emacs", "go",
+    "haskell", "java", "jelly", "julia", "kotlin", "lisp", "lua", "nasm", "nasm64", "nim", "node", "osabie",
+    "paradoc", "perl", "php", "python2", "python3", "ruby", "rust", "swift", "typescript", "zig"
+]
+# fmt: on
 
 
 def supported_languages_docs(f):
