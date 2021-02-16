@@ -2,10 +2,11 @@ import re
 
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
+from aiohttp import ClientError
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, CommandError, UserInputError
-from requests import RequestException
+from sentry_sdk import capture_exception
 
 from colours import Colours
 from emkc_api import Emkc, EmkcAPIException
@@ -49,8 +50,11 @@ class RunCodeCog(Cog):
         except EmkcAPIException as e:
             if e.message == "Supplied language is not supported by Piston":
                 raise CommandError(translations.f_error_unsupported_language(language))
+
+            capture_exception()
             raise CommandError(f"{translations.error_run_code}: {e.message}")
-        except RequestException:
+        except ClientError:
+            capture_exception()
             raise CommandError(translations.error_run_code)
 
         output: str = api_result["output"]
