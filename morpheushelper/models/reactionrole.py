@@ -1,9 +1,8 @@
 import re
 from typing import Union, Optional
 
-from sqlalchemy import Column, BigInteger, String, Boolean
-
 from PyDrocsid.database import db
+from sqlalchemy import Column, BigInteger, String, Boolean
 
 
 def encode(emoji: str) -> str:

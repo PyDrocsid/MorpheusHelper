@@ -2,13 +2,14 @@ from datetime import datetime
 from typing import Optional, List
 
 import requests
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 from discord import Embed, TextChannel
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
-from PyDrocsid.database import db_thread, db
-from PyDrocsid.settings import Settings
-from PyDrocsid.translations import translations
+from colours import Colours
 from info import VERSION
 from models.reddit import RedditPost, RedditChannel
 from permissions import Permission
@@ -63,7 +64,7 @@ def create_embed(post: dict) -> Embed:
         title=post["title"],
         url=f"https://reddit.com{post['permalink']}",
         description=f"{post['score']} :thumbsup: \u00B7 {post['num_comments']} :speech_balloon:",
-        color=0xFF4500,  # Reddit's brand color
+        colour=Colours.Reddit,  # Reddit's brand color
     )
     embed.set_author(name=f"u/{post['author']}", url=f"https://reddit.com/u/{post['author']}")
     embed.set_image(url=post["url"])
@@ -120,7 +121,7 @@ class RedditCog(Cog, name="Reddit"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.reddit, colour=0xFF4500)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit)
 
         interval = await Settings.get(int, "reddit_interval", 4)
         embed.add_field(name=translations.interval, value=translations.f_x_hours(interval))
@@ -135,7 +136,7 @@ class RedditCog(Cog, name="Reddit"):
                 await db_thread(db.delete, reddit_channel)
             else:
                 sub = reddit_channel.subreddit
-                out.append(f"[r/{sub}](https://reddit.com/r/{sub}) -> {text_channel.mention}")
+                out.append(f":small_orange_diamond: [r/{sub}](https://reddit.com/r/{sub}) -> {text_channel.mention}")
         embed.add_field(
             name=translations.reddit_links, value="\n".join(out) or translations.no_reddit_links, inline=False
         )
@@ -158,7 +159,8 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.reddit_link_already_exists)
 
         await db_thread(RedditChannel.create, subreddit, channel.id)
-        await ctx.send(translations.reddit_link_created)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_link_created)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_created(subreddit, channel.mention))
 
     @reddit.command(name="remove", aliases=["r", "del", "d", "-"])
@@ -175,7 +177,8 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.reddit_link_not_found)
 
         await db_thread(db.delete, link)
-        await ctx.send(translations.reddit_link_removed)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_link_removed)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_link_removed(subreddit, channel.mention))
 
     @reddit.command(name="interval", aliases=["int", "i"])
@@ -189,7 +192,8 @@ class RedditCog(Cog, name="Reddit"):
 
         await Settings.set(int, "reddit_interval", hours)
         await self.start_loop(hours)
-        await ctx.send(translations.reddit_interval_set)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_interval_set)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_interval_set(hours))
 
     @reddit.command(name="limit", aliases=["lim"])
@@ -202,7 +206,8 @@ class RedditCog(Cog, name="Reddit"):
             raise CommandError(translations.invalid_limit)
 
         await Settings.set(int, "reddit_limit", limit)
-        await ctx.send(translations.reddit_limit_set)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.reddit_limit_set)
+        await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_reddit_limit_set(limit))
 
     @reddit.command(name="trigger", aliases=["t"])
@@ -212,4 +217,5 @@ class RedditCog(Cog, name="Reddit"):
         """
 
         await self.start_loop(await Settings.get(int, "reddit_interval", 4))
-        await ctx.send(translations.done)
+        embed = Embed(title=translations.reddit, colour=Colours.Reddit, description=translations.done)
+        await ctx.send(embed=embed)

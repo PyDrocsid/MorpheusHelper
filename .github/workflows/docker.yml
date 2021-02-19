@@ -2,18 +2,22 @@ name: Docker Image
 
 on:
   push:
-    tags:
-      - v*
-    branches: [ experimental ]
-    paths-ignore: [ '**.md' ]
+    branches: "**/*"
+    tags: "v*"
+    paths-ignore: [ "**.md" ]
   workflow_dispatch:
 
 env:
-  DOCKER_PLATFORMS: linux/amd64,linux/arm/v7,linux/arm64/v8 #linux/s390x,linux/ppc64le
+  IMAGE_NAME: defelo/morpheushelper
+  REPO: Defelo/MorpheusHelper/morpheushelper
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
 
     steps:
       - name: Checkout
@@ -29,54 +33,87 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
+          key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-${{ matrix.platform }}-
 
       - name: Create Version
-        id: prepare
+        id: version
         run: |
           set -x
-          VERSION=experimental
-          IMAGE_NAME=defelo/morpheushelper
+
+          name=$IMAGE_NAME
+
+          tag=${GITHUB_REF#refs/tags/v}
+          branch=${GITHUB_REF#refs/heads/}
+          platform=${{ matrix.platform }}
+
+          hub=0
+
           if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
+            tags="v$tag latest"
+            hub=1
+          elif [[ $GITHUB_REF == refs/heads/* ]]; then
+            tags="$branch"
+            if [[ $branch == master ]]; then
+              tags="edge"
+              hub=1
+            elif [[ $branch == experimental ]]; then
+              hub=1
+            fi
           fi
-          TAGS="$IMAGE_NAME:${VERSION}"
-          if [[ $VERSION =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-            TAGS="$TAGS,$IMAGE_NAME:latest"
-          fi
-          echo ::set-output name=image::${TAGS}
+          tags="$(echo $tags | tr / -)"
+
+          out=""
+          for t in $tags; do
+            [[ $hub == "1" ]] && out="$out,$name:$t-$(echo $platform | tr / -)"
+            out="$out,ghcr.io/$name:$t-$(echo $platform | tr / -)"
+            if [[ $platform == linux/amd64 ]]; then
+              [[ $hub == "1" ]] && out="$out,$name:$t"
+              out="$out,ghcr.io/$name:$t"
+            fi
+          done
+
+          echo ::set-output name=tags::${out:1}
+          echo ::set-output name=push_to_hub::${hub}
 
       - name: Build
         uses: docker/build-push-action@v2
         with:
           push: false
-          tags: ${{ steps.prepare.outputs.image }}
-          platforms: ${{ env.DOCKER_PLATFORMS }}
+          tags: ${{ steps.version.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           file: Dockerfile
           context: .
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
       - name: Login to DockerHub
+        if: ${{ steps.version.outputs.push_to_hub == '1' }}
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: defelo
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Push
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+
+      - name: Push to Registries
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ steps.prepare.outputs.image }}
-          platforms: ${{ env.DOCKER_PLATFORMS }}
+          tags: ${{ steps.version.outputs.tags }}
+          platforms: ${{ matrix.platform }}
           file: Dockerfile
           context: .
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
       - name: Clear
         if: always()

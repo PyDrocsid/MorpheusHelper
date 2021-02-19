@@ -1,3 +1,4 @@
+from cogs.adventofcode import AdventOfCodeCog
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
@@ -16,10 +17,12 @@ from cogs.reaction_pin import ReactionPinCog
 from cogs.reactionrole import ReactionRoleCog
 from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
+from cogs.run_code import RunCodeCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
 
 COGS = [
+    RunCodeCog,
     VoiceChannelCog,
     ReactionPinCog,
     BeTheProfessionalCog,
@@ -40,4 +43,5 @@ COGS = [
     VerificationCog,
     PollsCog,
     DiscordpyDocumentationCog,
+    AdventOfCodeCog,
 ]

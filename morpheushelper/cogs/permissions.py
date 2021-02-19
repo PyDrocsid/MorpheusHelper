@@ -1,12 +1,14 @@
 from typing import Optional
 
+from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, Converter, BadArgument, CommandError, UserInputError
 
-from PyDrocsid.translations import translations
-from PyDrocsid.util import send_long_embed
+from colours import Colours
 from permissions import Permission, PermissionLevel  # skipcq: PYL-W0406
+from util import send_to_changelog
 
 
 async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel):
@@ -16,13 +18,13 @@ async def list_permissions(ctx: Context, title: str, min_level: PermissionLevel)
         if min_level.value >= level.value:
             out.setdefault(level.value, []).append(f"`{permission.name}` - {permission.description}")
 
-    embed = Embed(title=title, colour=0xCF0606)
+    embed = Embed(title=title, colour=Colours.error)
     if not out:
         embed.description = translations.no_permissions
         await ctx.send(embed=embed)
         return
 
-    embed.colour = 0x256BE6
+    embed.colour = Colours.Permissions
     for level, lines in sorted(out.items(), reverse=True):
         embed.add_field(name=translations.permission_levels[level], value="\n".join(sorted(lines)), inline=False)
 
@@ -93,11 +95,23 @@ class PermissionsCog(Cog, name="Permissions"):
         except KeyError:
             raise CommandError(translations.invalid_permission)
 
-        if PermissionLevel.OWNER in (
-            level,
-            await permission.resolve(),
-        ) and not await PermissionLevel.OWNER.check_permissions(ctx.author):
+        if (
+            PermissionLevel.OWNER
+            in (
+                level,
+                await permission.resolve(),
+            )
+            and not await PermissionLevel.OWNER.check_permissions(ctx.author)
+        ):
             raise CommandError(translations.cannot_manage_permission_level)
 
         await permission.set(level)
-        await ctx.send(translations.f_permission_set(permission.name, translations.permission_levels[level.value]))
+
+        description = permission.name, translations.permission_levels[level.value]
+        embed = Embed(
+            title=translations.permissions_title,
+            colour=Colours.Permissions,
+            description=translations.f_permission_set(*description),
+        )
+        await ctx.send(embed=embed)
+        await send_to_changelog(ctx.guild, translations.f_log_permission_set(*description))

@@ -1,13 +1,15 @@
-from typing import Optional, Tuple
-
-from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound
-from discord.ext import commands
-from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
+from typing import Optional, Tuple, Dict, Set
 
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emoji_converter import EmojiConverter
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
+from PyDrocsid.util import send_long_embed
+from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound, Embed
+from discord.ext import commands
+from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
+
+from colours import Colours
 from models.reactionrole import ReactionRole
 from permissions import Permission
 from util import send_to_changelog
@@ -66,64 +68,83 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         manage reactionrole
         """
 
-        if ctx.invoked_subcommand is None:
-            raise UserInputError
+        if ctx.subcommand_passed is not None:
+            if ctx.invoked_subcommand is None:
+                raise UserInputError
+            return
 
-    @reactionrole.command(name="list", aliases=["l", "?"])
-    async def reactionrole_list(self, ctx: Context, msg: Optional[Message] = None):
-        """
-        list configured reactionrole links
-        """
+        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole)
+        channels: Dict[TextChannel, Dict[Message, Set[str]]] = {}
+        message_cache: Dict[Tuple[int, int], Message] = {}
+        for link in await db_thread(db.all, ReactionRole):  # type: ReactionRole
+            channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
+            if channel is None:
+                await db_thread(db.delete, link)
+                continue
 
-        if msg is None:
-            channels = {}
-            for link in await db_thread(db.all, ReactionRole):  # type: ReactionRole
-                channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
-                if channel is None:
-                    await db_thread(db.delete, link)
-                    continue
+            key = link.channel_id, link.message_id
+            if key not in message_cache:
                 try:
-                    msg: Message = await channel.fetch_message(link.message_id)
+                    message_cache[key] = await channel.fetch_message(link.message_id)
                 except NotFound:
                     await db_thread(db.delete, link)
                     continue
-                if ctx.guild.get_role(link.role_id) is None:
-                    await db_thread(db.delete, link)
-                    continue
-                channels.setdefault(channel, {}).setdefault(msg.jump_url, set())
-                channels[channel][msg.jump_url].add(link.emoji)
+            msg = message_cache[key]
 
-            if not channels:
-                await ctx.send(translations.no_reactionrole_links)
-            else:
-                await ctx.send(
-                    "\n\n".join(
-                        f"{channel.mention}:\n"
-                        + "\n".join(url + " " + " ".join(emojis) for url, emojis in messages.items())
-                        for channel, messages in channels.items()
-                    )
-                )
+            if ctx.guild.get_role(link.role_id) is None:
+                await db_thread(db.delete, link)
+                continue
+
+            channels.setdefault(channel, {}).setdefault(msg, set())
+            channels[channel][msg].add(link.emoji)
+
+        if not channels:
+            embed.colour = Colours.error
+            embed.description = translations.no_reactionrole_links
         else:
             out = []
-            for link in await db_thread(
-                db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
-            ):  # type: ReactionRole
-                channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
-                if channel is None or await channel.fetch_message(link.message_id) is None:
-                    await db_thread(db.delete, link)
-                    continue
-                role: Optional[Role] = ctx.guild.get_role(link.role_id)
-                if role is None:
-                    await db_thread(db.delete, link)
-                    continue
-                if link.auto_remove:
-                    out.append(translations.f_rr_link_auto_remove(link.emoji, role.name))
-                else:
-                    out.append(translations.f_rr_link(link.emoji, role.name))
-            if not out:
-                await ctx.send(translations.no_reactionrole_links_for_msg)
+            for channel, messages in channels.items():
+                value = channel.mention + "\n"
+                for msg, emojis in messages.items():
+                    value += f"[{msg.id}]({msg.jump_url}): {' '.join(emojis)}\n"
+                out.append(value)
+            embed.description = "\n".join(out)
+
+        await send_long_embed(ctx, embed)
+
+    @reactionrole.command(name="list", aliases=["l", "?"])
+    async def reactionrole_list(self, ctx: Context, msg: Message):
+        """
+        list configured reactionrole links for a specific message
+        """
+
+        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole)
+        out = []
+        for link in await db_thread(
+            db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
+        ):  # type: ReactionRole
+            channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
+            if channel is None or await channel.fetch_message(link.message_id) is None:
+                await db_thread(db.delete, link)
+                continue
+
+            role: Optional[Role] = ctx.guild.get_role(link.role_id)
+            if role is None:
+                await db_thread(db.delete, link)
+                continue
+
+            if link.auto_remove:
+                out.append(translations.f_rr_link_auto_remove(link.emoji, role.mention))
             else:
-                await ctx.send("\n".join(out))
+                out.append(translations.f_rr_link(link.emoji, role.mention))
+
+        if not out:
+            embed.colour = Colours.error
+            embed.description = translations.no_reactionrole_links_for_msg
+        else:
+            embed.description = "\n".join(out)
+
+        await send_long_embed(ctx, embed)
 
     @reactionrole.command(name="add", aliases=["a", "+"])
     async def reactionrole_add(self, ctx: Context, msg: Message, emoji: EmojiConverter, role: Role, auto_remove: bool):
@@ -145,8 +166,13 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
 
         await db_thread(ReactionRole.create, msg.channel.id, msg.id, str(emoji), role.id, auto_remove)
         await msg.add_reaction(emoji)
-        await ctx.send(translations.rr_link_created)
-        await send_to_changelog(ctx.guild, translations.f_log_rr_link_created(emoji, role, msg.jump_url))
+        embed = Embed(
+            title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_created
+        )
+        await ctx.send(embed=embed)
+        await send_to_changelog(
+            ctx.guild, translations.f_log_rr_link_created(emoji, role.id, msg.jump_url, msg.channel.mention)
+        )
 
     @reactionrole.command(name="remove", aliases=["r", "del", "d", "-"])
     async def reactionrole_remove(self, ctx: Context, msg: Message, emoji: EmojiConverter):
@@ -163,5 +189,10 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         for reaction in msg.reactions:
             if str(emoji) == str(reaction.emoji):
                 await reaction.clear()
-        await ctx.send(translations.rr_link_removed)
-        await send_to_changelog(ctx.guild, translations.f_log_rr_link_removed(emoji, msg.jump_url))
+        embed = Embed(
+            title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_removed
+        )
+        await ctx.send(embed=embed)
+        await send_to_changelog(
+            ctx.guild, translations.f_log_rr_link_removed(emoji, link.role_id, msg.jump_url, msg.channel.mention)
+        )
