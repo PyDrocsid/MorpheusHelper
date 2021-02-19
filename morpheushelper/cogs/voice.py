@@ -1,15 +1,12 @@
 import discord
 from discord.ext import commands, tasks
+from discord.utils import get
 import time
 import asyncio
 from datetime import date
+from models.voice_plus import VoiceMutedLog, VoicePlusMember
 
 bot = commands.Bot(command_prefix='$')
-
-# links
-#
-# https://github.com/Defelo/MorpheusHelper/blob/master/morpheushelper/cogs/mod.py#L41
-# https://github.com/Defelo/MorpheusHelper/blob/master/morpheushelper/cogs/mod.py#L50
 
 
 class VoicePlus(discord.Client):
@@ -34,19 +31,22 @@ class VoicePlus(discord.Client):
 
     @bot.command(name="vmute", aliases=['vm', 'm'])
     async def vmute(self, ctx, member: discord.Member, duration=0, *, unit=None):
-        role = discord.utils.find(
-            lambda r: r.name == 'InVoice', ctx.message.server.roles)
-        if user.has_role(role):
-            await member.edit(mute=True)
-        elif member in self.users["user"]:
-            await member.edit(mute=True)
-            if unit == "s":
-                wait = 1 * duration
-                await asyncio.sleep(wait)
-            elif unit == "m":
-                wait = 60 * duration
-                await asyncio.sleep(wait)
-            await member.edit(mute=False)
+        channel = find_channel()
+        overwrite = channel.overwrites_for(ctx.message.author)
+        if overwrite.send_messages == True:
+            role = discord.utils.find(
+                lambda r: r.name == 'InVoice', ctx.message.server.roles)
+            if user.has_role(role):
+                await member.edit(mute=True)
+            elif member in self.users["user"]:
+                await member.edit(mute=True)
+                if unit == "s":
+                    wait = 1 * duration
+                    await asyncio.sleep(wait)
+                elif unit == "m":
+                    wait = 60 * duration
+                    await asyncio.sleep(wait)
+                await member.edit(mute=False)
 
     @bot.command(name="vunmute", aliases=['vu', 'u'])
     async def unmute(self, member: discord.Member):
@@ -55,3 +55,8 @@ class VoicePlus(discord.Client):
     @bot.command(name="vkick", aliases=['vk', 'k'])
     async def vkick(self, member: discord.Member):
         await member.move_to(None)
+
+    async def find_channel():
+        channel = get(ctx.message.server, name="voiceplus",
+                      type=discord.ChannelType.text)
+        return channel
