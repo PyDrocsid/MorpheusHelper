@@ -38,10 +38,10 @@ class RunCodeCog(Cog):
         run some code
         """
 
-        if not (match := re.fullmatch(r"```([a-zA-Z\d]+)\n(.+?)```", args, re.DOTALL)):
+        if not (match := re.fullmatch(r"((```)?)([a-zA-Z\d]+)\n(.+?)\1", args, re.DOTALL)):
             raise UserInputError
 
-        language, source = match.groups()
+        *_, language, source = match.groups()
 
         await ctx.trigger_typing()
 
