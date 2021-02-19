@@ -20,6 +20,11 @@ class VoicePlus(discord.Client):
             {'user': member.username, 'timemuted': datetime.datetime.now()})
         self.users.append(user_dict)
 
+    async def get_channel():
+        channel = get(ctx.message.server, name="voiceplus",
+                      type=discord.ChannelType.text)
+        return channel
+
     @tasks.loop(minutes=1)
     async def check_dict(self):
         for item in self.users:
@@ -31,12 +36,12 @@ class VoicePlus(discord.Client):
 
     @bot.command(name="vmute", aliases=['vm', 'm'])
     async def vmute(self, ctx, member: discord.Member, duration=0, *, unit=None):
-        channel = find_channel()
+        channel = get_channel()
         overwrite = channel.overwrites_for(ctx.message.author)
         if overwrite.send_messages == True:
             role = discord.utils.find(
                 lambda r: r.name == 'InVoice', ctx.message.server.roles)
-            if user.has_role(role):
+            if member.has_role(role):
                 await member.edit(mute=True)
             elif member in self.users["user"]:
                 await member.edit(mute=True)
@@ -55,8 +60,3 @@ class VoicePlus(discord.Client):
     @bot.command(name="vkick", aliases=['vk', 'k'])
     async def vkick(self, member: discord.Member):
         await member.move_to(None)
-
-    async def find_channel():
-        channel = get(ctx.message.server, name="voiceplus",
-                      type=discord.ChannelType.text)
-        return channel
