@@ -595,6 +595,7 @@ permissions:
   ban: ban a user
   view_stats: view other user's statistics
   init_join_log: initialize join log
+  manage_roles: manage roles
 
   manage_autokick: manage autokick
   manage_instantkick: manage instantkick
@@ -621,9 +622,11 @@ permissions:
   admininfo: view admininfo
   view_own_permissions: view own permissions
   view_all_permissions: view all permissions
+  manage_permissions: manage permissions
 
   manage_reddit: manage reddit integration
 
+  team_poll: start a team poll
   polls_delete: delete polls
 
   aoc_clear: clear aoc leaderboard cache

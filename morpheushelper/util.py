@@ -1,6 +1,8 @@
 import re
 from typing import Optional, Union
 
+from PyDrocsid.permission import BasePermission
+
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -8,7 +10,7 @@ from discord import Member, TextChannel, Guild, Message, Embed, PartialEmoji, Fo
 from discord.ext.commands import ColorConverter, BadArgument
 
 from colours import Colours
-from permissions import PermissionLevel, Permission
+from permissions import PermissionLevel
 
 
 class Color(ColorConverter):
@@ -41,16 +43,8 @@ async def send_to_changelog(guild: Guild, message: Union[str, Embed]):
         await channel.send(embed=embed)
 
 
-async def get_prefix() -> str:
-    return await Settings.get(str, "prefix", ".")
-
-
-async def set_prefix(new_prefix: str):
-    await Settings.set(str, "prefix", new_prefix)
-
-
 async def check_wastebasket(
-    message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: Permission
+    message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: BasePermission
 ) -> Optional[int]:
     if emoji.name != name_to_emoji["wastebasket"]:
         return None

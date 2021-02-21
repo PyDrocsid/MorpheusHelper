@@ -1,81 +1,26 @@
+from __future__ import annotations
+
 from contextvars import ContextVar
-from enum import auto
 from typing import Union
 
-from PyDrocsid.permission import BasePermission, BasePermissionLevel
-from PyDrocsid.settings import Settings
 from discord import Member, User
+
+from PyDrocsid.permission import BasePermissionLevel
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
 
 sudo_active = ContextVar("sudo_active")
 
 
-class Permission(BasePermission):
-    vc_private_owner = auto()
-    vc_manage_dyn = auto()
-    vc_manage_link = auto()
-
-    send = auto()
-    edit = auto()
-    delete = auto()
-
-    rr_manage = auto()
-
-    rp_pin = auto()
-    rp_manage = auto()
-
-    news_manage = auto()
-
-    warn = auto()
-    mute = auto()
-    kick = auto()
-    ban = auto()
-    view_stats = auto()
-    init_join_log = auto()
-
-    manage_autokick = auto()
-    manage_instantkick = auto()
-
-    manage_verification = auto()
-
-    mq_reduce = auto()
-
-    mo_bypass = auto()
-    mo_manage = auto()
-
-    btp_manage = auto()
-
-    cb_list = auto()
-    cb_manage = auto()
-    cb_reset = auto()
-
-    invite_bypass = auto()
-    invite_manage = auto()
-
-    log_manage = auto()
-
-    change_prefix = auto()
-    admininfo = auto()
-    view_own_permissions = auto()
-    view_all_permissions = auto()
-
-    manage_reddit = auto()
-
-    polls_delete = auto()
-
-    aoc_clear = auto()
-    aoc_link = auto()
-    aoc_role = auto()
-
-    @property
-    def default_permission_level(self) -> "BasePermissionLevel":
-        return PermissionLevel.ADMINISTRATOR
-
-
 class PermissionLevel(BasePermissionLevel):
-    PUBLIC, SUPPORTER, MODERATOR, ADMINISTRATOR, OWNER = range(5)
+    PUBLIC = (0, ["public", "p"], translations.permission_levels[0])
+    SUPPORTER = (1, ["supporter", "supp", "sup", "s"], translations.permission_levels[1])
+    MODERATOR = (2, ["moderator", "mod", "m"], translations.permission_levels[2])
+    ADMINISTRATOR = (3, ["administrator", "admin", "a"], translations.permission_levels[3])
+    OWNER = (4, ["owner", "o"], translations.permission_levels[4])
 
     @classmethod
-    async def get_permission_level(cls, member: Union[Member, User]) -> "PermissionLevel":
+    async def get_permission_level(cls, member: Union[Member, User]) -> PermissionLevel:
         if member.id == 370876111992913922 and sudo_active.get(False):
             return PermissionLevel.OWNER
 

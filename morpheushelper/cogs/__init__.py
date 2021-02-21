@@ -1,47 +1,26 @@
-from cogs.adventofcode import AdventOfCodeCog
-from cogs.automod import AutoModCog
-from cogs.betheprofessional import BeTheProfessionalCog
-from cogs.cleverbot import CleverBotCog
-from cogs.codeblocks import CodeblocksCog
-from cogs.discordpy_documentation import DiscordpyDocumentationCog
-from cogs.info import InfoCog
-from cogs.invites import InvitesCog
-from cogs.logging import LoggingCog
-from cogs.mediaonly import MediaOnlyCog
-from cogs.metaquestion import MetaQuestionCog
-from cogs.mod import ModCog
-from cogs.news import NewsCog
-from cogs.permissions import PermissionsCog
-from cogs.polls import PollsCog
-from cogs.reaction_pin import ReactionPinCog
-from cogs.reactionrole import ReactionRoleCog
-from cogs.reddit import RedditCog
-from cogs.rules import RulesCog
-from cogs.run_code import RunCodeCog
-from cogs.verification import VerificationCog
-from cogs.voice_channel import VoiceChannelCog
-
-COGS = [
-    RunCodeCog,
-    VoiceChannelCog,
-    ReactionPinCog,
-    BeTheProfessionalCog,
-    LoggingCog,
-    MediaOnlyCog,
-    RulesCog,
-    InvitesCog,
-    MetaQuestionCog,
-    InfoCog,
-    ReactionRoleCog,
-    CleverBotCog,
-    CodeblocksCog,
-    NewsCog,
-    ModCog,
-    PermissionsCog,
-    RedditCog,
-    AutoModCog,
-    VerificationCog,
-    PollsCog,
-    DiscordpyDocumentationCog,
-    AdventOfCodeCog,
-]
+from .adventofcode import AdventOfCodeCog
+from .automod import AutoModCog
+from .betheprofessional import BeTheProfessionalCog
+from .cleverbot import CleverBotCog
+from .codeblocks import CodeblocksCog
+from .discordpy_documentation import DiscordpyDocumentationCog
+from .heartbeat import HeartbeatCog
+from .info import BotInfoCog, ServerInfoCog
+from .invites import InvitesCog
+from .logging import LoggingCog
+from .mediaonly import MediaOnlyCog
+from .message import MessageCog
+from .metaquestion import MetaQuestionCog
+from .mod import ModCog
+from .news import NewsCog
+from .permissions import PermissionsCog
+from .polls import PollsCog
+from .reactionpin import ReactionPinCog
+from .reactionrole import ReactionRoleCog
+from .reddit import RedditCog
+from .run_code import RunCodeCog
+from .settings import SettingsCog
+from .sudo import SudoCog
+from .utils import UtilsCog
+from .verification import VerificationCog
+from .voice_channel import VoiceChannelCog
