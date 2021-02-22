@@ -8,11 +8,11 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed, read_normal_message, attachment_to_file, Color
-from ..logging import send_to_changelog
 from .colors import Colors
 from .models import NewsAuthorization
 from .permissions import Permission
 from ..contributor import Contributor
+from ..logging import send_to_changelog
 
 
 class NewsCog(Cog, name="News"):

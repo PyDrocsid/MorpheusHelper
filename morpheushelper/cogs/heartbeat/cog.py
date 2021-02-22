@@ -2,15 +2,15 @@ import os
 from datetime import datetime
 from typing import Optional
 
-from PyDrocsid.permission import BasePermission
 from discord import User, Forbidden
 from discord.ext import tasks
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.config import Config
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_editable_log
-from cogs.contributor import Contributor
+from ..contributor import Contributor
 
 
 class HeartbeatCog(Cog, name="Heartbeat"):

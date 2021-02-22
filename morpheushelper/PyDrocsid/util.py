@@ -5,13 +5,16 @@ from time import time
 from typing import Optional, List, Tuple
 
 import sentry_sdk
-from discord import Embed, Message, File, Attachment, TextChannel, Member
+from discord import Embed, Message, File, Attachment, TextChannel, Member, PartialEmoji, Forbidden
 from discord.abc import Messageable
 from discord.ext.commands import Command, Context, CommandError, Bot, BadArgument, ColorConverter
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
+from PyDrocsid.config import Config
+from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.material_colors import MaterialColors
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 
 
@@ -23,6 +26,10 @@ def setup_sentry(dsn: str, version: str):
         integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
         release=f"morpheushelper@{version}",
     )
+
+
+async def is_teamler(member: Member) -> bool:
+    return await Config.TEAMLER_LEVEL.check_permissions(member)
 
 
 class Color(ColorConverter):
@@ -46,6 +53,33 @@ async def can_run_command(command: Command, ctx: Context) -> bool:
         return await command.can_run(ctx)
     except CommandError:
         return False
+
+
+async def check_wastebasket(
+    message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: BasePermission
+) -> Optional[int]:
+    if emoji.name != name_to_emoji["wastebasket"]:
+        return None
+
+    for embed in message.embeds:
+        if embed.footer.text == Embed.Empty:
+            continue
+
+        pattern = re.escape(footer).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
+        if (match := re.match("^" + pattern + "$", embed.footer.text)) is None:
+            continue
+
+        author_id = int(match.group(1))
+        if not (author_id == member.id or await permission.check_permissions(member)):
+            try:
+                await message.remove_reaction(emoji, member)
+            except Forbidden:
+                pass
+            return None
+
+        return author_id
+
+    return None
 
 
 def measure_latency() -> Optional[float]:

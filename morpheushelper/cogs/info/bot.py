@@ -10,10 +10,10 @@ from PyDrocsid.github_api import GitHubUser, get_users, get_repo_description
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from cogs.contributor import Contributor
-from cogs.settings.cog import get_prefix
 from .colors import Colors
 from .permissions import Permission
+from ..contributor import Contributor
+from ..settings.cog import get_prefix
 
 
 class BotInfoCog(Cog, name="Bot Information"):

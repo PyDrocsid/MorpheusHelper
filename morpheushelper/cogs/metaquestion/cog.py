@@ -6,10 +6,10 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
-from cogs.contributor import Contributor
-from util import check_wastebasket
+from PyDrocsid.util import check_wastebasket
 from .colors import Colors
 from .permissions import Permission
+from ..contributor import Contributor
 
 
 def make_embed(requested_by: Member) -> Embed:

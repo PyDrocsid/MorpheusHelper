@@ -31,3 +31,4 @@ class Config:
     PERMISSION_LEVELS: Type[BasePermissionLevel]
     DEFAULT_PERMISSION_LEVEL: Callable[[BasePermission], BasePermissionLevel]
     PERMISSIONS: list[BasePermission] = []
+    TEAMLER_LEVEL: BasePermissionLevel

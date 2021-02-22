@@ -10,9 +10,9 @@ from PyDrocsid.config import Config
 from PyDrocsid.permission import BasePermissionLevel
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from cogs.contributor import Contributor
 from .colors import Colors
 from .permissions import Permission
+from ..contributor import Contributor
 from ..logging import send_to_changelog
 
 

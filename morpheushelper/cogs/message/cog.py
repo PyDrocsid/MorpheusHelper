@@ -9,9 +9,9 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.translations import translations
 from PyDrocsid.util import Color
 from PyDrocsid.util import read_normal_message, read_complete_message
-from cogs.contributor import Contributor
 from .colors import Colors
 from .permissions import Permission
+from ..contributor import Contributor
 
 
 class MessageCog(Cog, name="Message Commands"):

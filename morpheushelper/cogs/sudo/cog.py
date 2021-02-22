@@ -9,8 +9,8 @@ from PyDrocsid.config import Config
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import call_event_handlers
 from PyDrocsid.permission import permission_override
-from cogs.contributor import Contributor
-from cogs.sudo.permissions import Permission
+from .permissions import Permission
+from ..contributor import Contributor
 
 
 @check

@@ -13,8 +13,7 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from PyDrocsid.util import send_long_embed
-from util import is_teamler
+from PyDrocsid.util import send_long_embed, is_teamler
 from .colors import Colors
 from .models import DynamicVoiceChannel, DynamicVoiceGroup, RoleVoiceLink
 from .permissions import Permission

@@ -12,13 +12,12 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from PyDrocsid.util import send_long_embed
-from cogs.invites.models import InviteLog
-from util import is_teamler
+from PyDrocsid.util import is_teamler, send_long_embed
 from .colors import Colors
 from .models import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from .permissions import Permission
 from ..contributor import Contributor
+from ..invites.models import InviteLog
 from ..logging import send_to_changelog
 from ..settings.cog import get_prefix
 

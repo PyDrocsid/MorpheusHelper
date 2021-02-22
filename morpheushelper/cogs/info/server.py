@@ -10,10 +10,10 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.permission import BasePermission
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from cogs.betheprofessional.models import BTPRole
-from cogs.contributor import Contributor
-from cogs.invites.models import AllowedInvite
 from .colors import Colors
+from ..betheprofessional.models import BTPRole
+from ..contributor import Contributor
+from ..invites.models import AllowedInvite
 
 
 class ServerInfoCog(Cog, name="Server Information"):

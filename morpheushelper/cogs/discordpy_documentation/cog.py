@@ -39,8 +39,8 @@ from discord.ext.commands import Context
 from PyDrocsid.cog import Cog
 from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
-from cogs.contributor import Contributor
 from .colors import Colors
+from ..contributor import Contributor
 
 
 def finder(text: str, collection: Iterable, *, key: Optional[Callable[..., str]] = None):

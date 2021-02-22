@@ -61,6 +61,7 @@ Config.DEFAULT_PERMISSION_LEVEL = lambda permission: {
     SudoPermission.stop: PermissionLevel.OWNER,
     SudoPermission.kill: PermissionLevel.OWNER,
 }.get(permission, PermissionLevel.ADMINISTRATOR)
+Config.TEAMLER_LEVEL = PermissionLevel.SUPPORTER
 
 banner = r"""
 

@@ -10,11 +10,11 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from cogs.contributor import Contributor
-from cogs.mod.models import Kick
 from .colors import Colors
 from .permissions import Permission
+from ..contributor import Contributor
 from ..logging import send_to_changelog
+from ..mod.models import Kick
 
 pending_kicks: set[int] = set()
 

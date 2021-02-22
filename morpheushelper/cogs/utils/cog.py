@@ -9,8 +9,8 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency
-from cogs.contributor import Contributor
 from .colors import Colors
+from ..contributor import Contributor
 
 
 class UtilsCog(Cog, name="Utils"):
