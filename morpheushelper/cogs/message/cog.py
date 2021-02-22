@@ -7,10 +7,10 @@ from discord.ext.commands import guild_only, Context, CommandError, UserInputErr
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.translations import translations
+from PyDrocsid.util import Color
 from PyDrocsid.util import read_normal_message, read_complete_message
 from cogs.contributor import Contributor
-from colours import Colours
-from util import Color
+from .colors import Colors
 from .permissions import Permission
 
 
@@ -38,7 +38,7 @@ class MessageCog(Cog, name="Message Commands"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.could_not_send_message)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_message)
+        embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.send_message)
         await ctx.send(embed=embed)
         content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
         try:
@@ -61,7 +61,7 @@ class MessageCog(Cog, name="Message Commands"):
         if not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_embed_title)
+        embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.send_embed_title)
         await ctx.send(embed=embed)
         title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
         if len(title) > 256:
@@ -99,7 +99,7 @@ class MessageCog(Cog, name="Message Commands"):
         except (HTTPException, Forbidden):
             raise CommandError(translations.msg_could_not_be_sent)
         else:
-            embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_sent)
+            embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.msg_sent)
             await ctx.send(embed=embed)
 
     @commands.group()
@@ -122,7 +122,7 @@ class MessageCog(Cog, name="Message Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_new_message)
+        embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.send_new_message)
         await ctx.send(embed=embed)
         content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
         if files:
@@ -141,7 +141,7 @@ class MessageCog(Cog, name="Message Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_embed_title)
+        embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.send_embed_title)
         await ctx.send(embed=embed)
         title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
         if len(title) > 256:
@@ -173,7 +173,7 @@ class MessageCog(Cog, name="Message Commands"):
         if files:
             raise CommandError(translations.cannot_edit_files)
         await message.edit(content=content, embed=embed)
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_edited)
+        embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.msg_edited)
         await ctx.send(embed=embed)
 
     @commands.command()
@@ -193,5 +193,5 @@ class MessageCog(Cog, name="Message Commands"):
             raise CommandError(translations.could_not_delete)
 
         await message.delete()
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_deleted)
+        embed = Embed(title=translations.rule, colour=Colors.MessageCommands, description=translations.msg_deleted)
         await ctx.send(embed=embed)

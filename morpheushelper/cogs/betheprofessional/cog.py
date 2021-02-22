@@ -9,11 +9,11 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.translations import translations
 from PyDrocsid.util import calculate_edit_distance, send_long_embed
-from colours import Colours
-from util import send_to_changelog
+from .colors import Colors
 from .models import BTPRole
 from .permissions import Permission
 from ..contributor import Contributor
+from ..logging import send_to_changelog
 
 
 def split_topics(topics: str) -> List[str]:
@@ -75,7 +75,7 @@ async def unregister_roles(ctx: Context, topics: str, *, delete_roles: bool):
         await db_thread(db.delete, btp_role)
         if delete_roles:
             await role.delete()
-    embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
+    embed = Embed(title=translations.betheprofessional, colour=Colors.BeTheProfessional)
     if len(roles) > 1:
         embed.description = translations.f_cnt_topics_unregistered(len(roles))
         await send_to_changelog(
@@ -98,10 +98,10 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         list all registered topics
         """
 
-        embed = Embed(title=translations.available_topics_header, colour=Colours.BeTheProfessional)
+        embed = Embed(title=translations.available_topics_header, colour=Colors.BeTheProfessional)
         out = [role.name for role in await list_topics(ctx.guild)]
         if not out:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_topics_registered
             await ctx.send(embed=embed)
             return
@@ -121,13 +121,13 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         roles: List[Role] = [r for r in await parse_topics(ctx.guild, topics, ctx.author) if r not in member.roles]
 
         await member.add_roles(*roles)
-        embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
+        embed = Embed(title=translations.betheprofessional, colour=Colors.BeTheProfessional)
         if len(roles) > 1:
             embed.description = translations.f_cnt_topics_added(len(roles))
         elif len(roles) == 1:
             embed.description = translations.topic_added
         else:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_topic_added
         await ctx.send(embed=embed)
 
@@ -146,7 +146,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         roles = [r for r in roles if r in member.roles]
 
         await member.remove_roles(*roles)
-        embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
+        embed = Embed(title=translations.betheprofessional, colour=Colors.BeTheProfessional)
         if len(roles) > 1:
             embed.description = translations.f_cnt_topics_removed(len(roles))
         elif len(roles) == 1:
@@ -196,7 +196,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         for role in roles:
             await db_thread(BTPRole.create, role.id)
 
-        embed = Embed(title=translations.betheprofessional, colour=Colours.BeTheProfessional)
+        embed = Embed(title=translations.betheprofessional, colour=Colors.BeTheProfessional)
         if len(roles) > 1:
             embed.description = translations.f_cnt_topics_registered(len(roles))
             await send_to_changelog(

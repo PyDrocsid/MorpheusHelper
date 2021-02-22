@@ -1,6 +1,5 @@
 from typing import Optional, List
 
-from PyDrocsid.permission import BasePermission
 from discord import Embed, Guild, Status, Member
 from discord import Role
 from discord.ext import commands
@@ -8,12 +7,13 @@ from discord.ext.commands import guild_only, Context, UserInputError
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread, db
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from cogs.betheprofessional.models import BTPRole
 from cogs.contributor import Contributor
 from cogs.invites.models import AllowedInvite
-from colours import Colours
+from .colors import Colors
 
 
 class ServerInfoCog(Cog, name="Server Information"):
@@ -33,7 +33,7 @@ class ServerInfoCog(Cog, name="Server Information"):
             return
 
         guild: Guild = ctx.guild
-        embed = Embed(title=guild.name, description=translations.info_description, color=Colours.ServerInformation)
+        embed = Embed(title=guild.name, description=translations.info_description, color=Colors.ServerInformation)
         embed.set_thumbnail(url=guild.icon_url)
         created = guild.created_at.date()
         embed.add_field(name=translations.creation_date, value=f"{created.day}.{created.month}.{created.year}")
@@ -83,7 +83,7 @@ class ServerInfoCog(Cog, name="Server Information"):
         """
 
         guild: Guild = ctx.guild
-        embed = Embed(title=translations.bots, color=Colours.ServerInformation)
+        embed = Embed(title=translations.bots, color=Colors.ServerInformation)
         online: List[Member] = []
         offline: List[Member] = []
         for member in guild.members:  # type: Member
@@ -91,7 +91,7 @@ class ServerInfoCog(Cog, name="Server Information"):
                 [offline, online][member.status != Status.offline].append(member)
 
         if not online + offline:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_bots
             await ctx.send(embed=embed)
             return

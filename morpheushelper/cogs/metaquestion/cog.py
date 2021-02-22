@@ -7,13 +7,13 @@ from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
 from cogs.contributor import Contributor
-from colours import Colours
 from util import check_wastebasket
+from .colors import Colors
 from .permissions import Permission
 
 
 def make_embed(requested_by: Member) -> Embed:
-    embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/", colour=Colours.MetaQuestions)
+    embed = Embed(title=translations.metaquestion_title, url="http://metafrage.de/", colour=Colors.MetaQuestions)
     embed.description = translations.metaquestion_description
     embed.set_footer(text=translations.f_requested_by(requested_by, requested_by.id), icon_url=requested_by.avatar_url)
     embed.add_field(

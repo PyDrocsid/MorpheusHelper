@@ -1,15 +1,15 @@
 import re
 
-from PyDrocsid.permission import BasePermission
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import CommandError, UserInputError
 from requests import RequestException
 
 from PyDrocsid.cog import Cog
+from PyDrocsid.material_colors import MaterialColors
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from colours import Colours
 from .api import Emkc, EmkcAPIException
 from ..contributor import Contributor
 
@@ -63,9 +63,9 @@ class RunCodeCog(Cog):
 
         description = "```\n" + output.replace("`", "`\u200b") + "\n```"
 
-        embed = Embed(title=translations.run_output, color=Colours.green, description=description)
+        embed = Embed(title=translations.run_output, color=MaterialColors.green, description=description)
         if api_result["stderr"] and not api_result["stdout"]:
-            embed.colour = Colours.error
+            embed.colour = MaterialColors.error
 
         embed.set_footer(text=translations.f_requested_by(ctx.author, ctx.author.id), icon_url=ctx.author.avatar_url)
 

@@ -1,4 +1,5 @@
 import io
+import re
 from socket import gethostbyname, socket, AF_INET, SOCK_STREAM, timeout, SHUT_RD
 from time import time
 from typing import Optional, List, Tuple
@@ -6,9 +7,12 @@ from typing import Optional, List, Tuple
 import sentry_sdk
 from discord import Embed, Message, File, Attachment, TextChannel, Member
 from discord.abc import Messageable
-from discord.ext.commands import Command, Context, CommandError, Bot
+from discord.ext.commands import Command, Context, CommandError, Bot, BadArgument, ColorConverter
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+
+from PyDrocsid.material_colors import MaterialColors
+from PyDrocsid.translations import translations
 
 
 def setup_sentry(dsn: str, version: str):
@@ -19,6 +23,22 @@ def setup_sentry(dsn: str, version: str):
         integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
         release=f"morpheushelper@{version}",
     )
+
+
+class Color(ColorConverter):
+    async def convert(self, ctx, argument: str) -> Optional[int]:
+        try:
+            return await super().convert(ctx, argument)
+        except BadArgument:
+            pass
+
+        if not re.match(r"^[0-9a-fA-F]{6}$", argument):
+            raise BadArgument(translations.invalid_color)
+        return int(argument, 16)
+
+
+def make_error(message) -> Embed:
+    return Embed(title=translations.error, colour=MaterialColors.error, description=str(message))
 
 
 async def can_run_command(command: Command, ctx: Context) -> bool:

@@ -12,7 +12,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from cogs.contributor import Contributor
 from cogs.settings.cog import get_prefix
-from colours import Colours
+from .colors import Colors
 from .permissions import Permission
 
 
@@ -61,7 +61,7 @@ class BotInfoCog(Cog, name="Bot Information"):
         self.current_status = (self.current_status + 1) % len(translations.profile_status)
 
     async def build_info_embed(self, authorized: bool) -> Embed:
-        embed = Embed(title=Config.NAME, colour=Colours.info, description=translations.bot_description)
+        embed = Embed(title=Config.NAME, colour=Colors.info, description=translations.bot_description)
 
         if self.info_icon:
             embed.set_thumbnail(url=self.info_icon)
@@ -116,7 +116,7 @@ class BotInfoCog(Cog, name="Bot Information"):
         embed = Embed(
             title=Config.REPO,
             description=self.repo_description,
-            colour=Colours.github,
+            colour=Colors.github,
             url=Config.REPO_LINK,
         )
         embed.set_author(name="GitHub", icon_url="https://github.com/fluidicon.png")
@@ -129,7 +129,7 @@ class BotInfoCog(Cog, name="Bot Information"):
         show version
         """
 
-        embed = Embed(title=f"{Config.NAME} v{Config.VERSION}", colour=Colours.version)
+        embed = Embed(title=f"{Config.NAME} v{Config.VERSION}", colour=Colors.version)
         await ctx.send(embed=embed)
 
     @commands.command(aliases=["infos", "about"])
@@ -162,7 +162,7 @@ class BotInfoCog(Cog, name="Bot Information"):
             ctx,
             Embed(
                 title=translations.contributors_title,
-                colour=Colours.info,
+                colour=Colors.info,
                 description="\n".join(
                     f":small_orange_diamond: {f}"
                     for c, cnt in [(Config.AUTHOR, 0), *Config.CONTRIBUTORS.most_common()]

@@ -13,6 +13,7 @@ from PyDrocsid.database import db
 from PyDrocsid.events import listener
 from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
+from PyDrocsid.util import make_error
 from PyDrocsid.util import setup_sentry
 from cogs import (
     AdventOfCodeCog,
@@ -45,7 +46,6 @@ from cogs.contributor import Contributor
 from cogs.settings.cog import get_prefix
 from cogs.sudo.permissions import Permission as SudoPermission
 from permissions import PermissionLevel
-from util import make_error
 
 Config.NAME = "MorpheusHelper"
 Config.VERSION = getoutput("cat VERSION 2>/dev/null || git describe").lstrip("v")

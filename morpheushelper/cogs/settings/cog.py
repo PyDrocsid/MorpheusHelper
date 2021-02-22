@@ -1,18 +1,16 @@
 import string
 
 from discord import Embed
-
-from PyDrocsid.settings import Settings
-
-from PyDrocsid.translations import translations
 from discord.ext import commands
 from discord.ext.commands import guild_only, Context, CommandError
 
 from PyDrocsid.cog import Cog
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import translations
+from .colors import Colors
 from .permissions import Permission
 from ..contributor import Contributor
-from colours import Colours
-from util import send_to_changelog
+from ..logging import send_to_changelog
 
 
 async def get_prefix() -> str:
@@ -43,6 +41,6 @@ class SettingsCog(Cog, name="Settings"):
             raise CommandError(translations.prefix_invalid_chars)
 
         await set_prefix(new_prefix)
-        embed = Embed(title=translations.prefix, description=translations.prefix_updated, colour=Colours.prefix)
+        embed = Embed(title=translations.prefix, description=translations.prefix_updated, colour=Colors.prefix)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_prefix_updated(new_prefix))

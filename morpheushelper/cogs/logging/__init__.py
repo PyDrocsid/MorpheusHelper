@@ -1,1 +1,1 @@
-from .cog import LoggingCog
+from .cog import LoggingCog, send_to_changelog

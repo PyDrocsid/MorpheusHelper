@@ -12,8 +12,8 @@ from PyDrocsid.emojis import name_to_emoji, emoji_to_name
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from colours import Colours
 from util import is_teamler, check_wastebasket
+from .colors import Colors
 from .permissions import Permission
 from ..contributor import Contributor
 
@@ -41,7 +41,7 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
     options = [PollOption(ctx, line, i) for i, line in enumerate(options)]
 
     embed = Embed(
-        title=question, description=translations.vote_explanation, color=Colours.Polls, timestamp=datetime.utcnow()
+        title=question, description=translations.vote_explanation, color=Colors.Polls, timestamp=datetime.utcnow()
     )
     embed.set_author(name=str(ctx.author), icon_url=ctx.author.avatar_url)
     if allow_delete:

@@ -1,16 +1,16 @@
 from typing import Optional
 
-from PyDrocsid.permission import BasePermission
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import Context
 from discord.utils import snowflake_time
 
 from PyDrocsid.cog import Cog
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 from PyDrocsid.util import measure_latency
 from cogs.contributor import Contributor
-from colours import Colours
+from .colors import Colors
 
 
 class UtilsCog(Cog, name="Utils"):
@@ -24,7 +24,7 @@ class UtilsCog(Cog, name="Utils"):
         """
 
         latency: Optional[float] = measure_latency()
-        embed = Embed(title=translations.pong, colour=Colours.ping)
+        embed = Embed(title=translations.pong, colour=Colors.ping)
         if latency is not None:
             embed.description = translations.f_pong_latency(latency * 1000)
         await ctx.send(embed=embed)

@@ -12,11 +12,11 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from colours import Colours
-from util import send_to_changelog
+from .colors import Colors
 from .models import MediaOnlyChannel
 from .permissions import Permission
 from ..contributor import Contributor
+from ..logging import send_to_changelog
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -44,7 +44,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
 
         channel: TextChannel = message.channel
         await message.delete()
-        embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia, colour=Colours.error)
+        embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia, colour=Colors.error)
         await channel.send(content=message.author.mention, embed=embed, delete_after=30)
         await send_to_changelog(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
@@ -76,9 +76,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
                 out.append(f":small_orange_diamond: {text_channel.mention}")
             else:
                 await db_thread(db.delete, channel)
-        embed = Embed(title=translations.media_only_channels_header, colour=Colours.error)
+        embed = Embed(title=translations.media_only_channels_header, colour=Colors.error)
         if out:
-            embed.colour = Colours.MediaOnly
+            embed.colour = Colors.MediaOnly
             embed.description = "\n".join(out)
             await send_long_embed(ctx, embed)
         else:
@@ -100,7 +100,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         embed = Embed(
             title=translations.media_only_channels_header,
             description=translations.channel_now_media_only,
-            colour=Colours.MediaOnly,
+            colour=Colors.MediaOnly,
         )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_now_media_only(channel.mention))
@@ -118,7 +118,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         embed = Embed(
             title=translations.media_only_channels_header,
             description=translations.channel_not_media_only_anymore,
-            colour=Colours.MediaOnly,
+            colour=Colors.MediaOnly,
         )
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_channel_not_media_only_anymore(channel.mention))

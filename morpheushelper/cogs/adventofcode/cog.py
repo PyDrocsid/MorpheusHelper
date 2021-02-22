@@ -15,11 +15,11 @@ from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from colours import Colours
-from util import send_to_changelog
+from .colors import Colors
 from .models import AOCLink
 from .permissions import Permission
 from ..contributor import Contributor
+from ..logging import send_to_changelog
 
 BASE_URL = "https://adventofcode.com/"
 
@@ -264,7 +264,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.send(
             embed=Embed(
                 title=translations.aoc_join_title,
-                colour=Colours.AdventOfCode,
+                colour=Colors.AdventOfCode,
                 description=translations.f_aoc_join_instructions(AOCConfig.INVITE_CODE),
             )
         )
@@ -326,7 +326,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
             full = "**" * (unlocked == completed)
             progress = f"{completed}/{unlocked} ({full}{completed / unlocked * 100:.1f}%{full})"
 
-        embed = Embed(title=f"Advent of Code {AOCConfig.YEAR}", colour=Colours.AdventOfCode)
+        embed = Embed(title=f"Advent of Code {AOCConfig.YEAR}", colour=Colors.AdventOfCode)
         icon_url = member.avatar_url if member else "https://adventofcode.com/favicon.png"
         embed.set_author(name=name, icon_url=icon_url)
 
@@ -370,7 +370,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.aoc_links, colour=Colours.AdventOfCode)
+        embed = Embed(title=translations.aoc_links, colour=Colors.AdventOfCode)
         leaderboard = await AOCConfig.get_leaderboard()
         out = []
         for link in await db_thread(db.all, AOCLink):  # type: AOCLink
@@ -389,7 +389,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         if not out:
             embed.description = translations.aoc_no_links
-            embed.colour = Colours.error
+            embed.colour = Colors.error
         else:
             embed.description = "\n".join(out)
         await send_long_embed(ctx, embed)
@@ -447,7 +447,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         rank: int = await Settings.get(int, "aoc_rank", 10)
 
         if not role:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.add_field(name=translations.role, value=translations.disabled)
         else:
             embed.colour = role.colour
@@ -546,7 +546,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         list published solution repositories
         """
 
-        embed = Embed(title=translations.aoc_solutions, colour=Colours.AdventOfCode)
+        embed = Embed(title=translations.aoc_solutions, colour=Colors.AdventOfCode)
         members = (await AOCConfig.get_leaderboard())["members"]
         out = []
         for link in await db_thread(db.all, AOCLink):  # type: AOCLink
@@ -558,7 +558,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
 
         if not out:
             embed.description = translations.aoc_no_solutions
-            embed.colour = Colours.error
+            embed.colour = Colors.error
         else:
             embed.description = "\n".join(out)
 

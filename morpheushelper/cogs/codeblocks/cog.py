@@ -1,11 +1,11 @@
-from PyDrocsid.permission import BasePermission
 from discord import Embed
 from discord.ext import commands
 
 from PyDrocsid.cog import Cog
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 from cogs.contributor import Contributor
-from colours import Colours
+from .colors import Colors
 
 
 class CodeblocksCog(Cog, name="Codeblocks command"):
@@ -18,6 +18,6 @@ class CodeblocksCog(Cog, name="Codeblocks command"):
             embed=Embed(
                 title=translations.codeblocks_title,
                 description=translations.codeblocks_description,
-                colour=Colours.CodeBlocks,
+                colour=Colors.CodeBlocks,
             )
         )

@@ -21,7 +21,7 @@ class PermissionModel(db.Base):
     level: Union[Column, int] = Column(Integer)
 
     @staticmethod
-    def create(permission: str, level: int) -> "PermissionModel":
+    def create(permission: str, level: int) -> PermissionModel:
         row = PermissionModel(permission=permission, level=level)
         db.add(row)
         return row

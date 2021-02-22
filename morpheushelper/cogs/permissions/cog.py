@@ -11,9 +11,9 @@ from PyDrocsid.permission import BasePermissionLevel
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from cogs.contributor import Contributor
-from colours import Colours
-from util import send_to_changelog
+from .colors import Colors
 from .permissions import Permission
+from ..logging import send_to_changelog
 
 
 async def list_permissions(ctx: Context, title: str, min_level: BasePermissionLevel):
@@ -25,13 +25,13 @@ async def list_permissions(ctx: Context, title: str, min_level: BasePermissionLe
                 f"`{permission.name}` - {permission.description}"
             )
 
-    embed = Embed(title=title, colour=Colours.error)
+    embed = Embed(title=title, colour=Colors.error)
     if not out:
         embed.description = translations.no_permissions
         await ctx.send(embed=embed)
         return
 
-    embed.colour = Colours.Permissions
+    embed.colour = Colors.Permissions
     for (_, name), lines in sorted(out.items(), reverse=True):
         embed.add_field(name=name, value="\n".join(sorted(lines)), inline=False)
 
@@ -106,7 +106,7 @@ class PermissionsCog(Cog, name="Permissions"):
         description = permission.name, level.description
         embed = Embed(
             title=translations.permissions_title,
-            colour=Colours.Permissions,
+            colour=Colors.Permissions,
             description=translations.f_permission_set(*description),
         )
         await ctx.send(embed=embed)

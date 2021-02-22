@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, Dict, Set
 
-from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound, Embed
+from discord import Message, Role, PartialEmoji, TextChannel, Member, NotFound, Embed, HTTPException
 from discord.ext import commands
 from discord.ext.commands import guild_only, Context, CommandError, UserInputError
 
@@ -10,11 +10,11 @@ from PyDrocsid.emoji_converter import EmojiConverter
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from colours import Colours
-from util import send_to_changelog
+from .colors import Colors
 from .models import ReactionRole
 from .permissions import Permission
 from ..contributor import Contributor
+from ..logging import send_to_changelog
 
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:
@@ -75,7 +75,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 raise UserInputError
             return
 
-        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole)
+        embed = Embed(title=translations.reactionrole, colour=Colors.ReactionRole)
         channels: Dict[TextChannel, Dict[Message, Set[str]]] = {}
         message_cache: Dict[Tuple[int, int], Message] = {}
         for link in await db_thread(db.all, ReactionRole):  # type: ReactionRole
@@ -88,7 +88,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             if key not in message_cache:
                 try:
                     message_cache[key] = await channel.fetch_message(link.message_id)
-                except NotFound:
+                except HTTPException:
                     await db_thread(db.delete, link)
                     continue
             msg = message_cache[key]
@@ -101,7 +101,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             channels[channel][msg].add(link.emoji)
 
         if not channels:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_reactionrole_links
         else:
             out = []
@@ -120,13 +120,19 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         list configured reactionrole links for a specific message
         """
 
-        embed = Embed(title=translations.reactionrole, colour=Colours.ReactionRole)
+        embed = Embed(title=translations.reactionrole, colour=Colors.ReactionRole)
         out = []
         for link in await db_thread(
             db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
         ):  # type: ReactionRole
             channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
-            if channel is None or await channel.fetch_message(link.message_id) is None:
+            if channel is None:
+                await db_thread(db.delete, link)
+                continue
+
+            try:
+                await channel.fetch_message(link.message_id)
+            except HTTPException:
                 await db_thread(db.delete, link)
                 continue
 
@@ -141,7 +147,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
                 out.append(translations.f_rr_link(link.emoji, role.mention))
 
         if not out:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_reactionrole_links_for_msg
         else:
             embed.description = "\n".join(out)
@@ -169,7 +175,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         await db_thread(ReactionRole.create, msg.channel.id, msg.id, str(emoji), role.id, auto_remove)
         await msg.add_reaction(emoji)
         embed = Embed(
-            title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_created
+            title=translations.reactionrole, colour=Colors.ReactionRole, description=translations.rr_link_created
         )
         await ctx.send(embed=embed)
         await send_to_changelog(
@@ -192,7 +198,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             if str(emoji) == str(reaction.emoji):
                 await reaction.clear()
         embed = Embed(
-            title=translations.reactionrole, colour=Colours.ReactionRole, description=translations.rr_link_removed
+            title=translations.reactionrole, colour=Colors.ReactionRole, description=translations.rr_link_removed
         )
         await ctx.send(embed=embed)
         await send_to_changelog(

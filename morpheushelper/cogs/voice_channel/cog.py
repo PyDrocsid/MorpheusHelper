@@ -14,11 +14,12 @@ from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from colours import Colours
-from util import send_to_changelog, is_teamler
+from util import is_teamler
+from .colors import Colors
 from .models import DynamicVoiceChannel, DynamicVoiceGroup, RoleVoiceLink
 from .permissions import Permission
 from ..contributor import Contributor
+from ..logging import send_to_changelog
 from ..settings.cog import get_prefix
 
 
@@ -58,7 +59,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 await messages[0].edit(embed=embed)
                 return
 
-        embed = Embed(title=title, colour=Colours.Voice[["private", "public"][public]], description=msg)
+        embed = Embed(title=title, colour=[Colors.private, Colors.public][public], description=msg)
         await channel.send(embed=embed)
 
     async def on_ready(self):
@@ -328,11 +329,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             e = ":globe_with_meridians:" if group.public else ":lock:"
             out.append(translations.f_group_list_entry(e, group.name, cnt))
 
-        embed = Embed(title=translations.voice_channel, colour=Colours.Voice)
+        embed = Embed(title=translations.voice_channel, colour=Colors.Voice)
         if out:
             embed.description = "\n".join(sorted(out))
         else:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_dyn_group
         await send_long_embed(ctx, embed)
 
@@ -354,9 +355,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         name: str = re.match(r"^(.*?) ?\d*$", voice_channel.name).group(1) or voice_channel.name
         await db_thread(DynamicVoiceGroup.create, name, voice_channel.id, public)
         await voice_channel.edit(name=f"New {name}")
-        embed = Embed(
-            title=translations.voice_channel, colour=Colours.Voice, description=translations.dyn_group_created
-        )
+        embed = Embed(title=translations.voice_channel, colour=Colors.Voice, description=translations.dyn_group_created)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_created(name))
 
@@ -381,9 +380,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                 await text_channel.delete()
 
         await voice_channel.edit(name=group.name)
-        embed = Embed(
-            title=translations.voice_channel, colour=Colours.Voice, description=translations.dyn_group_removed
-        )
+        embed = Embed(title=translations.voice_channel, colour=Colors.Voice, description=translations.dyn_group_removed)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_dyn_group_removed(group.name))
 
@@ -418,7 +415,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         embed = Embed(
             title=translations.voice_info,
             timestamp=channel.created_at,
-            colour=Colours.Voice[["private", "public"][group.public]],
+            colour=Colors.Voice[["private", "public"][group.public]],
         )
         embed.set_footer(text=translations.voice_create_date)
         embed.add_field(name=translations.voice_name, value=channel.name)
@@ -463,7 +460,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         await self.update_dynamic_voice_group(group)
         if text_channel != ctx.channel:
             embed = Embed(
-                title=translations.voice_channel, colour=Colours.Voice, description=translations.private_voice_closed
+                title=translations.voice_channel, colour=Colors.Voice, description=translations.private_voice_closed
             )
             await ctx.send(embed=embed)
 
@@ -486,7 +483,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
             user_embed = Embed(
                 title=translations.voice_channel,
-                colour=Colours.Voice,
+                colour=Colors.Voice,
                 timestamp=datetime.utcnow(),
                 description=translations.f_user_added_to_private_voice_dm(ctx.author.mention),
             )
@@ -509,7 +506,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if text_channel != ctx.channel:
                 embed = Embed(
                     title=translations.voice_channel,
-                    colour=Colours.Voice,
+                    colour=Colors.Voice,
                     description=translations.user_added_to_private_voice_response,
                 )
                 await ctx.send(embed=embed)
@@ -545,7 +542,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             if text_channel != ctx.channel:
                 embed = Embed(
                     title=translations.voice_channel,
-                    colour=Colours.Voice,
+                    colour=Colors.Voice,
                     description=translations.user_removed_from_private_voice_response,
                 )
                 await ctx.send(embed=embed)
@@ -562,7 +559,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if not change:
             embed = Embed(
                 title=translations.voice_channel,
-                colour=Colours.Voice,
+                colour=Colors.Voice,
                 description=translations.f_owner_of_private_voice(f"<@{dyn_channel.owner}>"),
             )
             await ctx.send(embed=embed)
@@ -584,7 +581,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         if text_channel != ctx.channel:
             embed = Embed(
                 title=translations.voice_channel,
-                colour=Colours.Voice,
+                colour=Colors.Voice,
                 description=translations.private_voice_owner_changed_response,
             )
             await ctx.send(embed=embed)
@@ -615,11 +612,11 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             else:
                 out.append(f"`{voice}` (`{voice.id}`) -> <@&{role.id}> (`{role.id}`)")
 
-        embed = Embed(title=translations.voice_channel, colour=Colours.Voice)
+        embed = Embed(title=translations.voice_channel, colour=Colors.Voice)
         if out:
             embed.description = "\n".join(out)
         else:
-            embed.colour = Colours.error
+            embed.colour = Colors.error
             embed.description = translations.no_links_created
         await send_long_embed(ctx, embed)
 
@@ -653,7 +650,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         embed = Embed(
             title=translations.voice_channel,
-            colour=Colours.Voice,
+            colour=Colors.Voice,
             description=translations.f_link_created(channel, role.id),
         )
         await ctx.send(embed=embed)
@@ -680,6 +677,6 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     for member in dchannel.members:
                         await member.remove_roles(role)
 
-        embed = Embed(title=translations.voice_channel, colour=Colours.Voice, description=translations.link_deleted)
+        embed = Embed(title=translations.voice_channel, colour=Colors.Voice, description=translations.link_deleted)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_log_link_deleted(channel, role))
