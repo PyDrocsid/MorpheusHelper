@@ -1,19 +1,22 @@
+from discord import Member
 from discord.embeds import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord.ext.commands.context import Context
+from PyDrocsid.async_thread import run_in_thread
+from PyDrocsid.translations import translations
 from wikipedia.exceptions import WikipediaException
 from colours import Colours
-
 import wikipedia
 
 
-def make_embed(title: str, content: str, color) -> Embed:
+def make_embed(title: str, content: str, color, requested_by: Member) -> Embed:
     embed = Embed(title=title, description=content, color=color)
+    embed.set_footer(text=translations.f_requested_by(requested_by, requested_by.id), icon_url=requested_by.avatar_url)
     return embed
 
 
-# Note: wikiepdia allows bots, but only bots that are responsible (not going too fast).
+# Note: wikipedia allows bots, but only bots that are responsible (not going too fast).
 class WikipediaCog(Cog, name="Wikipedia"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -24,8 +27,24 @@ class WikipediaCog(Cog, name="Wikipedia"):
         """
         display wikipedia summary about a topic
         """
-        try:
-            await ctx.send(embed=make_embed(title=title, content=wikipedia.summary(title), color=Colours.default))
+        # workaround because the run_in_thread function doesn't support arguments
+        def inner():
+            try:
+                return wikipedia.summary(title)
+            except WikipediaException as e:
+                return {"Error": str(e)}
 
-        except WikipediaException as e:
-            await ctx.send(embed=make_embed(title="Not found!", content=str(e), color=Colours.warning))
+            except Exception as e:
+                return "Wikipedia cog is not working currently!"
+
+        summary = await run_in_thread(inner)
+
+        # if the type of the return value is dict, this mean that the wikipedia module didn't find
+        # the topic the user searched for
+        if type(summary) == dict:
+            await ctx.send(embed=make_embed(title=f"{title} was not found!", content=summary["Error"],
+                                            color=Colours.warning,
+                                            requested_by=ctx.author))
+        else:
+            await ctx.send(embed=make_embed(title=title, content=summary, color=Colours.default,
+                                            requested_by=ctx.author))
