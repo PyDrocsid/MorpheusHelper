@@ -5,7 +5,7 @@ from discord.ext.commands import Cog, Bot
 from discord.ext.commands.context import Context
 from PyDrocsid.async_thread import run_in_thread
 from PyDrocsid.translations import translations
-from wikipedia.exceptions import WikipediaException
+from wikipedia.exceptions import WikipediaException, DisambiguationError
 from colours import Colours
 import wikipedia
 
@@ -31,11 +31,11 @@ class WikipediaCog(Cog, name="Wikipedia"):
         def inner():
             try:
                 return wikipedia.summary(title)
-            except WikipediaException as e:
+            except DisambiguationError as e:
                 return {"Error": str(e)}
 
-            except:
-                return "Wikipedia cog is not working currently!"
+            except WikipediaException:
+                return "Wikipedia cog is not available currently!"
 
         summary = await run_in_thread(inner)
 
