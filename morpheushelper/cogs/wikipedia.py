@@ -34,14 +34,14 @@ class WikipediaCog(Cog, name="Wikipedia"):
             except WikipediaException as e:
                 return {"Error": str(e)}
 
-            except Exception as e:
+            except:
                 return "Wikipedia cog is not working currently!"
 
         summary = await run_in_thread(inner)
 
         # if the type of the return value is dict, this mean that the wikipedia module didn't find
         # the topic the user searched for
-        if type(summary) == dict:
+        if type(summary) is dict:
             await ctx.send(embed=make_embed(title=f"{title} was not found!", content=summary["Error"],
                                             color=Colours.warning,
                                             requested_by=ctx.author))
