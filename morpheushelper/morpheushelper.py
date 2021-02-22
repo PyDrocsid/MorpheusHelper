@@ -43,6 +43,7 @@ from cogs import (
 )
 from cogs.contributor import Contributor
 from cogs.settings.cog import get_prefix
+from cogs.sudo.permissions import Permission as SudoPermission
 from permissions import PermissionLevel
 from util import make_error
 
@@ -55,7 +56,11 @@ Config.REPO_ICON = "https://github.com/Defelo.png"
 Config.AUTHOR = Contributor.Defelo
 
 Config.PERMISSION_LEVELS = PermissionLevel
-Config.DEFAULT_PERMISSION_LEVEL = PermissionLevel.ADMINISTRATOR
+Config.DEFAULT_PERMISSION_LEVEL = lambda permission: {
+    SudoPermission.reload: PermissionLevel.OWNER,
+    SudoPermission.stop: PermissionLevel.OWNER,
+    SudoPermission.kill: PermissionLevel.OWNER,
+}.get(permission, PermissionLevel.ADMINISTRATOR)
 
 banner = r"""
 

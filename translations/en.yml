@@ -633,6 +633,10 @@ permissions:
   aoc_link: link discord members to aoc users
   aoc_role: manage aoc role
 
+  reload: reload the bot
+  stop: stop the bot
+  kill: kill the bot
+
 # reddit
 reddit: Reddit
 interval: Interval

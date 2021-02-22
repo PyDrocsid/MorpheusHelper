@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Type
+from typing import Type, Callable
 
 from PyDrocsid.permission import BasePermissionLevel, BasePermission
 
@@ -29,5 +29,5 @@ class Config:
         }
     )
     PERMISSION_LEVELS: Type[BasePermissionLevel]
-    DEFAULT_PERMISSION_LEVEL: BasePermissionLevel
+    DEFAULT_PERMISSION_LEVEL: Callable[[BasePermission], BasePermissionLevel]
     PERMISSIONS: list[BasePermission] = []

@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 
 from discord import Embed
@@ -6,7 +7,7 @@ from discord.ext.commands import guild_only, Context, Converter, BadArgument, Co
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.config import Config
-from PyDrocsid.permission import BasePermission, BasePermissionLevel
+from PyDrocsid.permission import BasePermissionLevel
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from cogs.contributor import Contributor
@@ -17,8 +18,8 @@ from .permissions import Permission
 
 async def list_permissions(ctx: Context, title: str, min_level: BasePermissionLevel):
     out = {}
-    for permission in Config.PERMISSIONS:  # type: BasePermission
-        level = await permission.resolve()
+    levels = await asyncio.gather(*[permission.resolve() for permission in Config.PERMISSIONS])
+    for permission, level in zip(Config.PERMISSIONS, levels):
         if min_level.level >= level.level:
             out.setdefault((level.level, level.description), []).append(
                 f"`{permission.name}` - {permission.description}"
@@ -68,7 +69,7 @@ class PermissionsCog(Cog, name="Permissions"):
         """
 
         if min_level is None:
-            min_level = Config.DEFAULT_PERMISSION_LEVEL
+            min_level = Config.DEFAULT_PERMISSION_LEVEL(...)
 
         await list_permissions(ctx, translations.permissions_title, min_level)
 

@@ -21,7 +21,7 @@ async def graphql(query: str, **kwargs) -> Optional[dict]:
 
 
 async def get_users(ids: list[str]) -> Optional[dict[str, GitHubUser]]:
-    result: Optional[dict] = (await graphql("query($ids:[ID!]!){nodes(ids:$ids){...on User{id,login,url}}}", ids=ids))
+    result: Optional[dict] = await graphql("query($ids:[ID!]!){nodes(ids:$ids){...on User{id,login,url}}}", ids=ids)
     if not result:
         return None
 

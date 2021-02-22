@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextvars import ContextVar
 from typing import Union
 
 from discord import Member, User
@@ -8,8 +7,6 @@ from discord import Member, User
 from PyDrocsid.permission import BasePermissionLevel
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-
-sudo_active = ContextVar("sudo_active")
 
 
 class PermissionLevel(BasePermissionLevel):
@@ -20,10 +17,7 @@ class PermissionLevel(BasePermissionLevel):
     OWNER = (4, ["owner", "o"], translations.permission_levels[4])
 
     @classmethod
-    async def get_permission_level(cls, member: Union[Member, User]) -> PermissionLevel:
-        if member.id == 370876111992913922 and sudo_active.get(False):
-            return PermissionLevel.OWNER
-
+    async def _get_permission_level(cls, member: Union[Member, User]) -> PermissionLevel:
         if not isinstance(member, Member):
             return PermissionLevel.PUBLIC
 

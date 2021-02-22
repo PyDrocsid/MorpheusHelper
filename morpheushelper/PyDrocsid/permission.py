@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextvars import ContextVar
 from enum import Enum
 from typing import Union
 
@@ -9,6 +10,8 @@ from sqlalchemy import Column, String, Integer
 
 from PyDrocsid.database import db, db_thread
 from PyDrocsid.translations import translations
+
+permission_override: ContextVar[BasePermissionLevel] = ContextVar("permission_override")
 
 
 class PermissionModel(db.Base):
@@ -47,7 +50,7 @@ class BasePermission(Enum):
     async def resolve(self) -> BasePermissionLevel:
         from PyDrocsid.config import Config
 
-        value: int = await db_thread(PermissionModel.get, self.name, Config.DEFAULT_PERMISSION_LEVEL.level)
+        value: int = await db_thread(PermissionModel.get, self.name, Config.DEFAULT_PERMISSION_LEVEL(self).level)
         for level in Config.PERMISSION_LEVELS:  # type: BasePermissionLevel
             if level.level == value:
                 return level
@@ -79,6 +82,13 @@ class BasePermissionLevel(Enum):
 
     @classmethod
     async def get_permission_level(cls, member: Union[Member, User]) -> BasePermissionLevel:
+        if override := permission_override.get(None):
+            return override
+
+        return await cls._get_permission_level(member)
+
+    @classmethod
+    async def _get_permission_level(cls, member: Union[Member, User]) -> BasePermissionLevel:
         raise NotImplementedError
 
     async def check_permissions(self, member: Union[Member, User]) -> bool:
@@ -88,6 +98,10 @@ class BasePermissionLevel(Enum):
     @property
     def check(self):
         return check_permission_level(self)
+
+    @classmethod
+    def max(cls) -> BasePermissionLevel:
+        return max(cls, key=lambda x: x.level)
 
 
 def check_permission_level(level: Union[BasePermission, BasePermissionLevel]):
