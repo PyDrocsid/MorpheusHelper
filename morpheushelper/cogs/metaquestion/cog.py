@@ -8,7 +8,7 @@ from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
 from PyDrocsid.util import check_wastebasket
 from .colors import Colors
-from .permissions import Permission
+from .permissions import MetaQuestionPermission
 from ..contributor import Contributor
 
 
@@ -31,7 +31,7 @@ def make_embed(requested_by: Member) -> Embed:
 
 class MetaQuestionCog(Cog, name="Metafragen"):
     CONTRIBUTORS = [Contributor.Defelo]
-    PERMISSIONS = Permission
+    PERMISSIONS = MetaQuestionPermission
 
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member):
         if message.guild is None or member == self.bot.user:
@@ -55,7 +55,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             await msg.add_reaction(name_to_emoji["wastebasket"])
             raise StopEventHandling
 
-        if await check_wastebasket(message, member, emoji, translations.requested_by, Permission.mq_reduce):
+        if await check_wastebasket(message, member, emoji, translations.requested_by, MetaQuestionPermission.mq_reduce):
             await message.clear_reactions()
             embed: Embed = message.embeds[0]
             embed.title = embed.url

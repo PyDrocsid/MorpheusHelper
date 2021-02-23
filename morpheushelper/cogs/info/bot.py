@@ -11,14 +11,14 @@ from PyDrocsid.help import send_help
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
-from .permissions import Permission
+from .permissions import InfoPermission
 from ..contributor import Contributor
 from ..settings.cog import get_prefix
 
 
 class BotInfoCog(Cog, name="Bot Information"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.ce_phox]
-    PERMISSIONS = Permission
+    PERMISSIONS = InfoPermission
 
     def __init__(self, *, info_icon: Optional[str] = None):
         self.info_icon: Optional[str] = info_icon
@@ -111,10 +111,10 @@ class BotInfoCog(Cog, name="Bot Information"):
         """
 
         if not self.repo_description:
-            self.repo_description = await get_repo_description(*Config.REPO.split("/"))
+            self.repo_description = await get_repo_description(Config.REPO_OWNER, Config.REPO_NAME)
 
         embed = Embed(
-            title=Config.REPO,
+            title=f"{Config.REPO_OWNER}/{Config.REPO_NAME}",
             description=self.repo_description,
             colour=Colors.github,
             url=Config.REPO_LINK,
@@ -141,7 +141,7 @@ class BotInfoCog(Cog, name="Bot Information"):
         await send_long_embed(ctx, await self.build_info_embed(False))
 
     @commands.command(aliases=["admininfos"])
-    @Permission.admininfo.check
+    @InfoPermission.admininfo.check
     async def admininfo(self, ctx: Context):
         """
         show information about the bot (admin view)

@@ -10,14 +10,14 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed, read_normal_message, attachment_to_file, Color
 from .colors import Colors
 from .models import NewsAuthorization
-from .permissions import Permission
+from .permissions import NewsPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
 
 class NewsCog(Cog, name="News"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = NewsPermission
 
     @commands.group()
     @guild_only()
@@ -30,7 +30,7 @@ class NewsCog(Cog, name="News"):
             raise UserInputError
 
     @news.group(name="auth", aliases=["a"])
-    @Permission.news_manage.check
+    @NewsPermission.news_manage.check
     async def news_auth(self, ctx: Context):
         """
         manage authorized users and channels

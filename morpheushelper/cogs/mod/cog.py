@@ -15,7 +15,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import is_teamler, send_long_embed
 from .colors import Colors
 from .models import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
-from .permissions import Permission
+from .permissions import ModPermission
 from ..contributor import Contributor
 from ..invites.models import InviteLog
 from ..logging import send_to_changelog
@@ -103,7 +103,7 @@ async def send_to_changelog_mod(
 
 class ModCog(Cog, name="Mod Tools"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu, Contributor.Florian]
-    PERMISSIONS = Permission
+    PERMISSIONS = ModPermission
 
     async def on_ready(self):
         guild: Guild = self.bot.guilds[0]
@@ -184,7 +184,7 @@ class ModCog(Cog, name="Mod Tools"):
         await db_thread(UsernameUpdate.create, before.id, str(before), str(after), False)
 
     @commands.group()
-    @Permission.manage_roles.check
+    @ModPermission.manage_roles.check
     @guild_only()
     async def roles(self, ctx: Context):
         """
@@ -259,7 +259,7 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog_mod(ctx.guild, ctx.message, Colors.report, translations.log_reported, member, reason)
 
     @commands.command()
-    @Permission.warn.check
+    @ModPermission.warn.check
     @guild_only()
     async def warn(self, ctx: Context, member: Member, *, reason: str):
         """
@@ -301,7 +301,7 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.user_not_found)
 
     @commands.command()
-    @Permission.mute.check
+    @ModPermission.mute.check
     @guild_only()
     async def mute(self, ctx: Context, user: Union[Member, User, int], days: DurationConverter, *, reason: str):
         """
@@ -372,7 +372,7 @@ class ModCog(Cog, name="Mod Tools"):
         await ctx.send(embed=server_embed)
 
     @commands.command()
-    @Permission.mute.check
+    @ModPermission.mute.check
     @guild_only()
     async def unmute(self, ctx: Context, user: Union[Member, User, int], *, reason: str):
         """
@@ -401,7 +401,7 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog_mod(ctx.guild, ctx.message, Colors.unmute, translations.log_unmuted, user, reason)
 
     @commands.command()
-    @Permission.kick.check
+    @ModPermission.kick.check
     @guild_only()
     async def kick(self, ctx: Context, member: Member, *, reason: str):
         """
@@ -441,7 +441,7 @@ class ModCog(Cog, name="Mod Tools"):
         await ctx.send(embed=server_embed)
 
     @commands.command()
-    @Permission.ban.check
+    @ModPermission.ban.check
     @guild_only()
     async def ban(
         self,
@@ -526,7 +526,7 @@ class ModCog(Cog, name="Mod Tools"):
         await ctx.send(embed=server_embed)
 
     @commands.command()
-    @Permission.ban.check
+    @ModPermission.ban.check
     @guild_only()
     async def unban(self, ctx: Context, user: Union[User, int], *, reason: str):
         """
@@ -576,7 +576,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         user_id = user if isinstance(user, int) else user.id
 
-        if user_id != ctx.author.id and not await Permission.view_stats.check_permissions(ctx.author):
+        if user_id != ctx.author.id and not await ModPermission.view_stats.check_permissions(ctx.author):
             raise CommandError(translations.stats_not_allowed)
 
         return user, user_id, arg_passed
@@ -733,7 +733,7 @@ class ModCog(Cog, name="Mod Tools"):
             await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
 
     @commands.command()
-    @Permission.init_join_log.check
+    @ModPermission.init_join_log.check
     @guild_only()
     async def init_join_log(self, ctx: Context):
         """

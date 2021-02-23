@@ -2,7 +2,7 @@ from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 
 
-class Permission(BasePermission):
+class MessagePermission(BasePermission):
     send = translations.permissions["send"]
     edit = translations.permissions["edit"]
     delete = translations.permissions["delete"]

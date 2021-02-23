@@ -11,7 +11,7 @@ from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from .colors import Colors
 from .models import VerificationRole
-from .permissions import Permission
+from .permissions import VerificationPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -26,7 +26,7 @@ async def private_only(ctx: Context):
 
 class VerificationCog(Cog, name="Verification"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = VerificationPermission
 
     @commands.command()
     @private_only
@@ -71,7 +71,7 @@ class VerificationCog(Cog, name="Verification"):
         await ctx.send(embed=embed)
 
     @commands.group(aliases=["vf"])
-    @Permission.manage_verification.check
+    @VerificationPermission.manage_verification.check
     @guild_only()
     async def verification(self, ctx: Context):
         """

@@ -10,16 +10,16 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import Color
 from PyDrocsid.util import read_normal_message, read_complete_message
 from .colors import Colors
-from .permissions import Permission
+from .permissions import MessagePermission
 from ..contributor import Contributor
 
 
 class MessageCog(Cog, name="Message Commands"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = MessagePermission
 
     @commands.group()
-    @Permission.send.check
+    @MessagePermission.send.check
     @guild_only()
     async def send(self, ctx: Context):
         """
@@ -103,7 +103,7 @@ class MessageCog(Cog, name="Message Commands"):
             await ctx.send(embed=embed)
 
     @commands.group()
-    @Permission.edit.check
+    @MessagePermission.edit.check
     @guild_only()
     async def edit(self, ctx: Context):
         """
@@ -177,7 +177,7 @@ class MessageCog(Cog, name="Message Commands"):
         await ctx.send(embed=embed)
 
     @commands.command()
-    @Permission.delete.check
+    @MessagePermission.delete.check
     @guild_only()
     async def delete(self, ctx: Context, message: Message):
         """

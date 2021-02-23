@@ -2,7 +2,7 @@ from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 
 
-class Permission(BasePermission):
+class ModPermission(BasePermission):
     warn = translations.permissions["warn"]
     mute = translations.permissions["mute"]
     kick = translations.permissions["kick"]

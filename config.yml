@@ -1,0 +1,40 @@
+name: MorpheusHelper
+
+repo:
+  owner: Defelo
+  name: MorpheusHelper
+  icon: "https://github.com/Defelo.png"
+
+author: Defelo
+
+permission_levels:
+  administrator:
+    name: Administrator
+    level: 3
+    aliases: [admin, a]
+    if:
+      permissions: [administrator]
+      roles: [admin]
+
+  moderator:
+    name: Moderator
+    level: 2
+    aliases: [mod, m]
+    if:
+      roles: [mod]
+
+  supporter:
+    name: Supporter
+    level: 1
+    aliases: [supp, sup, s]
+    if:
+      roles: [supp]
+
+default_permission_level: administrator
+default_permission_overrides:
+  sudo:
+    reload: owner
+    stop: owner
+    kill: owner
+
+teamler_level: supporter

@@ -12,7 +12,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .models import ReactionRole
-from .permissions import Permission
+from .permissions import ReactionRolePermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -34,7 +34,7 @@ async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional
 
 class ReactionRoleCog(Cog, name="ReactionRole"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = ReactionRolePermission
 
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member):
         if member.bot or message.guild is None:
@@ -63,7 +63,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             raise StopEventHandling
 
     @commands.group(aliases=["rr"])
-    @Permission.rr_manage.check
+    @ReactionRolePermission.rr_manage.check
     @guild_only()
     async def reactionrole(self, ctx: Context):
         """

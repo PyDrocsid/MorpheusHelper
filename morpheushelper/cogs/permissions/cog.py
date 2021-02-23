@@ -11,7 +11,7 @@ from PyDrocsid.permission import BasePermissionLevel
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
-from .permissions import Permission
+from .permissions import PermissionsPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -49,7 +49,7 @@ class PermissionLevelConverter(Converter):
 
 class PermissionsCog(Cog, name="Permissions"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = PermissionsPermission
 
     @commands.group(aliases=["perm", "p"])
     @guild_only()
@@ -62,19 +62,19 @@ class PermissionsCog(Cog, name="Permissions"):
             raise UserInputError
 
     @permissions.command(name="list", aliases=["show", "l", "?"])
-    @Permission.view_all_permissions.check
+    @PermissionsPermission.view_all_permissions.check
     async def permissions_list(self, ctx: Context, min_level: Optional[PermissionLevelConverter]):
         """
         list all permissions
         """
 
         if min_level is None:
-            min_level = Config.DEFAULT_PERMISSION_LEVEL(...)
+            min_level = Config.DEFAULT_PERMISSION_LEVEL
 
         await list_permissions(ctx, translations.permissions_title, min_level)
 
     @permissions.command(name="my", aliases=["m", "own", "o"])
-    @Permission.view_own_permissions.check
+    @PermissionsPermission.view_own_permissions.check
     async def permissions_my(self, ctx: Context):
         """
         list all permissions granted to the user
@@ -84,7 +84,7 @@ class PermissionsCog(Cog, name="Permissions"):
         await list_permissions(ctx, translations.my_permissions_title, min_level)
 
     @permissions.command(name="set", aliases=["s", "="])
-    @Permission.manage_permissions.check
+    @PermissionsPermission.manage_permissions.check
     async def permissions_set(self, ctx: Context, permission_name: str, level: PermissionLevelConverter):
         """
         configure bot permissions

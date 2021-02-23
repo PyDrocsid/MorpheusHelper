@@ -8,7 +8,7 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from .colors import Colors
-from .permissions import Permission
+from .permissions import SettingsPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -23,10 +23,10 @@ async def set_prefix(new_prefix: str):
 
 class SettingsCog(Cog, name="Settings"):
     CONTRIBUTORS = [Contributor.Defelo]
-    PERMISSIONS = Permission
+    PERMISSIONS = SettingsPermission
 
     @commands.command(name="prefix")
-    @Permission.change_prefix.check
+    @SettingsPermission.change_prefix.check
     @guild_only()
     async def change_prefix(self, ctx: Context, new_prefix: str):
         """

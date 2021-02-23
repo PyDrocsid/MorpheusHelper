@@ -16,7 +16,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed, is_teamler
 from .colors import Colors
 from .models import DynamicVoiceChannel, DynamicVoiceGroup, RoleVoiceLink
-from .permissions import Permission
+from .permissions import VoiceChannelPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 from ..settings.cog import get_prefix
@@ -42,7 +42,7 @@ async def get_group_channel(channel: VoiceChannel) -> Tuple[Optional[DynamicVoic
 
 class VoiceChannelCog(Cog, name="Voice Channels"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.Florian, Contributor.wolflu, Contributor.TNT2k]
-    PERMISSIONS = Permission
+    PERMISSIONS = VoiceChannelPermission
 
     def __init__(self):
         self.channel_lock = MultiLock()
@@ -128,7 +128,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(translations.not_in_private_voice)
 
         if owner_required and dyn_channel.owner != member.id:
-            if not await Permission.vc_private_owner.check_permissions(member):
+            if not await VoiceChannelPermission.vc_private_owner.check_permissions(member):
                 raise CommandError(translations.private_voice_owner_required)
 
         voice_channel: VoiceChannel = self.bot.get_channel(dyn_channel.channel_id)
@@ -303,7 +303,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise UserInputError
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
-    @Permission.vc_manage_dyn.check
+    @VoiceChannelPermission.vc_manage_dyn.check
     async def voice_dynamic(self, ctx: Context):
         """
         manage dynamic voice channels
@@ -586,7 +586,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send(embed=embed)
 
     @voice.group(name="link", aliases=["l"])
-    @Permission.vc_manage_link.check
+    @VoiceChannelPermission.vc_manage_link.check
     async def voice_link(self, ctx: Context):
         """
         manage links between voice channels and roles

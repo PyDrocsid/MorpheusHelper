@@ -13,7 +13,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import make_error
 from .colors import Colors
 from .models import ReactionPinChannel
-from .permissions import Permission
+from .permissions import ReactionPinPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -22,13 +22,13 @@ EMOJI = name_to_emoji["pushpin"]
 
 class ReactionPinCog(Cog, name="ReactionPin"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = ReactionPinPermission
 
     async def on_raw_reaction_add(self, message: Message, emoji: PartialEmoji, member: Member):
         if str(emoji) != EMOJI or member.bot or message.guild is None:
             return
 
-        access: bool = await Permission.rp_pin.check_permissions(member)
+        access: bool = await ReactionPinPermission.rp_pin.check_permissions(member)
         if not (await db_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return
 
@@ -52,7 +52,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot or message.guild is None:
             return
 
-        access: bool = await Permission.rp_pin.check_permissions(member)
+        access: bool = await ReactionPinPermission.rp_pin.check_permissions(member)
         is_reactionpin_channel = await db_thread(db.get, ReactionPinChannel, message.channel.id) is not None
         if message.pinned and (access or (is_reactionpin_channel and member == message.author)):
             await message.unpin()
@@ -73,7 +73,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             raise StopEventHandling
 
     @commands.group(aliases=["rp"])
-    @Permission.rp_manage.check
+    @ReactionPinPermission.rp_manage.check
     @guild_only()
     async def reactionpin(self, ctx: Context):
         """

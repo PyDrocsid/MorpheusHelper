@@ -16,7 +16,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .models import InviteLog, AllowedInvite
-from .permissions import Permission
+from .permissions import InvitesPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 from ..settings.cog import get_prefix
@@ -67,13 +67,13 @@ def get_discord_invite(url) -> Optional[str]:
 
 class InvitesCog(Cog, name="Allowed Discord Invites"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu, Contributor.TNT2k, Contributor.Florian]
-    PERMISSIONS = Permission
+    PERMISSIONS = InvitesPermission
 
     async def check_message(self, message: Message) -> bool:
         author: Member = message.author
         if message.guild is None or author.bot:
             return True
-        if await Permission.invite_bypass.check_permissions(author):
+        if await InvitesPermission.invite_bypass.check_permissions(author):
             return True
 
         forbidden = []
@@ -200,7 +200,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await ctx.send(embed=embed)
 
     @invites.command(name="add", aliases=["+", "a"])
-    @Permission.invite_manage.check
+    @InvitesPermission.invite_manage.check
     async def invites_add(self, ctx: Context, invite: Invite, applicant: Member):
         """
         allow a new discord server
@@ -233,7 +233,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if row is None:
             raise CommandError(translations.server_not_whitelisted)
 
-        if not await Permission.invite_manage.check_permissions(ctx.author) and ctx.author.id != row.applicant:
+        if not await InvitesPermission.invite_manage.check_permissions(ctx.author) and ctx.author.id != row.applicant:
             raise CommandError(translations.not_allowed)
 
         await db_thread(AllowedInvite.update, guild.id, invite.code, guild.name)
@@ -246,7 +246,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await send_to_changelog(ctx.guild, translations.f_log_invite_updated(ctx.author.mention, guild.name))
 
     @invites.command(name="remove", aliases=["r", "del", "d", "-"])
-    @Permission.invite_manage.check
+    @InvitesPermission.invite_manage.check
     async def invites_remove(self, ctx: Context, *, server: AllowedServerConverter):
         """
         disallow a discord server

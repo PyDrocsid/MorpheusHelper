@@ -2,5 +2,5 @@ from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 
 
-class Permission(BasePermission):
+class BeTheProfessionalCog(BasePermission):
     btp_manage = translations.permissions["btp_manage"]

@@ -9,7 +9,7 @@ from PyDrocsid.config import Config
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import call_event_handlers
 from PyDrocsid.permission import permission_override
-from .permissions import Permission
+from .permissions import SudoPermission
 from ..contributor import Contributor
 
 
@@ -23,7 +23,7 @@ def is_sudoer(ctx: Context) -> bool:
 
 class SudoCog(Cog, name="Sudo"):
     CONTRIBUTORS = [Contributor.Defelo]
-    PERMISSIONS = Permission
+    PERMISSIONS = SudoPermission
 
     def __init__(self):
         self.sudo_cache: dict[TextChannel, Message] = {}
@@ -45,19 +45,19 @@ class SudoCog(Cog, name="Sudo"):
         await self.bot.process_commands(message)
 
     @commands.command()
-    @Permission.reload.check
+    @SudoPermission.reload.check
     async def reload(self, ctx: Context):
         await call_event_handlers("ready")
         await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
 
     @commands.command()
-    @Permission.stop.check
+    @SudoPermission.stop.check
     async def stop(self, ctx: Context):
         await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
         await self.bot.close()
 
     @commands.command()
-    @Permission.kill.check
+    @SudoPermission.kill.check
     async def kill(self, ctx: Context):
         await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
         sys.exit(1)

@@ -13,7 +13,7 @@ from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from .colors import Colors
 from .models import RedditPost, RedditChannel
-from .permissions import Permission
+from .permissions import RedditPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -77,7 +77,7 @@ def create_embed(post: dict) -> Embed:
 
 class RedditCog(Cog, name="Reddit"):
     CONTRIBUTORS = [Contributor.Scriptim, Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = RedditPermission
 
     async def on_ready(self):
         interval = await Settings.get(int, "reddit_interval", 4)
@@ -111,7 +111,7 @@ class RedditCog(Cog, name="Reddit"):
             self.reddit_loop.restart()
 
     @commands.group()
-    @Permission.manage_reddit.check
+    @RedditPermission.manage_reddit.check
     @guild_only()
     async def reddit(self, ctx: Context):
         """

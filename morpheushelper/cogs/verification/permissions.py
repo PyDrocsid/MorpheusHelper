@@ -2,5 +2,5 @@ from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
 
 
-class Permission(BasePermission):
+class VerificationPermission(BasePermission):
     manage_verification = translations.permissions["manage_verification"]

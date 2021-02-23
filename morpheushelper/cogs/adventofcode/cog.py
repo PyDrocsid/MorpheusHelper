@@ -17,7 +17,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .models import AOCLink
-from .permissions import Permission
+from .permissions import AdventOfCodePermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -180,7 +180,7 @@ def parse_github_url(url: str) -> tuple[str, str]:
 
 class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
     CONTRIBUTORS = [Contributor.Defelo]
-    PERMISSIONS = Permission
+    PERMISSIONS = AdventOfCodePermission
 
     def __init__(self):
         AOCConfig.update_hook = self.update_roles
@@ -349,7 +349,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.send(embed=embed)
 
     @aoc.command(name="clear_cache", aliases=["clear", "cc"])
-    @Permission.aoc_clear.check
+    @AdventOfCodePermission.aoc_clear.check
     async def aoc_clear_cache(self, ctx: Context):
         """
         clear the leaderboard cache to force a refresh on the next request
@@ -359,7 +359,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
 
     @aoc.group(name="link", aliases=["l"])
-    @Permission.aoc_link.check
+    @AdventOfCodePermission.aoc_link.check
     async def aoc_link(self, ctx: Context):
         """
         manage links between discord members and aoc users on the private leaderboard
@@ -429,7 +429,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.send(translations.aoc_link_removed)
 
     @aoc.group(name="role", aliases=["r"])
-    @Permission.aoc_role.check
+    @AdventOfCodePermission.aoc_role.check
     @guild_only()
     async def aoc_role(self, ctx: Context):
         """

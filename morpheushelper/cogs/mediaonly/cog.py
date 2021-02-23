@@ -14,17 +14,21 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .models import MediaOnlyChannel
-from .permissions import Permission
+from .permissions import MediaOnlyPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = MediaOnlyPermission
 
     async def on_message(self, message: Message):
-        if message.guild is None or message.author.bot or await Permission.mo_bypass.check_permissions(message.author):
+        if (
+            message.guild is None
+            or message.author.bot
+            or await MediaOnlyPermission.mo_bypass.check_permissions(message.author)
+        ):
             return
         if await db_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return
@@ -52,7 +56,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         raise StopEventHandling
 
     @commands.group(aliases=["mo"])
-    @Permission.mo_manage.check
+    @MediaOnlyPermission.mo_manage.check
     @guild_only()
     async def mediaonly(self, ctx: Context):
         """

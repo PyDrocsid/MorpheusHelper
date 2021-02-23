@@ -47,10 +47,20 @@ class BasePermission(Enum):
     def description(self) -> str:
         return self.value
 
+    @property
+    def _default_level(self) -> BasePermissionLevel:
+        from PyDrocsid.config import Config
+
+        cog = self.__class__.__name__.lower().removesuffix("permission")
+        if cog not in Config.DEFAULT_PERMISSION_OVERRIDES:
+            return Config.DEFAULT_PERMISSION_LEVEL
+
+        return Config.DEFAULT_PERMISSION_OVERRIDES[cog].get(self.name, Config.DEFAULT_PERMISSION_LEVEL)
+
     async def resolve(self) -> BasePermissionLevel:
         from PyDrocsid.config import Config
 
-        value: int = await db_thread(PermissionModel.get, self.name, Config.DEFAULT_PERMISSION_LEVEL(self).level)
+        value: int = await db_thread(PermissionModel.get, self.name, self._default_level)
         for level in Config.PERMISSION_LEVELS:  # type: BasePermissionLevel
             if level.level == value:
                 return level

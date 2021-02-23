@@ -11,7 +11,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import calculate_edit_distance, send_long_embed
 from .colors import Colors
 from .models import BTPRole
-from .permissions import Permission
+from .permissions import BeTheProfessionalCog
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
@@ -89,7 +89,7 @@ async def unregister_roles(ctx: Context, topics: str, *, delete_roles: bool):
 
 class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu, Contributor.MaxiHuHe04, Contributor.AdriBloober]
-    PERMISSIONS = Permission
+    PERMISSIONS = BeTheProfessionalCog
 
     @commands.command(name="?")
     @guild_only()
@@ -156,7 +156,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await ctx.send(embed=embed)
 
     @commands.command(name="*")
-    @Permission.btp_manage.check
+    @BeTheProfessionalCog.btp_manage.check
     @guild_only()
     async def register_role(self, ctx: Context, *, topics: str):
         """
@@ -208,7 +208,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await ctx.send(embed=embed)
 
     @commands.command(name="/")
-    @Permission.btp_manage.check
+    @BeTheProfessionalCog.btp_manage.check
     @guild_only()
     async def delete_roles(self, ctx: Context, *, topics: str):
         """
@@ -218,7 +218,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await unregister_roles(ctx, topics, delete_roles=True)
 
     @commands.command(name="%")
-    @Permission.btp_manage.check
+    @BeTheProfessionalCog.btp_manage.check
     @guild_only()
     async def unregister_roles(self, ctx: Context, *, topics: str):
         """

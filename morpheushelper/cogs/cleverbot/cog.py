@@ -13,14 +13,14 @@ from PyDrocsid.util import send_long_embed
 from .api import CleverBot
 from .colors import Colors
 from .models import CleverBotChannel
-from .permissions import Permission
+from .permissions import CleverBotPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 
 
 class CleverBotCog(Cog, name="CleverBot"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = CleverBotPermission
 
     def __init__(self, bot: Bot):
         super().__init__(bot)
@@ -59,7 +59,7 @@ class CleverBotCog(Cog, name="CleverBot"):
             raise UserInputError
 
     @cleverbot.command(name="list", aliases=["l", "?"])
-    @Permission.cb_list.check
+    @CleverBotPermission.cb_list.check
     async def cleverbot_list(self, ctx: Context):
         """
         list cleverbot channels
@@ -82,7 +82,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_long_embed(ctx, embed)
 
     @cleverbot.command(name="add", aliases=["a", "+"])
-    @Permission.cb_manage.check
+    @CleverBotPermission.cb_manage.check
     async def cleverbot_add(self, ctx: Context, channel: TextChannel):
         """
         add channel to whitelist
@@ -99,7 +99,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_to_changelog(ctx.guild, translations.f_log_channel_whitelisted_cb(channel.mention))
 
     @cleverbot.command(name="remove", aliases=["del", "d", "-"])
-    @Permission.cb_manage.check
+    @CleverBotPermission.cb_manage.check
     async def cleverbot_remove(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist
@@ -117,7 +117,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_to_changelog(ctx.guild, translations.f_log_channel_removed_cb(channel.mention))
 
     @cleverbot.command(name="reset", aliases=["r"])
-    @Permission.cb_reset.check
+    @CleverBotPermission.cb_reset.check
     async def cleverbot_reset(self, ctx: Context, channel: TextChannel):
         """
         reset cleverbot session for a channel

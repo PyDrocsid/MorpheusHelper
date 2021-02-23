@@ -1,5 +1,5 @@
 import os
-from subprocess import getoutput
+from pathlib import Path
 from typing import Iterable
 
 import sentry_sdk
@@ -8,7 +8,7 @@ from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, Us
 
 from PyDrocsid.cog import load_cogs
 from PyDrocsid.command_edit import add_to_error_cache
-from PyDrocsid.config import Config
+from PyDrocsid.config import Config, load_config_file, load_version
 from PyDrocsid.database import db
 from PyDrocsid.events import listener
 from PyDrocsid.help import send_help
@@ -42,26 +42,10 @@ from cogs import (
     VoiceChannelCog,
     HeartbeatCog,
 )
-from cogs.contributor import Contributor
 from cogs.settings.cog import get_prefix
-from cogs.sudo.permissions import Permission as SudoPermission
-from permissions import PermissionLevel
 
-Config.NAME = "MorpheusHelper"
-Config.VERSION = getoutput("cat VERSION 2>/dev/null || git describe").lstrip("v")
-Config.REPO = "Defelo/MorpheusHelper"
-Config.REPO_LINK = "https://github.com/" + Config.REPO
-Config.REPO_ICON = "https://github.com/Defelo.png"
-
-Config.AUTHOR = Contributor.Defelo
-
-Config.PERMISSION_LEVELS = PermissionLevel
-Config.DEFAULT_PERMISSION_LEVEL = lambda permission: {
-    SudoPermission.reload: PermissionLevel.OWNER,
-    SudoPermission.stop: PermissionLevel.OWNER,
-    SudoPermission.kill: PermissionLevel.OWNER,
-}.get(permission, PermissionLevel.ADMINISTRATOR)
-Config.TEAMLER_LEVEL = PermissionLevel.SUPPORTER
+load_config_file(Path("config.yml"))
+load_version()
 
 banner = r"""
 

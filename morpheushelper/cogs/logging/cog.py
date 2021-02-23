@@ -12,7 +12,7 @@ from PyDrocsid.translations import translations
 from PyDrocsid.util import calculate_edit_distance, send_long_embed
 from .colors import Colors
 from .models import LogExclude
-from .permissions import Permission
+from .permissions import LoggingPermission
 from ..contributor import Contributor
 
 ignored_messages: Set[int] = set()
@@ -47,7 +47,7 @@ async def send_to_changelog(guild: Guild, message: Union[str, Embed]):
 
 class LoggingCog(Cog, name="Logging"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = LoggingPermission
 
     async def get_logging_channel(self, event: str) -> Optional[TextChannel]:
         return self.bot.get_channel(await Settings.get(int, "logging_" + event, -1))
@@ -171,7 +171,7 @@ class LoggingCog(Cog, name="Logging"):
         await delete_channel.send(embed=embed)
 
     @commands.group(aliases=["log"])
-    @Permission.log_manage.check
+    @LoggingPermission.log_manage.check
     @guild_only()
     async def logging(self, ctx: Context):
         """

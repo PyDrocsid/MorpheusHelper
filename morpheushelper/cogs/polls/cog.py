@@ -14,7 +14,7 @@ from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from PyDrocsid.util import is_teamler, check_wastebasket
 from .colors import Colors
-from .permissions import Permission
+from .permissions import PollsPermission
 from ..contributor import Contributor
 
 MAX_OPTIONS = 20  # Discord reactions limit
@@ -66,7 +66,7 @@ async def send_poll(ctx: Context, args: str, field: Optional[Tuple[str, str]] = 
 
 class PollsCog(Cog, name="Polls"):
     CONTRIBUTORS = [Contributor.MaxiHuHe04, Contributor.Defelo, Contributor.TNT2k, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = PollsPermission
 
     async def get_reacted_teamlers(self, message: Optional[Message] = None) -> str:
         guild: Guild = self.bot.guilds[0]
@@ -93,7 +93,7 @@ class PollsCog(Cog, name="Polls"):
         if member.bot or message.guild is None:
             return
 
-        if await check_wastebasket(message, member, emoji, translations.created_by, Permission.polls_delete):
+        if await check_wastebasket(message, member, emoji, translations.created_by, PollsPermission.polls_delete):
             await message.delete()
             raise StopEventHandling
 
@@ -147,7 +147,7 @@ class PollsCog(Cog, name="Polls"):
         await send_poll(ctx, args)
 
     @commands.command(usage=translations.poll_usage, aliases=["teamvote", "tp"])
-    @Permission.team_poll.check
+    @PollsPermission.team_poll.check
     @guild_only()
     async def teampoll(self, ctx: Context, *, args: str):
         """

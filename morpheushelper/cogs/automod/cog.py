@@ -11,7 +11,7 @@ from PyDrocsid.database import db_thread
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from .colors import Colors
-from .permissions import Permission
+from .permissions import AutoModPermission
 from ..contributor import Contributor
 from ..logging import send_to_changelog
 from ..mod.models import Kick
@@ -53,7 +53,7 @@ async def kick_delay(member: Member, delay: int, role: Role, reverse: bool):
 
 class AutoModCog(Cog, name="AutoMod"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
-    PERMISSIONS = Permission
+    PERMISSIONS = AutoModPermission
 
     def __init__(self):
         self.kick_tasks: Dict[Member, Task] = {}
@@ -112,7 +112,7 @@ class AutoModCog(Cog, name="AutoMod"):
             self.cancel_task(member)
 
     @commands.group(aliases=["ak"])
-    @Permission.manage_autokick.check
+    @AutoModPermission.manage_autokick.check
     @guild_only()
     async def autokick(self, ctx: Context):
         """
@@ -191,7 +191,7 @@ class AutoModCog(Cog, name="AutoMod"):
         await send_to_changelog(ctx.guild, translations.f_log_autokick_role_configured(role.mention, role.id))
 
     @commands.group(aliases=["ik"])
-    @Permission.manage_instantkick.check
+    @AutoModPermission.manage_instantkick.check
     @guild_only()
     async def instantkick(self, ctx: Context):
         """
