@@ -1,4 +1,5 @@
 from cogs.adventofcode import AdventOfCodeCog
+from cogs.alert_channel import AlertChannelCog
 from cogs.automod import AutoModCog
 from cogs.betheprofessional import BeTheProfessionalCog
 from cogs.cleverbot import CleverBotCog
@@ -44,4 +45,5 @@ COGS = [
     PollsCog,
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
+    AlertChannelCog
 ]
