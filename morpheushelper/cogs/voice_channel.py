@@ -18,6 +18,9 @@ from models.dynamic_voice import DynamicVoiceChannel, DynamicVoiceGroup
 from models.role_voice_link import RoleVoiceLink
 from permissions import Permission
 from util import get_prefix, send_to_changelog, is_teamler
+import logging
+
+voice_channel_logger = logging.getLogger("base_logger")
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -59,7 +62,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
     async def on_ready(self):
         guild: Guild = self.bot.guilds[0]
-        print(translations.updating_voice_roles)
+        voice_channel_logger.info(translations.updating_voice_roles)
         linked_roles: Dict[Role, Set[VoiceChannel]] = {}
         for link in await db_thread(db.all, RoleVoiceLink):
             role = guild.get_role(link.role)
@@ -107,10 +110,10 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     await db_thread(db.delete, dyn_channel)
             await self.update_dynamic_voice_group(group)
 
-        print(translations.voice_init_done)
+        voice_channel_logger.info(translations.voice_init_done)
 
     async def get_dynamic_voice_channel(
-        self, member: Member, owner_required: bool
+            self, member: Member, owner_required: bool
     ) -> Tuple[DynamicVoiceGroup, DynamicVoiceChannel, VoiceChannel, Optional[TextChannel]]:
         if member.voice is None or member.voice.channel is None:
             raise CommandError(translations.not_in_private_voice)

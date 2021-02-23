@@ -34,20 +34,26 @@ from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
+import logging
 
-banner = r"""
+root_logger = logging.getLogger("base_logger")
+root_logger.setLevel(logging.INFO)
 
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(formatter)
+
+root_logger.addHandler(handler)
+root_logger.info(r"""
         __  ___                 __                    __  __     __
        /  |/  /___  _________  / /_  ___  __  _______/ / / /__  / /___  ___  _____
       / /|_/ / __ \/ ___/ __ \/ __ \/ _ \/ / / / ___/ /_/ / _ \/ / __ \/ _ \/ ___/
      / /  / / /_/ / /  / /_/ / / / /  __/ /_/ (__  ) __  /  __/ / /_/ /  __/ /
     /_/  /_/\____/_/  / .___/_/ /_/\___/\__,_/____/_/ /_/\___/_/ .___/\___/_/
                      /_/                                      /_/
-
-""".splitlines()
-print("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
-print(f"Starting MorpheusHelper v{VERSION} ({GITHUB_LINK})\n")
-
+""")
+root_logger.info("Starting MorpheusHelper v%s (%s)\n", VERSION, GITHUB_LINK)
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
     sentry_sdk.init(
@@ -97,7 +103,7 @@ async def on_ready():
         except Forbidden:
             pass
 
-    print(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
+    root_logger.info("\033[1m\033[36mLogged in as %s\033[0m", bot.user)
 
     if owner is not None:
         try:
@@ -334,13 +340,14 @@ for cog_class in COGS:
 register_cogs(bot, *enabled_cogs)
 
 if bot.cogs:
-    print(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
+    root_logger.info("\033[1m\033[32m%s Cog%s enabled:\033[0m", len(bot.cogs), 's' if len(bot.cogs) > 1 else '')
     for cog in bot.cogs.values():
         commands = ", ".join(cmd.name for cmd in cog.get_commands())
-        print(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+        root_logger.info(" + %s %s", cog.__class__.__name__, str(commands) if commands else "")
 if disabled_cogs:
-    print(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
+    root_logger.info("\033[1m\033[31m%s Cog%s disabled:\033[0m", len(disabled_cogs),
+                     's' if len(disabled_cogs) > 1 else '')
     for name in disabled_cogs:
-        print(f" - {name}")
+        root_logger.info(" - %s", name)
 
 bot.run(os.environ["TOKEN"])
