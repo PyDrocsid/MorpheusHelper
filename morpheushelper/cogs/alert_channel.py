@@ -52,7 +52,8 @@ class AlertChannelCog(Cog):
         except KeyError:
             self.user_hops[member.id] = 1
 
-        if self.user_hops[member.id] >= (max := await getMaxHops()) and max > 0:
+        tempMax = await getMaxHops()
+        if self.user_hops[member.id] >= tempMax > 0:
             del self.user_hops[member.id]
             embed = Embed(title=translations.alert_channel_hop, color=Colours.AlertChannel)
             embed.add_field(name=translations.member, value=member.mention)
