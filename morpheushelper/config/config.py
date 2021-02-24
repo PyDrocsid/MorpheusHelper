@@ -19,16 +19,28 @@ DEFAULT_CONFIG: dict[str, any] = {
     "DISABLED_COGS": "",
 }
 
+CACHED_CONFIG: dict[str, any] = dict.fromkeys(DEFAULT_CONFIG.keys(), [])
+
 
 def get_config_entry(key: str) -> Optional[any]:
+    if key in CACHED_CONFIG:
+        return CACHED_CONFIG[key]
+
     if key in environ:
-        return environ[key]
+        value: any = environ[key]
+        CACHED_CONFIG[key] = value
+
+        if not value:
+            logging.error("Required environment variable called %s NOT in environment found.", key)
+
+        return value
 
     if key in DEFAULT_CONFIG:
         value: any = DEFAULT_CONFIG[key]
+        CACHED_CONFIG[key] = value
 
         if not value:
-            logging.error("Required environment variable called %s NOT found.", key)
+            logging.error("Required environment variable called %s NOT in DEFAULT config found.", key)
 
         return value
 

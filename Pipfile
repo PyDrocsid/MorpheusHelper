@@ -13,7 +13,7 @@ aiohttp = "*"
 alembic = "*"
 pydrocsid = "*"
 "discord.py" = "*"
-redis = "*"
+aioredis = "*"
 
 [dev-packages]
 flake8 = "*"

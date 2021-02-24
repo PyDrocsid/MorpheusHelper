@@ -1,6 +1,6 @@
 from subprocess import getoutput  # skipcq: BAN-B404
 
-from requests import get
+from requests import get as requests_get
 
 VERSION = getoutput("cat VERSION 2>/dev/null || git describe").lstrip("v")
 MORPHEUS_ICON = "https://cdn.discordapp.com/avatars/686299664726622258/cb99c816286bdd1d988ec16d8ae85e15.png"
@@ -15,4 +15,4 @@ CONTRIBUTORS = [
 ]
 GITHUB_LINK = "https://github.com/Defelo/MorpheusHelper"
 AVATAR_URL = "https://github.com/Defelo.png"
-GITHUB_DESCRIPTION = get("https://api.github.com/repos/Defelo/MorpheusHelper").json()["description"]
+GITHUB_DESCRIPTION = requests_get("https://api.github.com/repos/Defelo/MorpheusHelper").json()["description"]

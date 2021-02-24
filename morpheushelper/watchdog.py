@@ -23,7 +23,7 @@ class WatchDogClient(Client):
 
         # maybe add regex match here to ensure that the received message contains an malicious url
 
-        increase_warn_score(message.author)
+        await increase_warn_score(message.author)
 
     @staticmethod
     async def start_watchdogs():
