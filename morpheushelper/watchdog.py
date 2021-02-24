@@ -2,6 +2,7 @@ from discord import Client, Message, DMChannel
 import logging
 from warn.user_warn_level import increase_warn_score
 from config.config import get_config_entry
+from asyncio import get_event_loop
 
 
 class WatchDogClient(Client):
@@ -25,16 +26,17 @@ class WatchDogClient(Client):
 
         await increase_warn_score(message.author)
 
-    @staticmethod
-    async def start_watchdogs():
+    @classmethod
+    async def start_watchdogs(cls):
         tokens = get_config_entry("WATCHDOG_TOKENS")
 
         if not tokens:
             return
 
+        loop = get_event_loop()
+
         for token in tokens.split(","):
             if not isinstance(token, str):
                 continue
 
-            watchdog: WatchDogClient = WatchDogClient()
-            watchdog.run(token)
+            loop.run_until_complete(cls().start(token))
