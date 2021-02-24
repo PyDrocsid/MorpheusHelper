@@ -37,7 +37,7 @@ from util import make_error, send_to_changelog, get_prefix, set_prefix
 import logging
 from config.config import get_config_entry
 
-banner = r"""
+logging.info(r"""
 
         __  ___                 __                    __  __     __
        /  |/  /___  _________  / /_  ___  __  _______/ / / /__  / /___  ___  _____
@@ -46,9 +46,8 @@ banner = r"""
     /_/  /_/\____/_/  / .___/_/ /_/\___/\__,_/____/_/ /_/\___/_/ .___/\___/_/
                      /_/                                      /_/
 
-""".splitlines()
-logging.info("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
-logging.info(f"Starting MorpheusHelper v{VERSION} ({GITHUB_LINK})\n")
+""")
+logging.info("Starting MorpheusHelper v%s (%s)\n", VERSION, GITHUB_LINK)
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
@@ -99,7 +98,7 @@ async def on_ready():
         except Forbidden:
             pass
 
-    logging.info(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
+    logging.info("Logged in as %s", bot.user)
 
     if owner is not None:
         try:
