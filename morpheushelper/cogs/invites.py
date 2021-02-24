@@ -51,7 +51,7 @@ def get_discord_invite(url) -> Optional[str]:
     try:
         url = requests.head(url, allow_redirects=True, timeout=10).url
     except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError, LocationParseError):
-        logging.info("URL could not be resolved: %s" % url)
+        logging.info("URL could not be resolved: %s", url)
         return None
 
     if match := re.match(

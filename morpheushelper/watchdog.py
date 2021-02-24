@@ -15,7 +15,7 @@ class WatchDogClient(Client):
 
     async def on_ready(self):
         WatchDogClient.ACTIVE_WATCHDOGS[self.user.id] = self
-        logging.info("Started watchdog on %s" % self.user.id)
+        logging.info("Started watchdog on %s", self.user.id)
 
     async def on_message(self, message: Message):
         if not isinstance(message.channel, DMChannel):
