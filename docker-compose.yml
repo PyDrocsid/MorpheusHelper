@@ -4,7 +4,7 @@ services:
   morpheushelper:
     container_name: morpheushelper
     image: defelo/morpheushelper
-    #    image: defelo/morpheushelper:experimental
+    #image: defelo/morpheushelper:experimental
     restart: always
     tty: true
     depends_on:
