@@ -38,7 +38,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
     )
 
     if not response.ok:
-        logging.info(f"could not fetch reddit posts of r/{subreddit}", response, response.status_code)
+        logging.info("could not fetch reddit posts of r/%s %s %s", subreddit, response, response.status_code)
         return []
 
     posts: List[dict] = []

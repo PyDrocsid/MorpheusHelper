@@ -339,13 +339,13 @@ if __name__ == "__main__":
     register_cogs(bot, *enabled_cogs)
 
     if bot.cogs:
-        logging.info(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
+        logging.info("%s Cog%s enabled: ", len(bot.cogs), "s" * (len(bot.cogs) > 1))
         for cog in bot.cogs.values():
             commands = ", ".join(cmd.name for cmd in cog.get_commands())
-            logging.info(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+            logging.info(" + %s %s", cog.__class__.__name__, ("(" + commands + ")") * bool(commands))
     if disabled_cogs:
-        logging.info(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
+        logging.info("%s Cog%s enabled: ", len(bot.cogs), "s" * (len(bot.cogs) > 1))
         for name in disabled_cogs:
-            logging.info(f" - {name}")
+            logging.info(" - %s", name)
 
     bot.run(get_config_entry("TOKEN"))
