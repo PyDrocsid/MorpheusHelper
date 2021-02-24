@@ -774,6 +774,7 @@ run_output: Run Output
 
 # Alert Channel
 member: Member
+none: None
 alert_channel: Alert Channel
 alert_channel_set: The alert channel has been changed.
 alert_channel_get: Current Alert Channel
