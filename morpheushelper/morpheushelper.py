@@ -34,6 +34,8 @@ from colours import Colours
 from info import MORPHEUS_ICON, CONTRIBUTORS, GITHUB_LINK, VERSION, AVATAR_URL, GITHUB_DESCRIPTION
 from permissions import Permission, PermissionLevel, sudo_active
 from util import make_error, send_to_changelog, get_prefix, set_prefix
+import logging
+from config.config import get_config_entry
 
 banner = r"""
 
@@ -45,8 +47,8 @@ banner = r"""
                      /_/                                      /_/
 
 """.splitlines()
-print("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
-print(f"Starting MorpheusHelper v{VERSION} ({GITHUB_LINK})\n")
+logging.info("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
+logging.info(f"Starting MorpheusHelper v{VERSION} ({GITHUB_LINK})\n")
 
 sentry_dsn = os.environ.get("SENTRY_DSN")
 if sentry_dsn:
@@ -97,7 +99,7 @@ async def on_ready():
         except Forbidden:
             pass
 
-    print(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
+    logging.info(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
 
     if owner is not None:
         try:
@@ -321,26 +323,29 @@ async def on_bot_ping(message: Message):
     await message.channel.send(embed=await build_info_embed(False))
 
 
-cog_blacklist = set(map(str.lower, os.getenv("DISABLED_COGS", "").split(",")))
-disabled_cogs = []
-enabled_cogs = []
-for cog_class in COGS:
-    if cog_class.__name__.lower() in cog_blacklist or (cog_class is AdventOfCodeCog and not AOCConfig.load()):
-        disabled_cogs.append(cog_class.__name__)
-        continue
+if __name__ == "__main__":
+    logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO, datefmt="%Y-%m-%d %H:%M:%S")
 
-    enabled_cogs.append(cog_class)
+    cog_blacklist = set(map(str.lower, os.getenv("DISABLED_COGS", "").split(",")))
+    disabled_cogs = []
+    enabled_cogs = []
+    for cog_class in COGS:
+        if cog_class.__name__.lower() in cog_blacklist or (cog_class is AdventOfCodeCog and not AOCConfig.load()):
+            disabled_cogs.append(cog_class.__name__)
+            continue
 
-register_cogs(bot, *enabled_cogs)
+        enabled_cogs.append(cog_class)
 
-if bot.cogs:
-    print(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
-    for cog in bot.cogs.values():
-        commands = ", ".join(cmd.name for cmd in cog.get_commands())
-        print(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
-if disabled_cogs:
-    print(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
-    for name in disabled_cogs:
-        print(f" - {name}")
+    register_cogs(bot, *enabled_cogs)
 
-bot.run(os.environ["TOKEN"])
+    if bot.cogs:
+        logging.info(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
+        for cog in bot.cogs.values():
+            commands = ", ".join(cmd.name for cmd in cog.get_commands())
+            logging.info(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+    if disabled_cogs:
+        logging.info(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
+        for name in disabled_cogs:
+            logging.info(f" - {name}")
+
+    bot.run(get_config_entry("TOKEN"))

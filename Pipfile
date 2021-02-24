@@ -13,12 +13,13 @@ aiohttp = "*"
 alembic = "*"
 pydrocsid = "*"
 "discord.py" = "*"
+redis = "*"
 
 [dev-packages]
 flake8 = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"
 
 [scripts]
 bot = "python morpheushelper/morpheushelper.py"

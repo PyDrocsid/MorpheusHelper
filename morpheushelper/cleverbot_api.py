@@ -3,7 +3,7 @@ import http
 import string
 from urllib.parse import urlencode
 
-import requests
+from requests import Session
 
 
 def md5(data):
@@ -17,7 +17,7 @@ class CleverBot:
     def __init__(self):
         self.history = []
         self.result = None
-        self.session = requests.Session()
+        self.session = Session()
         self.ns = 1
         self.session.get("https://www.cleverbot.com/")
         self.set_cookie("_cbsid", "-1")

@@ -19,6 +19,8 @@ from models.role_voice_link import RoleVoiceLink
 from permissions import Permission
 from util import get_prefix, send_to_changelog, is_teamler
 
+import logging
+
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
     return [
@@ -59,7 +61,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
     async def on_ready(self):
         guild: Guild = self.bot.guilds[0]
-        print(translations.updating_voice_roles)
+        logging.info(translations.updating_voice_roles)
         linked_roles: Dict[Role, Set[VoiceChannel]] = {}
         for link in await db_thread(db.all, RoleVoiceLink):
             role = guild.get_role(link.role)
@@ -107,7 +109,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     await db_thread(db.delete, dyn_channel)
             await self.update_dynamic_voice_group(group)
 
-        print(translations.voice_init_done)
+        logging.info(translations.voice_init_done)
 
     async def get_dynamic_voice_channel(
         self, member: Member, owner_required: bool

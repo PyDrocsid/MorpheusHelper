@@ -18,6 +18,8 @@ from models.allowed_invite import InviteLog, AllowedInvite
 from permissions import Permission
 from util import send_to_changelog, get_prefix
 
+import logging
+
 
 class AllowedServerConverter(Converter):
     async def convert(self, ctx: Context, argument: str) -> AllowedInvite:
@@ -49,7 +51,7 @@ def get_discord_invite(url) -> Optional[str]:
     try:
         url = requests.head(url, allow_redirects=True, timeout=10).url
     except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError, LocationParseError):
-        print("URL could not be resolved:", url)
+        logging.info("URL could not be resolved:", url)
         return None
 
     if match := re.match(

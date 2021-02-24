@@ -15,6 +15,8 @@ from models.reddit import RedditPost, RedditChannel
 from permissions import Permission
 from util import send_to_changelog
 
+import logging
+
 
 def exists_subreddit(subreddit: str) -> bool:
     return requests.head(
@@ -36,7 +38,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
     )
 
     if not response.ok:
-        print(f"could not fetch reddit posts of r/{subreddit}", response, response.status_code)
+        logging.info(f"could not fetch reddit posts of r/{subreddit}", response, response.status_code)
         return []
 
     posts: List[dict] = []
@@ -86,7 +88,7 @@ class RedditCog(Cog, name="Reddit"):
         await self.pull_hot_posts()
 
     async def pull_hot_posts(self):
-        print("pulling hot reddit posts")
+        logging.info("pulling hot reddit posts")
         limit = await Settings.get(int, "reddit_limit", 4)
         for reddit_channel in await db_thread(db.all, RedditChannel):  # type: RedditChannel
             text_channel: Optional[TextChannel] = self.bot.get_channel(reddit_channel.channel)

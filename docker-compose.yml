@@ -1,13 +1,15 @@
 version: '3.7'
+
 services:
   morpheushelper:
     container_name: morpheushelper
     image: defelo/morpheushelper
-#    image: defelo/morpheushelper:experimental
+    #    image: defelo/morpheushelper:experimental
     restart: always
     tty: true
     depends_on:
       - db
+      - redis
     environment:
       TOKEN: '<TOKEN>'
       DB_HOST: 'db'
@@ -15,6 +17,8 @@ services:
       DB_DATABASE: 'morpheushelper'
       DB_USER: 'morpheushelper'
       DB_PASSWORD: 'morpheushelper'
+      REDIS_HOSTNAME: 'redis'
+      REDIS_PORT: 6379
       SENTRY_DSN: ''
       OWNER_ID: ''
       DISABLED_COGS: ''
@@ -32,3 +36,8 @@ services:
       # MYSQL_INITDB_SKIP_TZINFO: "yes"
     volumes:
       - './mysql_data:/var/lib/mysql'
+
+  redis:
+    image: redis
+    restart: always
+    container_name: redis
