@@ -28,7 +28,7 @@ def get_config_entry(key: str) -> Optional[any]:
         value: any = DEFAULT_CONFIG[key]
 
         if not value:
-            logging.error(f"Required environment variable called {key} NOT found.".format(key=key))
+            logging.error("Required environment variable called %s NOT found.", key)
 
         return value
 
