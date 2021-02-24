@@ -82,7 +82,7 @@ class RulesCog(Cog, name="Rule Commands"):
         title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
         if title is None:
             return
-        elif len(title) > 256:
+        if len(title) > 256:
             raise CommandError(translations.title_too_long)
 
         embed.description = translations.send_embed_content(translations.cancel)
@@ -173,7 +173,7 @@ class RulesCog(Cog, name="Rule Commands"):
 
         if title is None:
             return
-        elif len(title) > 256:
+        if len(title) > 256:
             raise CommandError(translations.title_too_long)
 
         embed.description = translations.send_embed_content(translations.cancel)
