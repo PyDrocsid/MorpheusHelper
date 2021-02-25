@@ -45,25 +45,27 @@ class AlertChannelCog(Cog):
         """
         if not (before.channel and after.channel):
             return
-        try:
-            self.user_hops[member.id] += 1
-        except KeyError:
-            self.user_hops[member.id] = 1
+        hops = self.user_hops.setdefault(member.id, 0) + 1
+        temp_max = await getMaxHops()
 
-        tempMax = await getMaxHops()
-        if self.user_hops[member.id] >= tempMax > 0:
-            del self.user_hops[member.id]
-            embed = Embed(title=translations.alert_channel_hop, color=Colours.AlertChannel)
-            embed.add_field(name=translations.member, value=member.mention)
-            embed.add_field(name=translations.alert_channel_hop_current_channel, value=after.channel.name)
-            if ch := await getAlertChannel(member.guild):
-                await ch.send(embed=embed)
-            else:
-                logging.warning("No alert channel so far")
+        if not (self.user_hops[member.id] >= temp_max > 0):
+            self.user_hops[member.id] = hops
+            return
+
+        del self.user_hops[member.id]
+        embed = Embed(title=translations.alert_channel_hop, color=Colours.AlertChannel)
+        embed.add_field(name=translations.member, value=member.mention)
+        embed.add_field(name=translations.alert_channel_hop_current_channel, value=after.channel.name)
+        if ch := await getAlertChannel(member.guild):
+            await ch.send(embed=embed)
+        else:
+            logging.warning("No alert channel so far")
 
     @tasks.loop(minutes=1)
     async def hop_loop(self):
-        # Once a minute, all possible channel hops are being reset
+        """
+        Once a minute, all possible channel hops are being reset
+        """
         self.user_hops = {}
 
     @commands.group(name="alert")
@@ -72,41 +74,31 @@ class AlertChannelCog(Cog):
         """
         Configures the alert channel
         """
-        if not ctx.subcommand_passed:
-            embed = Embed(title=translations.alert_channel, colour=Colours.AlertChannel)
-            channel: TextChannel = await getAlertChannel(ctx.guild)
-            if channel:
-                embed.add_field(name=translations.alert_channel_get,
-                                value=channel.mention,
-                                inline=False)
-            else:
-                embed.add_field(name=translations.alert_channel_get,
-                                value=translations.none,
-                                inline=False)
-            embed.add_field(name=translations.alert_channel_hop_current_amount, value=str(await getMaxHops()),
-                            inline=False)
-            await ctx.send(embed=embed)
+        if ctx.subcommand_passed:
+            return
+
+        embed = Embed(title=translations.alert_channel, colour=Colours.AlertChannel)
+        channel: TextChannel = await getAlertChannel(ctx.guild)
+        embed.add_field(name=translations.alert_channel_get,
+                        value=channel.mention if channel else translations.none,
+                        inline=False)
+        embed.add_field(name=translations.alert_channel_hop_current_amount, value=str(await getMaxHops()),
+                        inline=False)
+        await ctx.send(embed=embed)
 
     @alert_channel.command(name="set")
     async def alertch_set(self, ctx: Context, channel: Union[TextChannel, int]):
         """
         Updated the alert channel (set channel to `0` to unset)
         """
-        if isinstance(channel, int):
-            if channel == 0:
-                await Settings.set(int, "alert_channel", 0)
-
-                embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
-                              color=Colours.AlertChannel)
-                embed.add_field(name=translations.channel, value=translations.none)
-                await ctx.send(embed=embed)
-                return
-
-        await Settings.set(int, "alert_channel", channel.id)
+        if isinstance(channel, int) and channel == 0:
+            await Settings.set(int, "alert_channel", 0)
+        else:
+            await Settings.set(int, "alert_channel", channel.id)
 
         embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
                       color=Colours.AlertChannel)
-        embed.add_field(name=translations.channel, value=str(channel))
+        embed.add_field(name=translations.channel, value=channel.mention if channel else translations.none)
         await ctx.send(embed=embed)
 
     @alert_channel.command(name="hops")
