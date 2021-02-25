@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -88,10 +88,20 @@ class AlertChannelCog(Cog):
             await ctx.send(embed=embed)
 
     @alert_channel.command(name="set")
-    async def alertch_set(self, ctx: Context, channel: TextChannel):
+    async def alertch_set(self, ctx: Context, channel: Union[TextChannel, int]):
         """
-        Updated the alert channel
+        Updated the alert channel (set channel to `0` to unset)
         """
+        if isinstance(channel, int):
+            if channel == 0:
+                await Settings.set(int, "alert_channel", 0)
+
+                embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
+                              color=Colours.AlertChannel)
+                embed.add_field(name=translations.channel, value=translations.none)
+                await ctx.send(embed=embed)
+                return
+
         await Settings.set(int, "alert_channel", channel.id)
 
         embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
@@ -102,7 +112,7 @@ class AlertChannelCog(Cog):
     @alert_channel.command(name="hops")
     async def alertch_set_hops(self, ctx: Context, amount: Optional[int]):
         """
-        Updates the value of minimum hops per minute in order for a message to occur
+        Updates the value of minimum hops per minute in order for a message to occur (<=0: no limit)
         """
         if amount:
             await Settings.set(int, "alert_channel_warn_channel_hops", amount)
