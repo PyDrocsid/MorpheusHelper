@@ -48,7 +48,7 @@ class AlertChannelCog(Cog):
         hops = self.user_hops.setdefault(member.id, 0) + 1
         temp_max = await getMaxHops()
 
-        if not (self.user_hops[member.id] >= temp_max > 0):
+        if not self.user_hops[member.id] >= temp_max > 0:
             self.user_hops[member.id] = hops
             return
 
