@@ -85,7 +85,7 @@ class RulesCog(Cog, name="Rule Commands"):
         if len(title) > 256:
             raise CommandError(translations.title_too_long)
 
-        embed.description = translations.send_embed_content(translations.cancel)
+        embed.description = translations.f_send_embed_content(translations.cancel)
         await ctx.send(embed=embed)
         content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
 
@@ -167,7 +167,8 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_embed_title)
+        embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
+                      description=translations.f_send_embed_title(translations.cancel))
         await ctx.send(embed=embed)
         title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
 
@@ -176,9 +177,9 @@ class RulesCog(Cog, name="Rule Commands"):
         if len(title) > 256:
             raise CommandError(translations.title_too_long)
 
-        embed.description = translations.send_embed_content(translations.cancel)
+        embed.description = translations.f_send_embed_content(translations.cancel)
         await ctx.send(embed=embed)
-        content, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
 
         if content is None:
             return
