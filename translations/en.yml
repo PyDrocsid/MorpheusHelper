@@ -771,3 +771,9 @@ run_usage: |
   your code
   `​`​`
 run_output: Run Output
+
+# membership info
+joined_days: "joined less than a week ago"
+joined_weeks: "Joined {} weeks ago"
+joined_months: "Joined {} months ago"
+joined_years: "Joined {} years ago"
