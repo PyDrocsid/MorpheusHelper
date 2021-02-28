@@ -17,8 +17,8 @@ class RulesCog(Cog, name="Rule Commands"):
         self.bot = bot
 
     @staticmethod
-    async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> [Tuple[Optional[str],
-                                                                                           List[Optional[File]]]]:
+    async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str],
+                                                                                           list[Optional[File]]]:
         content, files = await read_normal_message(bot, channel, member)
         if content == translations.cancel:
             embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
