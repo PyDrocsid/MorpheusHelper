@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 def date_diff_to_str(date1: datetime, date2: datetime):
     rd = relativedelta(date1, date2)
     if rd.years:
-        return translations.f_joined_years(rd.months)
+        return translations.f_joined_years(rd.years)
     if rd.months:
         return translations.f_joined_months(rd.months)
     if rd.weeks:
