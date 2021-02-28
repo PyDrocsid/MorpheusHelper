@@ -1,5 +1,5 @@
 from http.client import HTTPException
-from typing import Optional, Tuple, List
+from typing import Optional
 
 from PyDrocsid.translations import translations
 from PyDrocsid.util import read_normal_message, read_complete_message
@@ -18,7 +18,7 @@ class RulesCog(Cog, name="Rule Commands"):
 
     @staticmethod
     async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str],
-                                                                                           list[Optional[File]]]:
+                                                                                          list[Optional[File]]]:
         content, files = await read_normal_message(bot, channel, member)
         if content == translations.cancel:
             embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
