@@ -16,7 +16,7 @@ async def get_max_hops() -> int:
     """
     Retrieves the channel hops per minute in order for a message to appear
     """
-    return await Settings.get(int, key="alert_channel_warn_channel_hops", default=5)
+    return await Settings.get(int, "alert_channel_warn_channel_hops", 5)
 
 
 class AlertChannelCog(Cog):
@@ -34,7 +34,7 @@ class AlertChannelCog(Cog):
         """
         Retrieves the alert-channel of the specified guild
         """
-        alert_channel_id: int = await Settings.get(int, key="alert_channel", default=-1)
+        alert_channel_id: int = await Settings.get(int, "alert_channel", -1)
         if alert_channel_id <= 0:
             return None
 
@@ -48,7 +48,7 @@ class AlertChannelCog(Cog):
         """
         Checks for channel-hopping
         """
-        if not (before.channel and after.channel):
+        if before.channel != after.channel:
             return
         hops: int = self.user_hops.setdefault(member.id, 0) + 1
         temp_max: int = await get_max_hops()
@@ -94,7 +94,7 @@ class AlertChannelCog(Cog):
     @alert_channel.command(name="set")
     async def alertch_set(self, ctx: Context, channel: TextChannel):
         """
-        Updated the alert channel (set channel to `0` to unset)
+        Updated the alert channel
         """
         await Settings.set(int, "alert_channel", channel.id)
 
