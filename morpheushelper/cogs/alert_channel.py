@@ -48,7 +48,7 @@ class AlertChannelCog(Cog):
         """
         Checks for channel-hopping
         """
-        if not (before.channel and after.channel):
+        if before.channel != after.channel:
             return
         hops: int = self.user_hops.setdefault(member.id, 0) + 1
         temp_max: int = await get_max_hops()
