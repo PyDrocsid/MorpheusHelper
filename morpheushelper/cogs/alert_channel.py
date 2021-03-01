@@ -94,7 +94,7 @@ class AlertChannelCog(Cog):
     @alert_channel.command(name="set")
     async def alertch_set(self, ctx: Context, channel: TextChannel):
         """
-        Updated the alert channel (set channel to `0` to unset)
+        Updated the alert channel
         """
         await Settings.set(int, "alert_channel", channel.id)
 
