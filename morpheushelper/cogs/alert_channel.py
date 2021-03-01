@@ -16,7 +16,7 @@ async def get_max_hops() -> int:
     """
     Retrieves the channel hops per minute in order for a message to appear
     """
-    return await Settings.get(int, key="alert_channel_warn_channel_hops", default=5)
+    return await Settings.get(int, "alert_channel_warn_channel_hops", 5)
 
 
 class AlertChannelCog(Cog):
