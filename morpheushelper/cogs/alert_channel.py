@@ -34,7 +34,7 @@ class AlertChannelCog(Cog):
         """
         Retrieves the alert-channel of the specified guild
         """
-        alert_channel_id: int = await Settings.get(int, key="alert_channel", default=-1)
+        alert_channel_id: int = await Settings.get(int, "alert_channel", -1)
         if alert_channel_id <= 0:
             return None
 
