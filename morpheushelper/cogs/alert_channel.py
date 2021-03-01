@@ -100,10 +100,9 @@ class AlertChannelCog(Cog):
 
         embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
                       color=Colours.AlertChannel)
-        embed.add_field(name=translations.channel, value=channel.mention if channel else translations.none)
+        embed.add_field(name=translations.channel, value=channel.mention)
         await ctx.send(embed=embed)
-        await send_to_changelog(ctx.guild, translations.f_alert_channel_log_updated(
-            channel.mention if channel else translations.none))
+        await send_to_changelog(ctx.guild, translations.f_alert_channel_log_updated(channel.mention))
 
     @alert_channel.command(name="unset")
     async def alertch_unset(self, ctx: Context):
