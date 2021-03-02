@@ -14,7 +14,8 @@ class ColorPickerCog(Cog):
     @commands.command(name="colorpicker", aliases=["cp", "color"])
     async def colorpicker(self, ctx, color_code: str):
         if not (color_code_re := re.match(r'^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$', color_code)):
-            embed: Embed = Embed(title=translations.f_error_parse_color(color_code), description=translations.error_parse_color_example)
+            embed: Embed = Embed(title=translations.f_error_parse_color(color_code),
+                                 description=translations.error_parse_color_example)
             await ctx.send(embed=embed)  # TODO
             return
         rgb: tuple[int] = ImageColor.getcolor(color_code, "RGB")
