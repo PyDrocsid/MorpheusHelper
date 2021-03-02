@@ -771,3 +771,7 @@ run_usage: |
   your code
   `​`​`
 run_output: Run Output
+
+# color picker
+error_parse_color: "Error cant parse HEX Color Code({})"
+error_parse_color_example: "**Examples:**\n  - #fff\n  - #ffffff\n  - #000000"

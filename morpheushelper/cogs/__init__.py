@@ -20,6 +20,7 @@ from cogs.rules import RulesCog
 from cogs.run_code import RunCodeCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
+from cogs.color_picker import ColorPickerCog
 
 COGS = [
     RunCodeCog,
@@ -44,4 +45,5 @@ COGS = [
     PollsCog,
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
+    ColorPickerCog,
 ]
