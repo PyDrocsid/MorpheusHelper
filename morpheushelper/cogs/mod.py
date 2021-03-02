@@ -406,11 +406,12 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command()
     @Permission.kick.check
     @guild_only()
-    async def kick(self, ctx: Context, member: Member, *, reason: str):
+    async def kick(self, ctx: Context, member: Union[Member, int], *, reason: str):
         """
         kick a member
         """
-
+        member_on_server: bool = isinstance(member, Member)
+        member: Member = await self.get_user(ctx.guild, member)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
@@ -419,9 +420,9 @@ class ModCog(Cog, name="Mod Tools"):
 
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
-
-        if member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id:
-            raise CommandError(translations.cannot_kick)
+        if member_on_server:
+            if member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id:
+                raise CommandError(translations.cannot_kick)
 
         await db_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
         await send_to_changelog_mod(
@@ -441,7 +442,8 @@ class ModCog(Cog, name="Mod Tools"):
             server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
 
-        await member.kick(reason=reason)
+        if member_on_server:
+            await member.kick(reason=reason)
 
         await ctx.send(embed=server_embed)
 
