@@ -39,4 +39,4 @@ class JoinedInfoCog(Cog):
         if join_query:
             first_join = join_query.timestamp
 
-        await ctx.send(date_diff_to_str(datetime.today(), first_join))
+        await ctx.send(f"{user.mention} {date_diff_to_str(datetime.today(), first_join)}")
