@@ -242,7 +242,7 @@ class ModCog(Cog, name="Mod Tools"):
 
     @commands.command()
     @guild_only()
-    async def report(self, ctx: Context, member: Union[Member, int], *, reason: str):
+    async def report(self, ctx: Context, member: Union[Member, User, int], *, reason: str):
         """
         report a member
         """
@@ -260,11 +260,12 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command()
     @Permission.warn.check
     @guild_only()
-    async def warn(self, ctx: Context, member: Union[Member, int], *, reason: str):
+    async def warn(self, ctx: Context, member: Union[Member, User, int], *, reason: str):
         """
         warn a member
         """
-        member: Member = await self.get_user(ctx.guild, member)
+
+        member: Union[Member, User] = await self.get_user(ctx.guild, member)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
@@ -406,12 +407,12 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command()
     @Permission.kick.check
     @guild_only()
-    async def kick(self, ctx: Context, member: Union[Member, int], *, reason: str):
+    async def kick(self, ctx: Context, member: Union[Member, User, int], *, reason: str):
         """
         kick a member
         """
-        member_on_server: bool = isinstance(member, Member)
-        member: Member = await self.get_user(ctx.guild, member)
+
+        member: Union[Member, User] = await self.get_user(ctx.guild, member)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
@@ -420,6 +421,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
+        member_on_server: bool = isinstance(member, Member)
         if member_on_server:
             if member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id:
                 raise CommandError(translations.cannot_kick)
