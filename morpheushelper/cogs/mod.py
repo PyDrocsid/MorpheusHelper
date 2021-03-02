@@ -242,11 +242,11 @@ class ModCog(Cog, name="Mod Tools"):
 
     @commands.command()
     @guild_only()
-    async def report(self, ctx: Context, member: Member, *, reason: str):
+    async def report(self, ctx: Context, member: Union[Member, int], *, reason: str):
         """
         report a member
         """
-
+        member: Member = await self.get_user(ctx.guild, member)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
