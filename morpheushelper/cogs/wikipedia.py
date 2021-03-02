@@ -28,32 +28,27 @@ class WikipediaCog(Cog, name="Wikipedia"):
         display wikipedia summary about a topic
         """
 
-        # workaround because the run_in_thread function doesn't support arguments
-        def inner():
-            try:
-                return [wikipedia.summary(title)]
+        try:
+            summary = await run_in_thread(wikipedia.summary, title)
+            await ctx.send(embed=make_embed(title=title, content=summary, color=Colours.default,
+                                            requested_by=ctx.author))
 
-            except DisambiguationError as e:
-                return {"Error": str(e)}
-
-            except PageError as e:
-                return str(e)
-
-            except WikipediaException:
-                return "Wikipedia cog is not available currently!"
-
-        summary = await run_in_thread(inner)
-
-        # if the type of the return value is dict, this mean that the wikipedia module didn't find
-        # the topic the user searched for
-        if type(summary) is dict:
-            await ctx.send(embed=make_embed(title=f"{title} was not found!", content=summary["Error"],
+        # this error occurs when the topic searched for has not been found, but there are suggestions
+        except DisambiguationError as not_found_err:
+            await ctx.send(embed=make_embed(title=f"{title} was not found!", content=str(not_found_err),
                                             color=Colours.warning,
                                             requested_by=ctx.author))
-        elif type(summary) is str:
-            await ctx.send(embed=make_embed(title=title, content=summary, color=Colours.warning,
+
+        # this error occurs when the topic searched has not been found and there are no suggestions
+        except PageError as not_not_found_error:
+            await ctx.send(embed=make_embed(title=title, content=str(not_not_found_error), color=Colours.warning,
                                             requested_by=ctx.author))
 
-        elif type(summary) is list:
-            await ctx.send(embed=make_embed(title=title, content=summary[0], color=Colours.default,
-                                            requested_by=ctx.author))
+        # WikipediaException is the base exception of all exceptions of the wikipedia module
+        # if an error occurs that has not been caught above
+        # it may mean that wikipedia hasn't responded correctly or not at all
+        except WikipediaException:
+            await ctx.send(
+                embed=make_embed(title=title, content="Wikipedia is not available currently! Try again later.",
+                                 color=Colours.warning,
+                                 requested_by=ctx.author))
