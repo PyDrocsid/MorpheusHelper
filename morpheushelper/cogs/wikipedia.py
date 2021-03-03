@@ -36,8 +36,7 @@ class WikipediaCog(Cog, name="Wikipedia"):
         # this error occurs when the topic searched for has not been found, but there are suggestions
         except DisambiguationError as not_found_err:
             await ctx.send(embed=make_embed(title=f"{title} was not found!", content=str(not_found_err),
-                                            color=Colours.warning,
-                                            requested_by=ctx.author))
+                                            color=Colours.warning, requested_by=ctx.author))
 
         # this error occurs when the topic searched has not been found and there are no suggestions
         except PageError as not_not_found_error:
@@ -50,5 +49,4 @@ class WikipediaCog(Cog, name="Wikipedia"):
         except WikipediaException:
             await ctx.send(
                 embed=make_embed(title=title, content="Wikipedia is not available currently! Try again later.",
-                                 color=Colours.warning,
-                                 requested_by=ctx.author))
+                                 color=Colours.warning, requested_by=ctx.author))
