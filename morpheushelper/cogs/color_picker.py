@@ -27,7 +27,7 @@ class ColorPickerCog(Cog):
         elif color_re := self.RE_RGB.match(color):
             rgb = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
             color_hex = '%02x%02x%02x' % rgb
-            hsv: tuple[int] = ImageColor.getcolor('#' + color_hex, "HSV")
+            hsv: tuple[int] = ImageColor.getcolor(f'#{color_hex}', "HSV")
             hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_HSV.match(color):
             hsv: tuple[int] = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
@@ -49,7 +49,7 @@ class ColorPickerCog(Cog):
             img.save(image_binary, 'PNG')
             image_binary.seek(0)
             embed: Embed = Embed(title='Colorpicker', color=Colour(int(color_hex, 16)))
-            embed.add_field(name='HEX', value='#' + color_hex)
+            embed.add_field(name='HEX', value=f'#{color_hex}')
             embed.add_field(name='RGB', value=f'rgb{rgb}')
             embed.add_field(name='HSV', value=f'hsv{hsv}')
             embed.add_field(name='HSL', value=f'hsl{hsl}')
