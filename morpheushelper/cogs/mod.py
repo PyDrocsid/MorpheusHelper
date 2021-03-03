@@ -422,9 +422,8 @@ class ModCog(Cog, name="Mod Tools"):
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
         member_on_server: bool = isinstance(member, Member)
-        if member_on_server:
-            if member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id:
-                raise CommandError(translations.cannot_kick)
+        if member_on_server and (member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id):
+            raise CommandError(translations.cannot_kick)
 
         await db_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
         await send_to_changelog_mod(
