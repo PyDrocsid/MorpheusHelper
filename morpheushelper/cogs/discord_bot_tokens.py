@@ -43,5 +43,5 @@ class DiscordBotTokenCog(Cog):
                 await msg.delete()
             except (Forbidden, NotFound, HTTPException):
                 pass
-            if (escaped_content := msg.content.replace(token_re.group(1), "***").replace("```", "\```")) != "***":
+            if (escaped_content := msg.content.replace(token_re.group(1), "***").replace("```", "\\```")) != "***":
                 await msg.author.send(f'Your message was: \n{escaped_content}\n*I replaced the Token*')
