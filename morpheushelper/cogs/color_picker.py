@@ -23,20 +23,26 @@ class ColorPickerCog(Cog):
             color_hex = color_re.group(1)
             rgb: tuple[int] = ImageColor.getcolor(color, "RGB")
             hsv: tuple[int] = ImageColor.getcolor(color, "HSV")
+            # skipcq: PYL-E1120
             hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_RGB.match(color):
             rgb = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
             color_hex = '%02x%02x%02x' % rgb
             hsv: tuple[int] = ImageColor.getcolor(f'#{color_hex}', "HSV")
+            # skipcq: PYL-E1120
             hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_HSV.match(color):
             hsv: tuple[int] = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
+            # skipcq: PYL-E1120
             rgb = tuple(map(int,  colorsys.hsv_to_rgb(*hsv)))
             color_hex = '%02x%02x%02x' % rgb
+            # skipcq: PYL-E1120
             hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_HSL.match(color):
             hsl: tuple[int] = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
+            # skipcq: PYL-E1120
             rgb = tuple(map(int,  colorsys.hls_to_rgb(*hsl)))
+            # skipcq: PYL-E1120
             hsv = tuple(map(int, colorsys.rgb_to_hsv(*rgb)))
             color_hex = '%02x%02x%02x' % rgb
         else:
