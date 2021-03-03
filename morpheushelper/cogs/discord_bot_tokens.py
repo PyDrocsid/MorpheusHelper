@@ -42,15 +42,16 @@ class DiscordBotTokenCog(Cog):
         deletes a message if it contains a discord bot token
         """
 
-        if tokens := self.RE_DC_TOKEN.findall(msg.content):
-            await msg.channel.send(embed=make_embed(msg.author))
-            try:
-                await msg.delete()
-            except (Forbidden, NotFound, HTTPException) as error:
-                discord_token_logger.error(error)
-            escaped_content = msg.content.replace("*", "\\*").replace("~", "\\~").replace("__", "\\_\\_")
-            for token in tokens:
-                escaped_content = escaped_content.replace(token, "\\*\\*\\*")
-            escaped_content = escaped_content.replace("`", "\\`")
-            if escaped_content != "***":
-                await msg.author.send(f'Your message was: \n{escaped_content}\n*I replaced the Token*')
+        if not (tokens := self.RE_DC_TOKEN.findall(msg.content)):
+            return
+        await msg.channel.send(embed=make_embed(msg.author))
+        try:
+            await msg.delete()
+        except (Forbidden, NotFound, HTTPException) as error:
+            discord_token_logger.error(error)
+        escaped_content = msg.content.replace("*", "\\*").replace("~", "\\~").replace("__", "\\_\\_")
+        for token in tokens:
+            escaped_content = escaped_content.replace(token, "\\*\\*\\*")
+        escaped_content = escaped_content.replace("`", "\\`")
+        if escaped_content != "***":
+            await msg.author.send(f'Your message was: \n{escaped_content}\n*I replaced the Token*')
