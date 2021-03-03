@@ -23,21 +23,21 @@ class ColorPickerCog(Cog):
             color_hex = color_re.group(1)
             rgb: tuple[int] = ImageColor.getcolor(color, "RGB")
             hsv: tuple[int] = ImageColor.getcolor(color, "HSV")
-            hsl = map(int, colorsys.rgb_to_hls(*rgb))
+            hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_RGB.match(color):
             rgb = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
             color_hex = '%02x%02x%02x' % rgb
             hsv: tuple[int] = ImageColor.getcolor('#' + color_hex, "HSV")
-            hsl = map(int, colorsys.rgb_to_hls(*rgb))
+            hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_HSV.match(color):
             hsv: tuple[int] = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
-            rgb = map(int,  colorsys.hsv_to_rgb(*hsv))
+            rgb = tuple(map(int,  colorsys.hsv_to_rgb(*hsv)))
             color_hex = '%02x%02x%02x' % rgb
-            hsl = map(int, colorsys.rgb_to_hls(*rgb))
+            hsl = tuple(map(int, colorsys.rgb_to_hls(*rgb)))
         elif color_re := self.RE_HSL.match(color):
             hsl: tuple[int] = (int(color_re.group(1)), int(color_re.group(2)), int(color_re.group(3)))
-            rgb = map(int,  colorsys.hls_to_rgb(*hsl))
-            hsl = map(int, colorsys.rgb_to_hsv(*rgb))
+            rgb = tuple(map(int,  colorsys.hls_to_rgb(*hsl)))
+            hsv = tuple(map(int, colorsys.rgb_to_hsv(*rgb)))
             color_hex = '%02x%02x%02x' % rgb
         else:
             embed: Embed = Embed(title=translations.f_error_parse_color(color),
