@@ -43,7 +43,7 @@ class DiscordBotTokenCog(Cog):
                 await msg.delete()
             except (Forbidden, NotFound, HTTPException):
                 pass
-            escaped_content = msg.content
+            escaped_content = msg.content.replace("*", "\\*").replace("~", "\\~").replace("__", "\\_\\_")
             for token in tokens:
                 escaped_content = escaped_content.replace(token, "\\*\\*\\*")
             escaped_content = escaped_content.replace("`", "\\`")
