@@ -2,7 +2,7 @@ from PyDrocsid.translations import translations
 from discord import Embed, Member, Message, Forbidden, NotFound, HTTPException
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, guild_only
-
+import logging
 from colours import Colours
 import re
 
@@ -14,7 +14,12 @@ def make_embed(requested_by: Member) -> Embed:
     return embed
 
 
+discord_token_logger = logging.getLogger("base_logger")
+
+
 class DiscordBotTokenCog(Cog):
+    RE_DC_TOKEN = re.compile(r'[A-Za-z\d]{24}\.[A-Za-z\d]{6}\.[A-Za-z\d\-\_]{27}')
+
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -28,8 +33,8 @@ class DiscordBotTokenCog(Cog):
         await ctx.send(embed=make_embed(ctx.author))
         try:
             await ctx.message.delete()
-        except (Forbidden, NotFound, HTTPException):
-            pass
+        except (Forbidden, NotFound, HTTPException) as error:
+            discord_token_logger.error(error)
 
     @guild_only()
     async def on_message(self, msg: Message):
@@ -37,12 +42,12 @@ class DiscordBotTokenCog(Cog):
         deletes a message if it contains a discord bot token
         """
 
-        if tokens := re.findall(r'([A-Za-z\d]{24}\.[A-Za-z\d]{6}\.[A-Za-z\d\-\_]{27})', msg.content):
+        if tokens := self.RE_DC_TOKEN.findall(msg.content):
             await msg.channel.send(embed=make_embed(msg.author))
             try:
                 await msg.delete()
-            except (Forbidden, NotFound, HTTPException):
-                pass
+            except (Forbidden, NotFound, HTTPException) as error:
+                discord_token_logger.error(error)
             escaped_content = msg.content.replace("*", "\\*").replace("~", "\\~").replace("__", "\\_\\_")
             for token in tokens:
                 escaped_content = escaped_content.replace(token, "\\*\\*\\*")
