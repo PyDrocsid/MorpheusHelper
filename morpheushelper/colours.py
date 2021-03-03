@@ -20,6 +20,7 @@ class Colours(MaterialColours):
     )
     MediaOnly = MaterialColours.yellow["a200"]
     MetaQuestions = MaterialColours.bluegrey
+    DiscordBotToken = MaterialColours.bluegrey
     ModTools = MaterialColours.blue["a700"]
     News = MaterialColours.orange
     Permissions = MaterialColours.blue["a700"]
