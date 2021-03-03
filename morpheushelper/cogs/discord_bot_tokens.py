@@ -37,9 +37,11 @@ class DiscordBotTokenCog(Cog):
         deletes a message if it contains a discord bot token
         """
 
-        if re.match(r'[A-Za-z\d]{24}\.[A-Za-z\d]{6}\.[A-Za-z\d\-\_]{27}', msg.content):
+        if token_re := re.search(r'([A-Za-z\d]{24}\.[A-Za-z\d]{6}\.[A-Za-z\d\-\_]{27})', msg.content):
             await msg.channel.send(embed=make_embed(msg.author))
             try:
                 await msg.delete()
             except (Forbidden, NotFound, HTTPException):
                 pass
+            if (escaped_content := msg.content.replace(token_re.group(1), "***").replace("```", "\```")) != "***":
+                await msg.author.send(f'Your message was: \n{escaped_content}\n*I replaced the Token*')
