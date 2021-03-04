@@ -771,3 +771,7 @@ run_usage: |
   your code
   `​`​`
 run_output: Run Output
+discordbottoken_title: Discord Bot Token
+discordbottoken_description: >
+  Discord Bot Tokens are used for authentication.
+  If another person gets it, the entire bot can be controlled with it!
