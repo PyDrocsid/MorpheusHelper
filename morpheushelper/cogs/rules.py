@@ -20,8 +20,9 @@ class RulesCog(Cog, name="Rule Commands"):
     async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
         content, files = await read_normal_message(bot, channel, member)
         if content == translations.cancel:
-            embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
-                          description=translations.msg_send_cancel)
+            embed = Embed(
+                title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_send_cancel
+            )
             await channel.send(embed=embed)
             return None, []
 
@@ -47,8 +48,11 @@ class RulesCog(Cog, name="Rule Commands"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.could_not_send_message)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
-                      description=translations.f_send_message(translations.cancel))
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_message(translations.cancel),
+        )
         await ctx.send(embed=embed)
         content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
 
@@ -75,8 +79,11 @@ class RulesCog(Cog, name="Rule Commands"):
         if not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
-                      description=translations.f_send_embed_title(translations.cancel))
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_embed_title(translations.cancel),
+        )
         await ctx.send(embed=embed)
         title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
         if title is None:
@@ -142,8 +149,11 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
-                      description=translations.f_send_new_message(translations.cancel))
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_new_message(translations.cancel),
+        )
         await ctx.send(embed=embed)
         content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
 
@@ -166,8 +176,11 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
-                      description=translations.f_send_embed_title(translations.cancel))
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_embed_title(translations.cancel),
+        )
         await ctx.send(embed=embed)
         title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
 
