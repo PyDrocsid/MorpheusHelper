@@ -773,3 +773,17 @@ run_usage: |
   your code
   `​`​`
 run_output: Run Output
+
+# color picker
+error_parse_color: "Error cant parse HEX/RGB/HSV/HSL Color Code(\"{}\")"
+error_parse_color_example: >
+  **Examples:**
+    - #fff
+    - #ffffff
+    - #000000
+    - rgb(255, 0, 0)
+    - rgb(255, 255, 255)
+    - hsv(0, 0, 0)
+    - hsv(0, 0, 255)
+    - hsl(0, 106, 0)
+    - hsl(0, 191, 0)

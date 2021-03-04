@@ -1,5 +1,5 @@
 # MorpheusHelper
-Bot for the [Discord Server of The Morpheus Tutorials](https://discord.gg/BnYZ8XS)
+Bot for the [Discord Server of The Morpheus Tutorials](https://discord.gg/themorpheus)
 
 ## Development
 ### Prerequisites
