@@ -246,7 +246,7 @@ class ModCog(Cog, name="Mod Tools"):
         """
         report a member
         """
-        user: Member = await self.get_user(ctx.guild, user)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
