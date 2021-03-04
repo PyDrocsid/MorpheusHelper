@@ -16,6 +16,7 @@ async def get_max_hops() -> int:
     """
     Retrieves the channel hops per minute in order for a message to appear
     """
+
     return await Settings.get(int, "alert_channel_warn_channel_hops", 5)
 
 
@@ -34,6 +35,7 @@ class AlertChannelCog(Cog):
         """
         Retrieves the alert-channel of the specified guild
         """
+
         alert_channel_id: int = await Settings.get(int, "alert_channel", -1)
         if alert_channel_id <= 0:
             return None
@@ -48,8 +50,10 @@ class AlertChannelCog(Cog):
         """
         Checks for channel-hopping
         """
-        if before.channel != after.channel:
+
+        if before.channel == after.channel:
             return
+
         hops: int = self.user_hops.setdefault(member.id, 0) + 1
         temp_max: int = await get_max_hops()
 
@@ -61,6 +65,7 @@ class AlertChannelCog(Cog):
         embed = Embed(title=translations.alert_channel_hop, color=Colours.AlertChannel)
         embed.add_field(name=translations.member, value=member.mention)
         embed.add_field(name=translations.alert_channel_hop_current_channel, value=after.channel.name)
+
         if ch := await self.get_alert_channel():
             await ch.send(embed=embed)
         else:
@@ -71,6 +76,7 @@ class AlertChannelCog(Cog):
         """
         Once a minute, all possible channel hops are being reset
         """
+
         self.user_hops = {}
 
     @commands.group(name="alert")
@@ -79,16 +85,18 @@ class AlertChannelCog(Cog):
         """
         Configures the alert channel
         """
+
         if ctx.subcommand_passed:
             return
 
         embed = Embed(title=translations.alert_channel, colour=Colours.AlertChannel)
         channel: TextChannel = await self.get_alert_channel()
-        embed.add_field(name=translations.alert_channel_get,
-                        value=channel.mention if channel else translations.none,
-                        inline=False)
-        embed.add_field(name=translations.alert_channel_hop_current_amount, value=str(await get_max_hops()),
-                        inline=False)
+        embed.add_field(
+            name=translations.alert_channel_get, value=channel.mention if channel else translations.none, inline=False
+        )
+        embed.add_field(
+            name=translations.alert_channel_hop_current_amount, value=str(await get_max_hops()), inline=False
+        )
         await ctx.send(embed=embed)
 
     @alert_channel.command(name="set")
@@ -96,10 +104,12 @@ class AlertChannelCog(Cog):
         """
         Updated the alert channel
         """
+
         await Settings.set(int, "alert_channel", channel.id)
 
-        embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
-                      color=Colours.AlertChannel)
+        embed = Embed(
+            title=translations.alert_channel, description=translations.alert_channel_set, color=Colours.AlertChannel
+        )
         embed.add_field(name=translations.channel, value=channel.mention)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_alert_channel_log_updated(channel.mention))
@@ -109,10 +119,12 @@ class AlertChannelCog(Cog):
         """
         Unsets the alert channel
         """
+
         await Settings.set(int, "alert_channel", 0)
 
-        embed = Embed(title=translations.alert_channel, description=translations.alert_channel_set,
-                      color=Colours.AlertChannel)
+        embed = Embed(
+            title=translations.alert_channel, description=translations.alert_channel_set, color=Colours.AlertChannel
+        )
         embed.add_field(name=translations.channel, value=translations.none)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.alert_channel_log_unset)
@@ -122,15 +134,18 @@ class AlertChannelCog(Cog):
         """
         Updates the value of minimum hops per minute in order for a message to occur (<=0: no limit)
         """
+
         if amount is not None:
             await Settings.set(int, "alert_channel_warn_channel_hops", amount)
-            embed = Embed(title=translations.alert_channel_hop, description=translations.alert_channel_hop_set_amount,
-                          colour=Colours.AlertChannel)
+            embed = Embed(
+                title=translations.alert_channel_hop,
+                description=translations.alert_channel_hop_set_amount,
+                colour=Colours.AlertChannel,
+            )
             embed.add_field(name=translations.alert_channel_hop_new_amount, value=str(amount))
             await ctx.send(embed=embed)
             await send_to_changelog(ctx.guild, translations.f_alert_channel_hop_log_updated(str(amount)))
         else:
-            embed = Embed(title=translations.alert_channel_hop,
-                          colour=Colours.AlertChannel)
+            embed = Embed(title=translations.alert_channel_hop, colour=Colours.AlertChannel)
             embed.add_field(name=translations.alert_channel_hop_current_amount, value=str(await get_max_hops()))
             await ctx.send(embed=embed)

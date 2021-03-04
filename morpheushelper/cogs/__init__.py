@@ -45,5 +45,5 @@ COGS = [
     PollsCog,
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
-    AlertChannelCog
+    AlertChannelCog,
 ]
