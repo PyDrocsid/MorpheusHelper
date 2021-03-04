@@ -242,34 +242,34 @@ class ModCog(Cog, name="Mod Tools"):
 
     @commands.command()
     @guild_only()
-    async def report(self, ctx: Context, member: Union[Member, User, int], *, reason: str):
+    async def report(self, ctx: Context, user: Union[Member, User, int], *, reason: str):
         """
         report a member
         """
-        member: Member = await self.get_user(ctx.guild, member)
+        user: Member = await self.get_user(ctx.guild, user)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        await db_thread(Report.create, member.id, str(member), ctx.author.id, reason)
+        await db_thread(Report.create, user.id, str(user), ctx.author.id, reason)
         embed = Embed(title=translations.report, description=translations.reported_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
         await send_to_changelog_mod(
-            ctx.guild, ctx.message, Colours.changelog["report"], translations.log_reported, member, reason
+            ctx.guild, ctx.message, Colours.changelog["report"], translations.log_reported, user, reason
         )
 
     @commands.command()
     @Permission.warn.check
     @guild_only()
-    async def warn(self, ctx: Context, member: Union[Member, User, int], *, reason: str):
+    async def warn(self, ctx: Context, user: Union[Member, User, int], *, reason: str):
         """
         warn a member
         """
 
-        member: Union[Member, User] = await self.get_user(ctx.guild, member)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        if member == self.bot.user:
+        if user == self.bot.user:
             raise CommandError(translations.cannot_warn)
 
         user_embed = Embed(
@@ -279,14 +279,14 @@ class ModCog(Cog, name="Mod Tools"):
         )
         server_embed = Embed(title=translations.warn, description=translations.warned_response, colour=Colours.ModTools)
         try:
-            await member.send(embed=user_embed)
+            await user.send(embed=user_embed)
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
-        await db_thread(Warn.create, member.id, str(member), ctx.author.id, reason)
+        await db_thread(Warn.create, user.id, str(user), ctx.author.id, reason)
         await ctx.send(embed=server_embed)
         await send_to_changelog_mod(
-            ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warned, member, reason
+            ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warned, user, reason
         )
 
     async def get_user(self, guild: Guild, user: Union[Member, User, int]) -> Union[Member, User]:
@@ -407,27 +407,27 @@ class ModCog(Cog, name="Mod Tools"):
     @commands.command()
     @Permission.kick.check
     @guild_only()
-    async def kick(self, ctx: Context, member: Union[Member, User, int], *, reason: str):
+    async def kick(self, ctx: Context, user: Union[Member, User, int], *, reason: str):
         """
         kick a member
         """
 
-        member: Union[Member, User] = await self.get_user(ctx.guild, member)
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
         if len(reason) > 900:
             raise CommandError(translations.reason_too_long)
 
-        if member == self.bot.user or await is_teamler(member):
+        if user == self.bot.user or await is_teamler(user):
             raise CommandError(translations.cannot_kick)
 
         if not ctx.guild.me.guild_permissions.kick_members:
             raise CommandError(translations.cannot_kick_permissions)
-        member_on_server: bool = isinstance(member, Member)
-        if member_on_server and (member.top_role >= ctx.guild.me.top_role or member.id == ctx.guild.owner_id):
+        member_on_server: bool = isinstance(user, Member)
+        if member_on_server and (user.top_role >= ctx.guild.me.top_role or user.id == ctx.guild.owner_id):
             raise CommandError(translations.cannot_kick)
 
-        await db_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
+        await db_thread(Kick.create, user.id, str(user), ctx.author.id, reason)
         await send_to_changelog_mod(
-            ctx.guild, ctx.message, Colours.changelog["kick"], translations.log_kicked, member, reason
+            ctx.guild, ctx.message, Colours.changelog["kick"], translations.log_kicked, user, reason
         )
 
         user_embed = Embed(
@@ -438,13 +438,13 @@ class ModCog(Cog, name="Mod Tools"):
         server_embed = Embed(title=translations.kick, description=translations.kicked_response, colour=Colours.ModTools)
 
         try:
-            await member.send(embed=user_embed)
+            await user.send(embed=user_embed)
         except (Forbidden, HTTPException):
             server_embed.description = translations.no_dm + "\n\n" + server_embed.description
             server_embed.colour = Colours.error
 
         if member_on_server:
-            await member.kick(reason=reason)
+            await user.kick(reason=reason)
 
         await ctx.send(embed=server_embed)
 
