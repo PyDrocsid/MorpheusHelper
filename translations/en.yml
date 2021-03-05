@@ -773,7 +773,8 @@ run_usage: |
 run_output: Run Output
 
 # membership info
+joined_info: "Joined Info"
 joined_days: "joined less than a week ago"
-joined_weeks: "Joined {} weeks ago"
-joined_months: "Joined {} months ago"
-joined_years: "Joined {} years ago"
+joined_weeks: "joined {} weeks ago"
+joined_months: "joined {} months ago"
+joined_years: "joined {} years ago"

@@ -2,11 +2,11 @@ from datetime import datetime
 
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.translations import translations
-from discord import Member
+from discord import Member, Embed, member
 from discord.ext import commands
 from discord.ext.commands import Cog, Context, Bot, guild_only
 
-from models.mod import Join
+from models.mod import Join, Kick
 from dateutil.relativedelta import relativedelta
 
 
@@ -31,12 +31,17 @@ class JoinedInfoCog(Cog):
         """
         Returns the date on which the user joined the server
         """
+
         if not user:
             user = ctx.author
-        join_query = await db_thread(lambda: db.query(Join).filter(Join.member == user.id)
-                                     .order_by(Join.timestamp).first())
-        first_join = user.joined_at
-        if join_query:
-            first_join = join_query.timestamp
-
-        await ctx.send(f"{user.mention} {date_diff_to_str(datetime.today(), first_join)}")
+        last_auto_kick = await db_thread(lambda: db.query(Kick).filter_by(member=user.id, mod=None)
+                                         .order_by(Kick.timestamp.desc()).first())
+        last_join_after_kick = await db_thread(lambda: db.query(Join).filter(Join.member == user.id)
+                                               .order_by(Join.timestamp.desc()).first())
+        if last_auto_kick:
+            last_join_after_kick = await db_thread(
+                lambda: db.query(Join).filter(Join.timestamp > last_auto_kick.timestamp,
+                                              Join.member == user.id)
+                    .order_by(Join.timestamp.asc()).first().timestamp)
+        await ctx.send(embed=Embed(title=translations.joined_info, description=f"{user.mention}"
+                                                                               f" {date_diff_to_str(datetime.today(), last_join_after_kick)}"))
