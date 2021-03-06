@@ -36,7 +36,6 @@ class DiscordBotTokenCog(Cog):
         except (Forbidden, NotFound, HTTPException) as error:
             discord_token_logger.error(error)
 
-    @guild_only()
     async def on_message(self, msg: Message):
         """
         deletes a message if it contains a discord bot token
