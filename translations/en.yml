@@ -775,3 +775,7 @@ discordbottoken_title: Discord Bot Token
 discordbottoken_description: >
   Discord Bot Tokens are used for authentication.
   If another person gets it, the entire bot can be controlled with it!
+  You can regenerate the Discord Bot Token in the Discord Developer Portal (https://discord.com/developers/applications):
+    - Select the Application
+    - Click on "Bot" in the Side Menu
+    - Click on "Regenerate" to regenerate the Token
