@@ -98,6 +98,11 @@ async def send_to_changelog_mod(
     await send_to_changelog(guild, embed)
 
 
+def check_reason_length(reason):
+    if len(reason) > 900:
+        raise CommandError(translations.reason_too_long)
+
+
 class ModCog(Cog, name="Mod Tools"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -247,8 +252,7 @@ class ModCog(Cog, name="Mod Tools"):
         report a member
         """
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        check_reason_length(reason)
 
         await db_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         embed = Embed(title=translations.report, description=translations.reported_response, colour=Colours.ModTools)
@@ -265,8 +269,7 @@ class ModCog(Cog, name="Mod Tools"):
         warn a member
         """
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        check_reason_length(reason)
 
         if member == self.bot.user:
             raise CommandError(translations.cannot_warn)
@@ -312,8 +315,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         days: Optional[int]
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        check_reason_length(reason)
 
         mute_role: Role = await get_mute_role(ctx.guild)
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
@@ -380,8 +382,7 @@ class ModCog(Cog, name="Mod Tools"):
         unmute a member
         """
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        check_reason_length(reason)
 
         mute_role: Role = await get_mute_role(ctx.guild)
         user: Union[Member, User] = await self.get_user(ctx.guild, user)
@@ -411,8 +412,7 @@ class ModCog(Cog, name="Mod Tools"):
         kick a member
         """
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        check_reason_length(reason)
 
         if member == self.bot.user or await is_teamler(member):
             raise CommandError(translations.cannot_kick)
@@ -467,8 +467,8 @@ class ModCog(Cog, name="Mod Tools"):
         if not ctx.guild.me.guild_permissions.ban_members:
             raise CommandError(translations.cannot_ban_permissions)
 
-        if len(reason) > 900:
-            raise CommandError(translations.reason_too_long)
+        check_reason_length(reason)
+
         if not 0 <= delete_days <= 7:
             raise CommandError(translations.invalid_duration)
 
