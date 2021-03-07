@@ -141,8 +141,8 @@ class Mute(db.Base):
         return row
 
     @staticmethod
-    def upgrade(ban_id: int, mod: int):
-        mute = Mute.deactivate(ban_id, mod)
+    def upgrade(mute_id: int, mod: int):
+        mute = Mute.deactivate(mute_id, mod)
         mute.upgraded = True
 
 
