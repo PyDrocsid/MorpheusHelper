@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 import requests
+import html
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -47,7 +48,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
                 {
                     "id": post["data"]["id"],
                     "author": post["data"]["author"],
-                    "title": post["data"]["title"],
+                    "title": html.unescape(post["data"]["title"]),  # parse html special characters
                     "created_utc": post["data"]["created_utc"],
                     "score": post["data"]["score"],
                     "num_comments": post["data"]["num_comments"],
