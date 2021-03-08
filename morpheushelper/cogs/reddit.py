@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 import requests
+import html
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -47,7 +48,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
                 {
                     "id": post["data"]["id"],
                     "author": post["data"]["author"],
-                    "title": post["data"]["title"],
+                    "title": html.unescape(post["data"]["title"]),  # parse html special characters
                     "created_utc": post["data"]["created_utc"],
                     "score": post["data"]["score"],
                     "num_comments": post["data"]["num_comments"],
@@ -61,7 +62,8 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
 
 def create_embed(post: dict) -> Embed:
     embed = Embed(
-        title=post["title"],
+        # add a blank character after every : and . to prevent wrong redirects for titles
+        title=post["title"].replace(":", ":\u200b").replace(".", ".\u200b"),
         url=f"https://reddit.com{post['permalink']}",
         description=f"{post['score']} :thumbsup: \u00B7 {post['num_comments']} :speech_balloon:",
         colour=Colours.Reddit,  # Reddit's brand color

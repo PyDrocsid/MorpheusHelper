@@ -3,7 +3,7 @@ from typing import Optional
 
 from PyDrocsid.translations import translations
 from PyDrocsid.util import read_normal_message, read_complete_message
-from discord import TextChannel, Message, Forbidden, Permissions, Embed
+from discord import TextChannel, Message, Forbidden, Permissions, Embed, Member, File
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
@@ -15,6 +15,18 @@ from util import Color
 class RulesCog(Cog, name="Rule Commands"):
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    @staticmethod
+    async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
+        content, files = await read_normal_message(bot, channel, member)
+        if content == translations.cancel:
+            embed = Embed(
+                title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_send_cancel
+            )
+            await channel.send(embed=embed)
+            return None, []
+
+        return content, files
 
     @commands.group()
     @Permission.send.check
@@ -36,9 +48,17 @@ class RulesCog(Cog, name="Rule Commands"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(translations.could_not_send_message)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_message)
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_message(translations.cancel),
+        )
         await ctx.send(embed=embed)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
+
         try:
             await channel.send(content=content, files=files)
         except (HTTPException, Forbidden):
@@ -59,15 +79,24 @@ class RulesCog(Cog, name="Rule Commands"):
         if not permissions.embed_links:
             raise CommandError(translations.could_not_send_embed)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_embed_title)
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_embed_title(translations.cancel),
+        )
         await ctx.send(embed=embed)
-        title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        if title is None:
+            return
         if len(title) > 256:
             raise CommandError(translations.title_too_long)
 
-        embed.description = translations.send_embed_content
+        embed.description = translations.f_send_embed_content(translations.cancel)
         await ctx.send(embed=embed)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
 
         send_embed = Embed(title=title, description=content)
 
@@ -120,9 +149,17 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_new_message)
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_new_message(translations.cancel),
+        )
         await ctx.send(embed=embed)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
+
         if files:
             raise CommandError(translations.cannot_edit_files)
 
@@ -139,15 +176,25 @@ class RulesCog(Cog, name="Rule Commands"):
         if message.author != self.bot.user:
             raise CommandError(translations.could_not_edit)
 
-        embed = Embed(title=translations.rule, colour=Colours.RuleCommands, description=translations.send_embed_title)
+        embed = Embed(
+            title=translations.rule,
+            colour=Colours.RuleCommands,
+            description=translations.f_send_embed_title(translations.cancel),
+        )
         await ctx.send(embed=embed)
-        title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if title is None:
+            return
         if len(title) > 256:
             raise CommandError(translations.title_too_long)
 
-        embed.description = translations.send_embed_content
+        embed.description = translations.f_send_embed_content(translations.cancel)
         await ctx.send(embed=embed)
-        content, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
 
         send_embed = Embed(title=title, description=content)
 
