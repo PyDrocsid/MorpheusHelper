@@ -47,5 +47,5 @@ COGS = [
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
     AlertChannelCog,
-    JoinedInfoCog
+    JoinedInfoCog,
 ]

@@ -31,17 +31,32 @@ class JoinedInfoCog(Cog):
         """
         Returns a rough estimate for the user's time on the server
         """
+
         if not user:
             user = ctx.author
-        last_auto_kick = await db_thread(lambda: db.query(Kick, member=user.id, mod=None)
-                                         .order_by(Kick.timestamp.desc()).first())
+
+        last_auto_kick = await db_thread(
+            lambda: db.query(Kick, member=user.id, mod=None).order_by(Kick.timestamp.desc()).first()
+        )
         if last_auto_kick:
             last_join_after_kick = await db_thread(
-                lambda: db.query(Join).filter(Join.timestamp > last_auto_kick.timestamp,
-                                              Join.member == user.id).order_by(Join.timestamp.asc()).first().timestamp)
+                lambda: db.query(Join, member=user.id)
+                .filter(Join.timestamp > last_auto_kick.timestamp)
+                .order_by(Join.timestamp.asc())
+                .first()
+            )
         else:
-            last_join_after_kick = await db_thread(lambda: db.query(Join, member=user.id)
-                                                   .order_by(Join.timestamp.asc()).first().timestamp)
-        embed = Embed(title=translations.joined_info,
-                      description=f"{user.mention} {date_diff_to_str(datetime.today(), last_join_after_kick)}")
+            last_join_after_kick = await db_thread(
+                lambda: db.query(Join, member=user.id).order_by(Join.timestamp.asc()).first()
+            )
+
+        if last_join_after_kick is None:
+            last_join_after_kick = user.joined_at
+        else:
+            last_join_after_kick = last_join_after_kick.timestamp
+
+        embed = Embed(
+            title=translations.joined_info,
+            description=f"{user.mention} {date_diff_to_str(datetime.today(), last_join_after_kick)}",
+        )
         await ctx.send(embed=embed)
