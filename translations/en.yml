@@ -791,3 +791,10 @@ alert_channel_hop_set_amount: The new minimum channel hops per minute has been c
 alert_channel_hop_log_updated: "**Alerts**\nThe maximum amount of hops has been updated to {}. :white_check_mark:"
 alert_channel_hop_new_amount: New amount
 alert_channel_hop_current_amount: Maximum channel hops per minute
+
+# membership info
+joined_info: "Joined Info"
+joined_days: "joined less than a week ago"
+joined_weeks: "joined {} weeks ago"
+joined_months: "joined {} months ago"
+joined_years: "joined {} years ago"

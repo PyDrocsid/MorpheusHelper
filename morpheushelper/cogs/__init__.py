@@ -21,6 +21,7 @@ from cogs.rules import RulesCog
 from cogs.run_code import RunCodeCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
+from cogs.joined_info import JoinedInfoCog
 
 COGS = [
     RunCodeCog,
@@ -46,4 +47,5 @@ COGS = [
     DiscordpyDocumentationCog,
     AdventOfCodeCog,
     AlertChannelCog,
+    JoinedInfoCog,
 ]
