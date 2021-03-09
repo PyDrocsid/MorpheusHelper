@@ -784,7 +784,7 @@ alert_channel_get: Current Alert Channel
 alert_channel_log_updated: "**Alerts** will now be **sent** to {}. :white_check_mark:"
 alert_channel_log_unset: "**Alerts** won't be sent anymore."
 
-## Channel hopping
+# Channel hopping
 alert_channel_hop: Channel Hopping
 alert_channel_hop_current_channel: Current Channel
 alert_channel_hop_set_amount: The new minimum channel hops per minute has been changed.
