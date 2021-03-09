@@ -478,7 +478,8 @@ unmute: ":loud_sound: Mute"
 mute_role_not_set: User could not be muted because no mute role is configured.
 cannot_mute: This member cannot be muted.
 already_muted: User is already muted for the given period of time.
-muted: "{} just muted you on {} for {} days:```\n{}\n```"
+muted_days: "{} just muted you on {} for {} days:```\n{}\n```"
+muted_minutes: "{} just muted you on {} for {} minutes:```\n{}\n```"
 muted_inf: "{} just muted you on {}:```\n{}\n```"
 muted_response: "User muted. :white_check_mark:"
 log_muted: ":mute: Member muted"
@@ -497,7 +498,8 @@ unban: ":white_check_mark: Ban"
 cannot_ban: This member cannot be banned.
 already_banned: This member is already banned for the given period of time.
 cannot_ban_permissions: User could not be banned because I don't have `ban_members` permission on this server.
-banned: "{} just banned you from {} for {} days:```\n{}\n```"
+banned_days: "{} just banned you from {} for {} days:```\n{}\n```"
+banned_minutes: "{} just banned you from {} for {} minutes:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
 banned_response: "User banned. :white_check_mark:"
 log_banned: ":no_entry: Member Banned"

@@ -104,7 +104,7 @@ class Mute(db.Base):
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     mod: Union[Column, int] = Column(BigInteger)
     timestamp: Union[Column, datetime] = Column(DateTime)
-    days: Union[Column, int] = Column(Integer)
+    minutes: Union[Column, int] = Column(Integer)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     active: Union[Column, bool] = Column(Boolean)
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
@@ -114,13 +114,13 @@ class Mute(db.Base):
     is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, days: int, reason: str, is_upgrade: bool = False) -> "Mute":
+    def create(member: int, member_name: str, mod: int, minutes: int, reason: str, is_upgrade: bool = False) -> "Mute":
         row = Mute(
             member=member,
             member_name=member_name,
             mod=mod,
             timestamp=datetime.utcnow(),
-            days=days,
+            minutes=minutes,
             reason=reason,
             active=True,
             deactivation_timestamp=None,
@@ -171,7 +171,7 @@ class Ban(db.Base):
     member_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     mod: Union[Column, int] = Column(BigInteger)
     timestamp: Union[Column, datetime] = Column(DateTime)
-    days: Union[Column, int] = Column(Integer)
+    minutes: Union[Column, int] = Column(Integer)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     active: Union[Column, bool] = Column(Boolean)
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
@@ -181,13 +181,13 @@ class Ban(db.Base):
     is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, days: int, reason: str, is_upgrade: bool = False) -> "Ban":
+    def create(member: int, member_name: str, mod: int, minutes: int, reason: str, is_upgrade: bool = False) -> "Ban":
         row = Ban(
             member=member,
             member_name=member_name,
             mod=mod,
             timestamp=datetime.utcnow(),
-            days=days,
+            minutes=minutes,
             reason=reason,
             active=True,
             deactivation_timestamp=None,
