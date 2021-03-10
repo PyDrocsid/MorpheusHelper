@@ -16,7 +16,7 @@ from colours import Colours
 from models.allowed_invite import InviteLog
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from permissions import Permission, PermissionLevel
-from util import send_to_changelog, get_prefix, is_teamler
+from util import send_to_changelog, get_prefix, is_teamler, send_to_alert_channel
 
 
 class DurationConverter(Converter):
@@ -59,7 +59,7 @@ async def update_join_date(guild: Guild, user_id: int):
         await db_thread(Join.update, member.id, str(member), member.joined_at)
 
 
-async def send_to_changelog_mod(
+async def send_to_alert_channel_mod(
     guild: Guild,
     message: Optional[Message],
     colour: int,
@@ -95,7 +95,7 @@ async def send_to_changelog_mod(
 
     embed.add_field(name=translations.log_field_reason, value=reason, inline=False)
 
-    await send_to_changelog(guild, embed)
+    await send_to_alert_channel(guild, embed)
 
 
 class ModCog(Cog, name="Mod Tools"):
@@ -129,7 +129,7 @@ class ModCog(Cog, name="Mod Tools"):
                 except NotFound:
                     user = ban.member, ban.member_name
 
-                await send_to_changelog_mod(
+                await send_to_alert_channel_mod(
                     guild,
                     None,
                     Colours.changelog["unban"],
@@ -149,7 +149,7 @@ class ModCog(Cog, name="Mod Tools"):
                 else:
                     member = mute.member, mute.member_name
 
-                await send_to_changelog_mod(
+                await send_to_alert_channel_mod(
                     guild,
                     None,
                     Colours.changelog["unmute"],
@@ -253,7 +253,7 @@ class ModCog(Cog, name="Mod Tools"):
         await db_thread(Report.create, member.id, str(member), ctx.author.id, reason)
         embed = Embed(title=translations.report, description=translations.reported_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
-        await send_to_changelog_mod(
+        await send_to_alert_channel_mod(
             ctx.guild, ctx.message, Colours.changelog["report"], translations.log_reported, member, reason
         )
 
@@ -284,7 +284,7 @@ class ModCog(Cog, name="Mod Tools"):
             server_embed.colour = Colours.error
         await db_thread(Warn.create, member.id, str(member), ctx.author.id, reason)
         await ctx.send(embed=server_embed)
-        await send_to_changelog_mod(
+        await send_to_alert_channel_mod(
             ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warned, member, reason
         )
 
@@ -342,7 +342,7 @@ class ModCog(Cog, name="Mod Tools"):
         if days is not None:
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, days, reason, bool(active_mutes))
             user_embed.description = translations.f_muted(ctx.author.mention, ctx.guild.name, days, reason)
-            await send_to_changelog_mod(
+            await send_to_alert_channel_mod(
                 ctx.guild,
                 ctx.message,
                 Colours.changelog["mute"],
@@ -354,7 +354,7 @@ class ModCog(Cog, name="Mod Tools"):
         else:
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, -1, reason, bool(active_mutes))
             user_embed.description = translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason)
-            await send_to_changelog_mod(
+            await send_to_alert_channel_mod(
                 ctx.guild,
                 ctx.message,
                 Colours.changelog["mute"],
@@ -399,7 +399,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         embed = Embed(title=translations.unmute, description=translations.unmuted_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
-        await send_to_changelog_mod(
+        await send_to_alert_channel_mod(
             ctx.guild, ctx.message, Colours.changelog["unmute"], translations.log_unmuted, user, reason
         )
 
@@ -424,7 +424,7 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.cannot_kick)
 
         await db_thread(Kick.create, member.id, str(member), ctx.author.id, reason)
-        await send_to_changelog_mod(
+        await send_to_alert_channel_mod(
             ctx.guild, ctx.message, Colours.changelog["kick"], translations.log_kicked, member, reason
         )
 
@@ -498,7 +498,7 @@ class ModCog(Cog, name="Mod Tools"):
         if ban_days is not None:
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, ban_days, reason, bool(active_bans))
             user_embed.description = translations.f_banned(ctx.author.mention, ctx.guild.name, ban_days, reason)
-            await send_to_changelog_mod(
+            await send_to_alert_channel_mod(
                 ctx.guild,
                 ctx.message,
                 Colours.changelog["ban"],
@@ -510,7 +510,7 @@ class ModCog(Cog, name="Mod Tools"):
         else:
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason, bool(active_bans))
             user_embed.description = translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason)
-            await send_to_changelog_mod(
+            await send_to_alert_channel_mod(
                 ctx.guild,
                 ctx.message,
                 Colours.changelog["ban"],
@@ -560,7 +560,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         embed = Embed(title=translations.unban, description=translations.unbanned_response, colour=Colours.ModTools)
         await ctx.send(embed=embed)
-        await send_to_changelog_mod(
+        await send_to_alert_channel_mod(
             ctx.guild, ctx.message, Colours.changelog["unban"], translations.log_unbanned, user, reason
         )
 

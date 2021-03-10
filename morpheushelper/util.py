@@ -41,6 +41,16 @@ async def send_to_changelog(guild: Guild, message: Union[str, Embed]):
         await channel.send(embed=embed)
 
 
+async def send_to_alert_channel(guild: Guild, message: Union[str, Embed]):
+    channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "alert_channel", -1))
+    if channel is not None:
+        if isinstance(message, str):
+            embed = Embed(colour=Colours.AlertChannel, description=message)
+        else:
+            embed = message
+        await channel.send(embed=embed)
+
+
 async def get_prefix() -> str:
     return await Settings.get(str, "prefix", ".")
 
@@ -50,7 +60,7 @@ async def set_prefix(new_prefix: str):
 
 
 async def check_wastebasket(
-    message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: Permission
+        message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: Permission
 ) -> Optional[int]:
     if emoji.name != name_to_emoji["wastebasket"]:
         return None
