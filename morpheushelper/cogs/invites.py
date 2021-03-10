@@ -15,6 +15,7 @@ from urllib3.exceptions import LocationParseError
 
 from colours import Colours
 from models.allowed_invite import InviteLog, AllowedInvite
+from models.forbidden_invites import ForbiddenInvites
 from permissions import Permission
 from util import send_to_changelog, get_prefix
 
@@ -92,6 +93,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                 continue
             if await db_thread(db.get, AllowedInvite, invite.guild.id) is None:
                 forbidden.append(f"`{invite.code}` ({invite.guild.name})")
+                await db_thread(ForbiddenInvites.create, code, author.id)
             else:
                 legal_invite = True
         if forbidden:
