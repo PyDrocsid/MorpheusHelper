@@ -16,7 +16,7 @@ from urllib3.exceptions import LocationParseError
 from colours import Colours
 from models.allowed_invite import InviteLog, AllowedInvite
 from permissions import Permission
-from util import send_to_changelog, get_prefix
+from util import send_to_changelog, get_prefix, send_to_alert_channel
 
 
 class AllowedServerConverter(Converter):
@@ -106,7 +106,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
             )
             await message.channel.send(content=author.mention, embed=embed, delete_after=30)
             if can_delete:
-                await send_to_changelog(
+                await send_to_alert_channel(
                     message.guild,
                     translations.f_log_illegal_invite(
                         f"{author.mention} (`@{author}`, {author.id})",
@@ -115,7 +115,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
                     ),
                 )
             else:
-                await send_to_changelog(
+                await send_to_alert_channel(
                     message.guild,
                     translations.f_log_illegal_invite_not_deleted(
                         f"{author.mention} (`@{author}`, {author.id})",
