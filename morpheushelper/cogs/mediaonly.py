@@ -14,7 +14,7 @@ from requests import RequestException
 from colours import Colours
 from models.mediaonly_channel import MediaOnlyChannel
 from permissions import Permission
-from util import send_to_changelog
+from util import send_to_changelog, send_to_alert_channel
 
 
 class MediaOnlyCog(Cog, name="MediaOnly"):
@@ -44,7 +44,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         await message.delete()
         embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia, colour=Colours.error)
         await channel.send(content=message.author.mention, embed=embed, delete_after=30)
-        await send_to_changelog(
+        await send_to_alert_channel(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
         )
         raise StopEventHandling
