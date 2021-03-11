@@ -35,4 +35,4 @@ COPY --from=builder /build/VERSION /app/
 COPY translations /app/translations/
 COPY morpheushelper /app/morpheushelper/
 
-CMD python morpheushelper/morpheushelper.py
+CMD ["python", "morpheushelper/morpheushelper.py"]
