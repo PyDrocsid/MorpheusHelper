@@ -13,6 +13,7 @@ from requests import RequestException
 
 from colours import Colours
 from models.mediaonly_channel import MediaOnlyChannel
+from models.mod import MediaOnlyEntry
 from permissions import Permission
 from util import send_to_changelog
 
@@ -47,6 +48,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         await send_to_changelog(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
         )
+        await db_thread(MediaOnlyEntry.create, message.author.id, channel.id)
         raise StopEventHandling
 
     @commands.group(aliases=["mo"])

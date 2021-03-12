@@ -211,3 +211,18 @@ class Ban(db.Base):
     def upgrade(ban_id: int, mod: int):
         ban = Ban.deactivate(ban_id, mod)
         ban.upgraded = True
+
+
+class MediaOnlyEntry(db.Base):
+    __tablename__ = "nomedia"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    channel: Union[Column, int] = Column(BigInteger)
+    timestamp: Union[Column, datetime] = Column(DateTime)
+
+    @staticmethod
+    def create(member: int, channel: int, timestamp: Optional[datetime] = None) -> "MediaOnlyEntry":
+        row = MediaOnlyEntry(member=member, channel=channel, timestamp=timestamp or datetime.utcnow())
+        db.add(row)
+        return row

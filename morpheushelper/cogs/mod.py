@@ -14,7 +14,7 @@ from discord.utils import snowflake_time
 
 from colours import Colours
 from models.allowed_invite import InviteLog
-from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
+from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick, MediaOnlyEntry
 from permissions import Permission, PermissionLevel
 from util import send_to_changelog, get_prefix, is_teamler
 
@@ -69,7 +69,6 @@ class toMinutes:
         mins += toMinutes.from_days(values[3])
         mins += toMinutes.from_hours(values[4])
         return mins
-
 
 
 async def configure_role(ctx: Context, role_name: str, role: Role, check_assignable: bool = False):
@@ -725,11 +724,11 @@ class ModCog(Cog, name="Mod Tools"):
         for warn in await db_thread(db.all, Warn, member=user_id):
             out.append((warn.timestamp, translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason)))
         for mute in await db_thread(db.all, Mute, member=user_id):
-            text = [translations.ulog_muted, translations.ulog_muted_inf][mute.days == -1][mute.is_upgrade].format
-            if mute.days == -1:
+            text = [translations.ulog_muted, translations.ulog_muted_inf][mute.minutes == -1][mute.is_upgrade].format
+            if mute.minutes == -1:
                 out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.reason)))
             else:
-                out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.days, mute.reason)))
+                out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.minutes, mute.reason)))
             if not mute.active and not mute.upgraded:
                 if mute.unmute_mod is None:
                     out.append((mute.deactivation_timestamp, translations.ulog_unmuted_expired))
@@ -746,11 +745,11 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 out.append((kick.timestamp, translations.ulog_autokicked))
         for ban in await db_thread(db.all, Ban, member=user_id):
-            text = [translations.ulog_banned, translations.ulog_banned_inf][ban.days == -1][ban.is_upgrade].format
-            if ban.days == -1:
+            text = [translations.ulog_banned, translations.ulog_banned_inf][ban.minutes == -1][ban.is_upgrade].format
+            if ban.minutes == -1:
                 out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.reason)))
             else:
-                out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.days, ban.reason)))
+                out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.minutes, ban.reason)))
             if not ban.active and not ban.upgraded:
                 if ban.unban_mod is None:
                     out.append((ban.deactivation_timestamp, translations.ulog_unbanned_expired))
@@ -766,6 +765,10 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
             else:
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
+
+        for nomedia in await db_thread(db.all, MediaOnlyEntry, member=user.id):
+            out.append((nomedia.timestamp,
+                        translations.f_ulog_nomedia(ctx.guild.get_channel(nomedia.channel).name)))
 
         out.sort()
         embed = Embed(title=translations.userlogs, color=Colours.userlog)
