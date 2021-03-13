@@ -12,8 +12,9 @@ class Emkc:
 
     @staticmethod
     async def run_code(language: str, source: str) -> dict:
-        async with ClientSession() as session, session.post(Emkc.URL,
-                                                            json={"language": language, "source": source}) as response:
+        async with ClientSession() as session, session.post(
+            Emkc.URL, json={"language": language, "source": source}
+        ) as response:
             if response.status != 200:
                 raise EmkcAPIException(await response.json())
 

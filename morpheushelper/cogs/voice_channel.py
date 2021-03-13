@@ -113,7 +113,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         voice_channel_logger.info(translations.voice_init_done)
 
     async def get_dynamic_voice_channel(
-            self, member: Member, owner_required: bool
+        self, member: Member, owner_required: bool
     ) -> Tuple[DynamicVoiceGroup, DynamicVoiceChannel, VoiceChannel, Optional[TextChannel]]:
         if member.voice is None or member.voice.channel is None:
             raise CommandError(translations.not_in_private_voice)
