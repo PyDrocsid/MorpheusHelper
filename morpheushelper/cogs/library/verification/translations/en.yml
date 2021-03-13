@@ -1,0 +1,36 @@
+permissions:
+  manage_verification: manage verification command
+
+verification: Verification
+verification_role_added: "Verification role has been added. :white_check_mark:"
+log_verification_role_added: "**Verification role** has been **added**: `@{}` ({}) (normal)"
+log_verification_role_added_reverse: "**Verification role** has been **added**: `@{}` ({}) (reverse)"
+verification_role_removed: " Verification role has been removed. :white_check_mark:"
+log_verification_role_removed: "**Verification role** has been **removed**: `@{}` ({})"
+password_too_long: Password is too long, sorry.
+verification_password_configured: "Verification password has been configured. :white_check_mark:"
+log_verification_password_configured: "**Verification password** has been **set** to `{}`"
+verification_delay_configured: "Verification delay has been configured. :white_check_mark:"
+verification_delay_disabled: "**Verification delay** has been **disabled**. :white_check_mark:"
+log_verification_delay_configured:
+  one: "**Verification delay** has been **set** to {cnt} second."
+  many: "**Verification delay** has been **set** to {cnt} seconds."
+verification_disabled: Verification command is disabled.
+verification_enabled: Verification command is enabled.
+password: Password
+roles_normal: Roles (normal)
+roles_reverse: Roles (reverse)
+verification_role: " - `@{}` ({}) (normal)"
+verification_role_reverse: " - `@{}` ({}) (reverse)"
+private_only: This command can only be used in direct messages.
+already_verified: You are already verified.
+password_incorrect: Password is incorrect!
+verified: "Verified successfully :white_check_mark:"
+verification_role_already_set: Role already set.
+verification_role_not_set: Role not set.
+verification_reverse_role_not_assigned: Verification failed!
+x_seconds:
+  one: "{cnt} second"
+  many: "{cnt} seconds"
+role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
+role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.

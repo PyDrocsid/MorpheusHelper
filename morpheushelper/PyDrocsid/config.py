@@ -1,4 +1,5 @@
 from collections import Counter
+from os import getenv
 from pathlib import Path
 from subprocess import getoutput
 from typing import Type, Union
@@ -8,6 +9,7 @@ from discord import Member, User
 
 from PyDrocsid.permission import BasePermissionLevel, BasePermission
 from PyDrocsid.settings import Settings
+from PyDrocsid.translations import Translations
 
 
 class Contributor:
@@ -61,6 +63,10 @@ def load_config_file(path: Path):
     Config.REPO_ICON = config["repo"]["icon"]
 
     Config.AUTHOR = getattr(Contributor, config["author"])
+
+    if (lang := getenv("LANGUAGE", config["default_language"])) not in config["languages"]:
+        raise ValueError(f"unknown language: {lang}")
+    Translations.LANGUAGE = lang
 
     permission_levels: dict[str, dict] = {
         k: v for k, v in sorted(config["permission_levels"].items(), key=lambda x: -x[1]["level"])

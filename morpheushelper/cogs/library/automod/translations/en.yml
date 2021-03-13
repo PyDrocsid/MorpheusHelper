@@ -1,0 +1,34 @@
+permissions:
+  manage_autokick: manage autokick
+  manage_instantkick: manage instantkick
+
+# autokick
+autokick: AutoKick
+autokick_mode_configured:
+  - "**AutoKick** has been **disabled**. :white_check_mark:"
+  - "**AutoKick mode** has been **set to normal**. :white_check_mark:"
+  - "**AutoKick mode** has been **set to reverse**. :white_check_mark:"
+autokick_delay_configured: "AutoKick delay has been configured. :white_check_mark:"
+log_autokick_delay_configured:
+  one: "**AutoKick delay** has been **set to {cnt} second**."
+  many: "**AutoKick delay** has been **set to {cnt} seconds**."
+autokick_role_configured: "AutoKick role has been configured. :white_check_mark:"
+log_autokick_role_configured: "**AutoKick role** has been **set to** {} ({})"
+autokick_disabled: AutoKick is disabled.
+autokick_mode:
+  - Mode is set to **normal**.
+  - Mode is set to **reverse**.
+x_seconds:
+  one: "{cnt} second"
+  many: "{cnt} seconds"
+autokicked: "You have been automatically kicked from {}."
+log_autokicked: "Kicked automatically."
+
+# instantkick
+instantkick: InstantKick
+instantkick_disabled: ":x: InstantKick is disabled."
+instantkick_enabled: "InstantKick is enabled. :white_check_mark:"
+instantkick_set_disabled: "**InstantKick** has been **disabled**. :white_check_mark:"
+instantkick_role_configured: "InstantKick role has been configured. :white_check_mark:"
+log_instantkick_role_configured: "**InstantKick role** has been **set to** {} ({})"
+instantkick_cannot_kick: Members with this role cannot be kicked.

@@ -4,28 +4,15 @@ from socket import gethostbyname, socket, AF_INET, SOCK_STREAM, timeout, SHUT_RD
 from time import time
 from typing import Optional, List, Tuple
 
-import sentry_sdk
 from discord import Embed, Message, File, Attachment, TextChannel, Member, PartialEmoji, Forbidden
 from discord.abc import Messageable
 from discord.ext.commands import Command, Context, CommandError, Bot, BadArgument, ColorConverter
-from sentry_sdk.integrations.aiohttp import AioHttpIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from PyDrocsid.config import Config
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.material_colors import MaterialColors
 from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import translations
-
-
-def setup_sentry(dsn: str, version: str):
-    sentry_sdk.init(
-        dsn=dsn,
-        attach_stacktrace=True,
-        shutdown_timeout=5,
-        integrations=[AioHttpIntegration(), SqlalchemyIntegration()],
-        release=f"morpheushelper@{version}",
-    )
 
 
 async def is_teamler(member: Member) -> bool:

@@ -1,0 +1,15 @@
+permissions:
+  cb_list: list cleverbot channels
+  cb_manage: manage cleverbot
+  cb_reset: reset cleverbot sessions
+
+cleverbot: Cleverbot
+whitelisted_channels: Whitelisted Channels
+no_whitelisted_channels: No whitelisted channels.
+channel_already_whitelisted: Channel is already whitelisted.
+channel_whitelisted: "Channel has been whitelisted. :white_check_mark:"
+log_channel_whitelisted: "**Channel** {} has been **whitelisted** for CleverBot."
+channel_not_whitelisted: ":x: Channel is not whitelisted."
+channel_removed: "Channel has been removed from the whitelist. :white_check_mark:"
+log_channel_removed: "**Channel** {} has been **removed** from the CleverBot whitelist."
+session_reset: Session for {} was successfully reset.

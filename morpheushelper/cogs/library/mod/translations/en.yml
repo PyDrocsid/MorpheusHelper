@@ -1,0 +1,133 @@
+permissions:
+  warn: warn a user
+  mute: mute a user
+  kick: kick a user
+  ban: ban a user
+  view_stats: view other user's statistics
+  init_join_log: initialize join log
+  manage_roles: manage roles
+
+log_field:
+  member: ":bust_in_silhouette: Member"
+  member_id: ":dna: Member ID"
+  channel: ":compass: Channel"
+  duration: ":clock2: Duration"
+  reason: ":scroll: Reason"
+  days:
+    one: "{cnt} day"
+    many: "{cnt} days"
+  days_infinity: "*Permanent*"
+
+jump_url: "{} [[Jump]]({})"
+no_dm: ":warning: User does not allow direct messages."
+reason_too_long: "Reason is too long. :pencil:"
+invalid_duration_inf: Invalid duration. Try `inf` instead.
+
+report: ":speech_balloon: Report"
+cannot_report: This member cannot be reported.
+reported_response: "User reported. :white_check_mark:"
+log_reported: ":speech_balloon: Member reported"
+
+warn: ":warning: Warn"
+cannot_warn: This member cannot be warned.
+warned: "{} just warned you on {}:```\n{}\n```"
+warned_response: "User warned. :white_check_mark:"
+log_warned: ":warning: Member warned"
+
+mute: ":mute: Mute"
+unmute: ":loud_sound: Mute"
+mute_role_not_set: User could not be muted because no mute role is configured.
+cannot_mute: This member cannot be muted.
+already_muted: User is already muted for the given period of time.
+muted:
+  one: "{} just muted you on {} for {cnt} day:```\n{}\n```"
+  many: "{} just muted you on {} for {cnt} days:```\n{}\n```"
+muted_inf: "{} just muted you on {}:```\n{}\n```"
+muted_response: "User muted. :white_check_mark:"
+log_muted: ":mute: Member muted"
+log_unmuted_expired: "Unmuted automatically because the mute time for this user has expired."
+unmuted_response: "User unmuted. :white_check_mark:"
+log_unmuted: ":loud_sound: Member unmuted"
+not_muted: User is not muted.
+
+kick: ":x: Kick"
+kicked: "{} just kicked you from {}:```\n{}\n```"
+kicked_response: "User kicked. :white_check_mark:"
+log_kicked: ":x: Member kicked"
+cannot_kick: This member cannot be kicked.
+cannot_kick_permissions: User could not be kicked because I don't have `kick_members` permission on this server.
+
+ban: ":no_entry: Ban"
+unban: ":white_check_mark: Ban"
+cannot_ban: This member cannot be banned.
+already_banned: This member is already banned for the given period of time.
+cannot_ban_permissions: User could not be banned because I don't have `ban_members` permission on this server.
+banned:
+  one: "{} just banned you from {} for {cnt} day:```\n{}\n```"
+  many: "{} just banned you from {} for {cnt} days:```\n{}\n```"
+banned_inf: "{} just banned you from {}:```\n{}\n```"
+banned_response: "User banned. :white_check_mark:"
+log_banned: ":no_entry: Member Banned"
+log_unbanned_expired: "Unbanned automatically because the ban time for this user has expired."
+not_banned: This member is not banned.
+unbanned_response: "User unbanned. :white_check_mark:"
+log_unbanned: ":white_check_mark: Member Unbanned"
+cannot_unban_permissions: User could not be unbanned because I don't have `ban_members` permission on this server.
+
+init_join_log: Join Log Initialization
+filling_join_log:
+  one: ":hourglass_flowing_sand: Creating join log entries for {cnt} member. This may take a while."
+  many: ":hourglass_flowing_sand: Creating join log entries for {cnt} members. This may take a while."
+join_log_filled: "Join log has been initialized successfully. :white_check_mark:"
+
+stats_not_allowed: You are not allowed to access this information.
+could_not_send_dm: Message could not be sent. Please enable direct messages from this server!
+stats: User Statistics
+reported_cnt: ":speech_balloon:  Reported"
+warned_cnt: ":warning:  Warned"
+muted_cnt: ":mute:  Muted"
+kicked_cnt: ":x:  Kicked"
+banned_cnt: ":no_entry:  Banned"
+active_passive: "active: `{}`\npassive: `{}`"
+member_since: ":clock2:  Member since {} (UTC)"
+not_a_member: ":x:  User is not a member of this server."
+status_banned: ":no_entry:  User is banned from this server."
+status_banned_days:
+  one: ":no_entry:  User is banned for {cnt} day from this server ({left} left)."
+  many: ":no_entry:  User is banned for {cnt} days from this server ({left} left)."
+status_muted: ":mute:  User is muted on this server."
+status_muted_days:
+  one: ":mute:  User is muted for {cnt} day on this server ({left} left)."
+  many: ":mute:  User is muted for {cnt} days on this server ({left} left)."
+
+userlogs: User Logs
+ulog_created: ":sparkles:  **Created** this account."
+ulog_joined: ":tada:  **Joined** this server."
+ulog_left: ":door:  **Left** this server."
+ulog_nick_set: ":label:  **Nickname set** to `{}`"
+ulog_nick_updated: ":label:  **Nickname changed** from `{}` to `{}`"
+ulog_nick_cleared: ":label:  **Nickname** `{}` **cleared**"
+ulog_username_updated: ":label:  **Username changed** from `{}` to `{}`"
+ulog_reported: ":speech_balloon:  **Reported** by {} because of `{}`"
+ulog_warned: ":warning:  **Warned** by {} because of `{}`"
+ulog_muted:
+  - ":mute:  **Muted** by {} for {} days because of `{}`"
+  - ":mute:  **Mute upgraded** by {} to {} days because of `{}`"
+ulog_muted_inf:
+  - ":mute:  **Muted** permanently by {} because of `{}`"
+  - ":mute:  **Mute upgraded** to permanent by {} because of `{}`"
+ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
+ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
+ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
+ulog_autokicked: ":hourglass:  **Kicked** automatically."
+ulog_banned:
+  - ":no_entry:  **Banned** by {} for {} days because of `{}`"
+  - ":no_entry:  **Ban upgraded** by {} to {} days because of `{}`"
+ulog_banned_inf:
+  - ":no_entry:  **Banned** permanently by {} because of `{}`"
+  - ":no_entry:  **Ban upgraded** to permanent by {} because of `{}`"
+ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
+ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
+ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"
+ulog_invite_removed: ":-1:  **Invite removed** by {}: {}"
+utc_note: Timestamps in UTC

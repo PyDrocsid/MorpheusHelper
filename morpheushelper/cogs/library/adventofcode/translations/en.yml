@@ -1,0 +1,38 @@
+permissions:
+  clear: clear aoc leaderboard cache
+  link: link discord members to aoc users
+  role: manage aoc role
+
+join_title: How to Join the Private Leaderboard
+join_instructions: |
+  1. Log in at https://adventofcode.com/
+  2. Go to https://adventofcode.com/leaderboard/private
+  3. Enter the code `{}`
+  Good Luck, Have Fun! :christmas_tree: :gift:
+
+leaderboard_header: "**Private Leaderboard (Advent of Code {})**"
+
+links: Advent of Code - User Links
+no_links: No member has been linked yet.
+link_already_exists: A link already exists for this user.
+link_created: Link has been created.
+link_not_found: Link not found.
+link_removed: Link has been removed.
+
+aoc_role: Advent of Code - Role
+min_rank: Minimum Rank
+role_set: Advent of Code role has been configured.
+log_role_set: "Advent of Code role has been set to `@{}` ({})."
+role_disabled: Advent of Code role has been disabled.
+rank_set: Minimum rank for Advent of Code role has been configured.
+log_rank_set: Minimum rank for Advent of Code role has been set to {}.
+invalid_rank: Invalid rank.
+
+not_verified: You have to be verified to use this command.
+invalid_url: Invalid URL. Only GitHub repositories are allowed.
+published: Repository has been published successfully.
+not_published: No repository has been published yet.
+unpublished: Repository has been removed from your profile.
+
+solutions: Advent of Code - Solution Repositories
+no_solutions: No solutions have been published yet.

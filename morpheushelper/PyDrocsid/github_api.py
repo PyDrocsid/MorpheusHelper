@@ -1,13 +1,13 @@
 from collections import namedtuple
-from os import getenv
 from typing import Optional
 
 from aiohttp import ClientSession
 
+from PyDrocsid.environment import GITHUB_TOKEN
+
 GitHubUser = namedtuple("GitHubUser", ["id", "name", "profile"])
 
 API_URL = "https://api.github.com/graphql"
-GITHUB_TOKEN = getenv("GITHUB_TOKEN")
 
 
 async def graphql(query: str, **kwargs) -> Optional[dict]:

@@ -9,9 +9,12 @@ from discord.ext.commands import check, Context, CheckFailure
 from sqlalchemy import Column, String, Integer
 
 from PyDrocsid.database import db, db_thread
-from PyDrocsid.translations import translations
 
 permission_override: ContextVar[BasePermissionLevel] = ContextVar("permission_override")
+
+
+class PermissionDeniedError(CheckFailure):
+    pass
 
 
 class PermissionModel(db.Base):
@@ -45,29 +48,36 @@ class PermissionModel(db.Base):
 class BasePermission(Enum):
     @property
     def description(self) -> str:
-        return self.value
+        raise NotImplementedError
+
+    @property
+    def cog(self) -> str:
+        return self.__class__.__name__.lower().removesuffix("permission")
+
+    @property
+    def fullname(self) -> str:
+        return self.cog + "." + self.name
 
     @property
     def _default_level(self) -> BasePermissionLevel:
         from PyDrocsid.config import Config
 
-        cog = self.__class__.__name__.lower().removesuffix("permission")
-        if cog not in Config.DEFAULT_PERMISSION_OVERRIDES:
+        if self.cog not in Config.DEFAULT_PERMISSION_OVERRIDES:
             return Config.DEFAULT_PERMISSION_LEVEL
 
-        return Config.DEFAULT_PERMISSION_OVERRIDES[cog].get(self.name, Config.DEFAULT_PERMISSION_LEVEL)
+        return Config.DEFAULT_PERMISSION_OVERRIDES[self.cog].get(self.name, Config.DEFAULT_PERMISSION_LEVEL)
 
     async def resolve(self) -> BasePermissionLevel:
         from PyDrocsid.config import Config
 
-        value: int = await db_thread(PermissionModel.get, self.name, self._default_level)
+        value: int = await db_thread(PermissionModel.get, self.fullname, self._default_level)
         for level in Config.PERMISSION_LEVELS:  # type: BasePermissionLevel
             if level.level == value:
                 return level
         raise ValueError(f"permission level not found: {value}")
 
     async def set(self, level: BasePermissionLevel):
-        await db_thread(PermissionModel.set, self.name, level.level)
+        await db_thread(PermissionModel.set, self.fullname, level.level)
 
     async def check_permissions(self, member: Union[Member, User]) -> bool:
         return await (await self.resolve()).check_permissions(member)
@@ -121,7 +131,7 @@ def check_permission_level(level: Union[BasePermission, BasePermissionLevel]):
         if not isinstance(member, Member):
             member = ctx.bot.guilds[0].get_member(ctx.author.id) or member
         if not await level.check_permissions(member):
-            raise CheckFailure(translations.not_allowed)
+            raise PermissionDeniedError
 
         return True
 

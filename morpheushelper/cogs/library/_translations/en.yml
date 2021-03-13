@@ -1,0 +1,12 @@
+not_allowed: You are not allowed to use this command.
+permission_denied: Permission denied!
+user_not_found: User not found.
+role: Role
+enabled: ":white_check_mark: Enabled"
+disabled: ":x: Disabled"
+members: Members
+status: Status
+delay: Delay
+invalid_duration: Invalid duration.
+requested_by: Requested by @{} ({})
+error: ":x: Error"

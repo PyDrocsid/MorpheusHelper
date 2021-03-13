@@ -1,0 +1,6 @@
+permissions:
+  reload: reload the bot
+  stop: stop the bot
+  kill: kill the bot
+
+not_in_sudoers_file: "{} is not in the sudoers file. This incident will be reported."

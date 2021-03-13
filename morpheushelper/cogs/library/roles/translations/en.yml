@@ -1,0 +1,27 @@
+permissions:
+  roles_config: configure roles
+  roles_auth: manage role assignment permissions
+  list_members: list role members
+
+roles: Roles
+role_not_set: ":x: Role not set."
+role_set: "Role has been set successfully. :white_check_mark:"
+log_role_set: "**{} role** has been **set to** {} ({})"
+role_not_set_too_high: Role could not be set because `@{}` is higher than `@{}`.
+role_not_set_managed_role: Role could not be set because `@{}` cannot be assigned manually.
+
+role_auth: Role Assignment Authorizations
+no_role_auth: No role assignment authorizations have been created yet.
+role_auths: Role Authorizations
+user_auths: User Authorizations
+role_auth_already_exists: Role assignment authorization already exists.
+role_auth_created: Role assignment authorization has been created successfully.
+log_role_auth_created: Role assignment authorization `@{}` -> `@{}` has been created.
+role_auth_not_found: Role assignment authorization does not exist.
+role_auth_removed: Role assignment authorization has been removed successfully.
+log_role_auth_removed: Role assignment authorization `@{}` -> `@{}` has been removed.
+role_not_authorized: You are not allowed to manage this role.
+member_list: Member List
+member_list_cnt: Member List ({})
+member_list_line: ":small_orange_diamond: {} ({})"
+no_members: No member was found with this role.

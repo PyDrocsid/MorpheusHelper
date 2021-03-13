@@ -7,6 +7,10 @@ repo:
 
 author: Defelo
 
+languages:
+  - en
+default_language: en
+
 permission_levels:
   administrator:
     name: Administrator

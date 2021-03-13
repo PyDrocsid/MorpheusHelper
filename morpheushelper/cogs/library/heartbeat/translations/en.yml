@@ -1,0 +1,4 @@
+online_status: ":vertical_traffic_light: Online Status"
+status_description: ":label: **MorpheusHelper v{}**"
+logged_in: ":robot: Logged in"
+heartbeat: ":heartbeat: Heartbeat"

@@ -1,0 +1,33 @@
+permissions:
+  manage_reddit: manage reddit integration
+
+reddit: Reddit
+interval: Interval
+x_hours:
+  one: "{cnt} hour"
+  many: "{cnt} hours"
+limit: Limit
+reddit_links: Reddit links
+no_reddit_links: No reddit links have been created yet.
+subreddit_not_found: Subreddit does not exist.
+reddit_link_not_created_permission: >
+  Reddit link could not be created because I don't have `send_messages` permission in this channel.
+reddit_link_already_exists: Reddit link already exists.
+reddit_link_created: Reddit link has been created.
+log_reddit_link_created: "**Reddit link** `r/{}` -> {} has been **created**."
+reddit_link_not_found: Reddit link does not exist.
+reddit_link_removed: "Reddit link has been removed. :white_check_mark:"
+log_reddit_link_removed: "**Reddit link** `r/{}` -> {} has been **removed**."
+done: "Done :white_check_mark:"
+reddit_interval:
+  one: "Reddit lookup interval: {cnt} hour"
+  many: "Reddit lookup interval: {cnt} hours"
+invalid_interval: Invalid interval.
+reddit_interval_set: "Reddit lookup interval has been updated. :white_check_mark:"
+log_reddit_interval_set:
+  one: "**Reddit lookup interval** has been **set** to {cnt} hour."
+  many: "**Reddit lookup interval** has been **set** to {cnt} hours."
+invalid_limit: Invalid limit.
+reddit_limit: "Reddit limit: {}"
+reddit_limit_set: "Reddit limit has been updated. :white_check_mark:"
+log_reddit_limit_set: "**Reddit limit** has been **set** to {}."
