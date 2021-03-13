@@ -10,6 +10,7 @@ from discord.ext.commands import Cog, Bot, Context, CommandError, CheckFailure, 
 
 from colours import Colours
 from models.verification_role import VerificationRole
+from models.mod import VerificationDate
 from permissions import Permission
 from util import send_to_changelog
 
@@ -63,6 +64,7 @@ class VerificationCog(Cog, name="Verification"):
         if fail:
             raise CommandError(translations.verification_reverse_role_not_assigned)
 
+        await db_thread(VerificationDate.create, ctx.author.id)
         await member.add_roles(*add)
         await member.remove_roles(*remove)
         embed = Embed(title=translations.verification, description=translations.verified, colour=Colours.Verification)

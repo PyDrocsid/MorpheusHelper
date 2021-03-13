@@ -226,3 +226,17 @@ class MediaOnlyEntry(db.Base):
         row = MediaOnlyEntry(member=member, channel=channel, timestamp=timestamp or datetime.utcnow())
         db.add(row)
         return row
+
+
+class VerificationDate(db.Base):
+    __tablename__ = "verifydate"
+
+    id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
+    member: Union[Column, int] = Column(BigInteger)
+    timestamp: Union[Column, datetime] = Column(DateTime)
+
+    @staticmethod
+    def create(member: int, timestamp: Optional[datetime] = None) -> "VerificationDate":
+        row = VerificationDate(member=member, timestamp=timestamp or datetime.utcnow())
+        db.add(row)
+        return row

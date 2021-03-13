@@ -533,6 +533,7 @@ userlogs: User Logs
 ulog_created: ":sparkles:  **Created** this account."
 ulog_joined: ":tada:  **Joined** this server."
 ulog_left: ":door:  **Left** this server."
+ulog_verification: ":unlock: **Verified** on this server"
 ulog_nick_set: ":label:  **Nickname set** to `{}`"
 ulog_nick_updated: ":label:  **Nickname changed** from `{}` to `{}`"
 ulog_nick_cleared: ":label:  **Nickname** `{}` **cleared**"

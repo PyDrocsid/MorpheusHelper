@@ -14,7 +14,7 @@ from discord.utils import snowflake_time
 
 from colours import Colours
 from models.allowed_invite import InviteLog
-from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick, MediaOnlyEntry
+from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick, MediaOnlyEntry, VerificationDate
 from permissions import Permission, PermissionLevel
 from util import send_to_changelog, get_prefix, is_teamler
 
@@ -709,6 +709,8 @@ class ModCog(Cog, name="Mod Tools"):
             out.append((join.timestamp, translations.ulog_joined))
         for leave in await db_thread(db.all, Leave, member=user_id):
             out.append((leave.timestamp, translations.ulog_left))
+        for verification in await db_thread(db.all, VerificationDate, member=user.id):
+            out.append((verification.timestamp, translations.ulog_verification))
         for username_update in await db_thread(db.all, UsernameUpdate, member=user_id):
             if not username_update.nick:
                 msg = translations.f_ulog_username_updated(username_update.member_name, username_update.new_name)
