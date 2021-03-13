@@ -48,7 +48,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         await send_to_changelog(
             message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
         )
-        await db_thread(MediaOnlyEntry.create, message.author.id, channel.id)
+        await db_thread(MediaOnlyEntry.create, message.author.id, channel.name)
         raise StopEventHandling
 
     @commands.group(aliases=["mo"])

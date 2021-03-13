@@ -768,9 +768,9 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
 
-        for nomedia in await db_thread(db.all, MediaOnlyEntry, member=user.id):
+        for nomedia in await db_thread(db.all, MediaOnlyEntry, member=user.id):  # type: MediaOnlyEntry
             out.append((nomedia.timestamp,
-                        translations.f_ulog_nomedia(ctx.guild.get_channel(nomedia.channel).name)))
+                        translations.f_ulog_nomedia(nomedia.channel_name)))
 
         out.sort()
         embed = Embed(title=translations.userlogs, color=Colours.userlog)

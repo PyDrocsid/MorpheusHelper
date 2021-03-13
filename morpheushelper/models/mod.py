@@ -218,12 +218,12 @@ class MediaOnlyEntry(db.Base):
 
     id: Union[Column, int] = Column(Integer, primary_key=True, unique=True, autoincrement=True)
     member: Union[Column, int] = Column(BigInteger)
-    channel: Union[Column, int] = Column(BigInteger)
+    channel_name: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
     timestamp: Union[Column, datetime] = Column(DateTime)
 
     @staticmethod
     def create(member: int, channel: int, timestamp: Optional[datetime] = None) -> "MediaOnlyEntry":
-        row = MediaOnlyEntry(member=member, channel=channel, timestamp=timestamp or datetime.utcnow())
+        row = MediaOnlyEntry(member=member, channel_name=channel, timestamp=timestamp or datetime.utcnow())
         db.add(row)
         return row
 
