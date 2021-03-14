@@ -175,7 +175,7 @@ class LoggingCog(Cog, name="Logging"):
         await delete_channel.send(embed=embed)
 
     @commands.group(aliases=["log"])
-    @LoggingPermission.log_manage.check
+    @LoggingPermission.manage.check
     @guild_only()
     async def logging(self, ctx: Context):
         """

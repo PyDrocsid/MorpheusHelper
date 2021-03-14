@@ -5,7 +5,6 @@ permissions:
   ban: ban a user
   view_stats: view other user's statistics
   init_join_log: initialize join log
-  manage_roles: manage roles
 
 log_field:
   member: ":bust_in_silhouette: Member"

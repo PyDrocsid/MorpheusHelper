@@ -31,7 +31,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot or message.guild is None:
             return
 
-        access: bool = await ReactionPinPermission.rp_pin.check_permissions(member)
+        access: bool = await ReactionPinPermission.pin.check_permissions(member)
         if not (await db_thread(db.get, ReactionPinChannel, message.channel.id) is not None or access):
             return
 
@@ -55,7 +55,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
         if str(emoji) != EMOJI or member.bot or message.guild is None:
             return
 
-        access: bool = await ReactionPinPermission.rp_pin.check_permissions(member)
+        access: bool = await ReactionPinPermission.pin.check_permissions(member)
         is_reactionpin_channel = await db_thread(db.get, ReactionPinChannel, message.channel.id) is not None
         if message.pinned and (access or (is_reactionpin_channel and member == message.author)):
             await message.unpin()
@@ -76,7 +76,7 @@ class ReactionPinCog(Cog, name="ReactionPin"):
             raise StopEventHandling
 
     @commands.group(aliases=["rp"])
-    @ReactionPinPermission.rp_manage.check
+    @ReactionPinPermission.manage.check
     @guild_only()
     async def reactionpin(self, ctx: Context):
         """

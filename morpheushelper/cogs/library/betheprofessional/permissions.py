@@ -9,4 +9,4 @@ class BeTheProfessionalPermission(BasePermission):
     def description(self) -> str:
         return t.betheprofessional.permissions[self.name]
 
-    btp_manage = auto()
+    manage = auto()

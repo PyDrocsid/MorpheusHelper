@@ -24,6 +24,4 @@ print(f"Starting {Config.NAME} v{Config.VERSION} ({Config.REPO_LINK})\n")
 if SENTRY_DSN:
     setup_sentry(SENTRY_DSN, Config.NAME, Config.VERSION)
 
-db.create_tables()
-
 __import__("bot").run()

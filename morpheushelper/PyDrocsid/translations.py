@@ -99,3 +99,4 @@ class Translations:
 
 
 t = Translations()
+t.register_namespace("g", Path(__file__).parent.joinpath("translations"))

@@ -354,7 +354,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.send(embed=embed)
 
     @aoc.command(name="clear_cache", aliases=["clear", "cc"])
-    @AdventOfCodePermission.aoc_clear.check
+    @AdventOfCodePermission.clear.check
     async def aoc_clear_cache(self, ctx: Context):
         """
         clear the leaderboard cache to force a refresh on the next request
@@ -364,7 +364,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.message.add_reaction(name_to_emoji["white_check_mark"])
 
     @aoc.group(name="link", aliases=["l"])
-    @AdventOfCodePermission.aoc_link.check
+    @AdventOfCodePermission.link.check
     async def aoc_link(self, ctx: Context):
         """
         manage links between discord members and aoc users on the private leaderboard
@@ -434,7 +434,7 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
         await ctx.send(t.link_removed)
 
     @aoc.group(name="role", aliases=["r"])
-    @AdventOfCodePermission.aoc_role.check
+    @AdventOfCodePermission.role.check
     @guild_only()
     async def aoc_role(self, ctx: Context):
         """

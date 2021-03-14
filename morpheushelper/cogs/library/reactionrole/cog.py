@@ -63,7 +63,7 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
             raise StopEventHandling
 
     @commands.group(aliases=["rr"])
-    @ReactionRolePermission.rr_manage.check
+    @ReactionRolePermission.manage.check
     @guild_only()
     async def reactionrole(self, ctx: Context):
         """

@@ -9,4 +9,4 @@ class VerificationPermission(BasePermission):
     def description(self) -> str:
         return t.verification.permissions[self.name]
 
-    manage_verification = auto()
+    manage = auto()

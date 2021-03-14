@@ -1,6 +1,6 @@
 permissions:
-  mo_bypass: bypass mediaonly checks
-  mo_manage: manage mediaonly
+  bypass: bypass mediaonly checks
+  manage: manage mediaonly
 
 mediaonly: Mediaonly
 deleted_nomedia: >

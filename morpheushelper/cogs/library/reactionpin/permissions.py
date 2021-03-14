@@ -9,5 +9,5 @@ class ReactionPinPermission(BasePermission):
     def description(self) -> str:
         return t.reactionpin.permissions[self.name]
 
-    rp_pin = auto()
-    rp_manage = auto()
+    pin = auto()
+    manage = auto()

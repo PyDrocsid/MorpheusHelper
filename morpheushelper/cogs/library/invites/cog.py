@@ -77,7 +77,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         author: Member = message.author
         if message.guild is None or author.bot:
             return True
-        if await InvitesPermission.invite_bypass.check_permissions(author):
+        if await InvitesPermission.bypass.check_permissions(author):
             return True
 
         forbidden = []
@@ -204,7 +204,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await ctx.send(embed=embed)
 
     @invites.command(name="add", aliases=["+", "a"])
-    @InvitesPermission.invite_manage.check
+    @InvitesPermission.manage.check
     async def invites_add(self, ctx: Context, invite: Invite, applicant: Member):
         """
         allow a new discord server
@@ -237,7 +237,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         if row is None:
             raise CommandError(t.server_not_whitelisted)
 
-        if not await InvitesPermission.invite_manage.check_permissions(ctx.author) and ctx.author.id != row.applicant:
+        if not await InvitesPermission.manage.check_permissions(ctx.author) and ctx.author.id != row.applicant:
             raise CommandError(tg.not_allowed)
 
         await db_thread(AllowedInvite.update, guild.id, invite.code, guild.name)
@@ -250,7 +250,7 @@ class InvitesCog(Cog, name="Allowed Discord Invites"):
         await send_to_changelog(ctx.guild, t.log_invite_updated(ctx.author.mention, guild.name))
 
     @invites.command(name="remove", aliases=["r", "del", "d", "-"])
-    @InvitesPermission.invite_manage.check
+    @InvitesPermission.manage.check
     async def invites_remove(self, ctx: Context, *, server: AllowedServerConverter):
         """
         disallow a discord server

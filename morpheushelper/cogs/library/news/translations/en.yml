@@ -1,5 +1,5 @@
 permissions:
-  news_manage: manage news
+  manage: manage news
 
 news: News
 news_already_authorized: User is already authorized to send news in this channel.

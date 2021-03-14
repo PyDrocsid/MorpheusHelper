@@ -1,5 +1,5 @@
 permissions:
-  manage_verification: manage verification command
+  manage: manage verification command
 
 verification: Verification
 verification_role_added: "Verification role has been added. :white_check_mark:"

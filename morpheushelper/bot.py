@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import sentry_sdk
+from PyDrocsid.database import db
 from discord import Intents, Message
 from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError
 
@@ -8,10 +9,8 @@ from PyDrocsid.cog import load_cogs
 from PyDrocsid.command_edit import add_to_error_cache
 from PyDrocsid.environment import TOKEN
 from PyDrocsid.events import listener
-from PyDrocsid.permission import PermissionDeniedError
-from PyDrocsid.translations import t
 from PyDrocsid.util import make_error
-from cogs.custom import CustomBotInfoCog, CustomRolesCog
+from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.help.cog import send_help
 from cogs.library.settings.cog import get_prefix
@@ -43,9 +42,7 @@ async def on_error(*_, **__):
 
 @listener
 async def on_command_error(ctx: Context, error: CommandError):
-    if isinstance(error, PermissionDeniedError):
-        messages = [await ctx.send(embed=make_error(t.g.not_allowed))]
-    elif isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
+    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
         messages = []
     elif isinstance(error, UserInputError):
         messages = await send_help(ctx, ctx.command)
@@ -65,7 +62,7 @@ load_cogs(
     SudoCog(),
 
     # Moderation
-    CustomRolesCog(),
+    RolesCog(),
     ModCog(),
     LoggingCog(),
     MessageCog(),
@@ -80,7 +77,7 @@ load_cogs(
     HeartbeatCog(),
     HelpCog(),
     MetaQuestionCog(),
-    ServerInfoCog(),
+    CustomServerInfoCog(),
 
     # Integrations
     AdventOfCodeCog(),
@@ -99,4 +96,6 @@ load_cogs(
 
 
 def run():
+    db.create_tables()
+
     bot.run(TOKEN)

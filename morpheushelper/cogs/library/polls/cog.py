@@ -91,7 +91,7 @@ class PollsCog(Cog, name="Polls"):
         if member.bot or message.guild is None:
             return
 
-        if await check_wastebasket(message, member, emoji, t.created_by, PollsPermission.polls_delete):
+        if await check_wastebasket(message, member, emoji, t.created_by, PollsPermission.delete):
             await message.delete()
             raise StopEventHandling
 

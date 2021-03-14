@@ -26,7 +26,7 @@ async def list_permissions(ctx: Context, title: str, min_level: BasePermissionLe
     for permission, level in zip(Config.PERMISSIONS, levels):
         if min_level.level >= level.level:
             out.setdefault((level.level, level.description), []).append(
-                f"`{permission.name}` - {permission.description}"
+                f"`{permission.fullname}` - {permission.description}"
             )
 
     embed = Embed(title=title, colour=Colors.error)
@@ -66,7 +66,7 @@ class PermissionsCog(Cog, name="Permissions"):
             raise UserInputError
 
     @permissions.command(name="list", aliases=["show", "l", "?"])
-    @PermissionsPermission.view_all_permissions.check
+    @PermissionsPermission.view_all.check
     async def permissions_list(self, ctx: Context, min_level: Optional[PermissionLevelConverter]):
         """
         list all permissions
@@ -78,7 +78,7 @@ class PermissionsCog(Cog, name="Permissions"):
         await list_permissions(ctx, t.permissions_title, min_level)
 
     @permissions.command(name="my", aliases=["m", "own", "o"])
-    @PermissionsPermission.view_own_permissions.check
+    @PermissionsPermission.view_own.check
     async def permissions_my(self, ctx: Context):
         """
         list all permissions granted to the user
@@ -88,7 +88,7 @@ class PermissionsCog(Cog, name="Permissions"):
         await list_permissions(ctx, t.my_permissions_title, min_level)
 
     @permissions.command(name="set", aliases=["s", "="])
-    @PermissionsPermission.manage_permissions.check
+    @PermissionsPermission.manage.check
     async def permissions_set(self, ctx: Context, permission_name: str, level: PermissionLevelConverter):
         """
         configure bot permissions
@@ -96,7 +96,7 @@ class PermissionsCog(Cog, name="Permissions"):
 
         level: BasePermissionLevel
         for permission in Config.PERMISSIONS:
-            if permission.name.lower() == permission_name.lower():
+            if permission.fullname.lower() == permission_name.lower():
                 break
         else:
             raise CommandError(t.invalid_permission)
@@ -107,7 +107,7 @@ class PermissionsCog(Cog, name="Permissions"):
 
         await permission.set(level)
 
-        description = permission.name, level.description
+        description = permission.fullname, level.description
         embed = Embed(
             title=t.permissions_title,
             colour=Colors.Permissions,

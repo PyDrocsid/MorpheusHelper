@@ -62,7 +62,7 @@ class CleverBotCog(Cog, name="CleverBot"):
             raise UserInputError
 
     @cleverbot.command(name="list", aliases=["l", "?"])
-    @CleverBotPermission.cb_list.check
+    @CleverBotPermission.list.check
     async def cleverbot_list(self, ctx: Context):
         """
         list cleverbot channels
@@ -85,7 +85,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_long_embed(ctx, embed)
 
     @cleverbot.command(name="add", aliases=["a", "+"])
-    @CleverBotPermission.cb_manage.check
+    @CleverBotPermission.manage.check
     async def cleverbot_add(self, ctx: Context, channel: TextChannel):
         """
         add channel to whitelist
@@ -100,7 +100,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_to_changelog(ctx.guild, t.log_channel_whitelisted(channel.mention))
 
     @cleverbot.command(name="remove", aliases=["del", "d", "-"])
-    @CleverBotPermission.cb_manage.check
+    @CleverBotPermission.manage.check
     async def cleverbot_remove(self, ctx: Context, channel: TextChannel):
         """
         remove channel from whitelist
@@ -118,7 +118,7 @@ class CleverBotCog(Cog, name="CleverBot"):
         await send_to_changelog(ctx.guild, t.log_channel_removed(channel.mention))
 
     @cleverbot.command(name="reset", aliases=["r"])
-    @CleverBotPermission.cb_reset.check
+    @CleverBotPermission.reset.check
     async def cleverbot_reset(self, ctx: Context, channel: TextChannel):
         """
         reset cleverbot session for a channel

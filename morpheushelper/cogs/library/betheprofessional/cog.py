@@ -151,7 +151,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await ctx.send(embed=embed)
 
     @commands.command(name="*")
-    @BeTheProfessionalPermission.btp_manage.check
+    @BeTheProfessionalPermission.manage.check
     @guild_only()
     async def register_role(self, ctx: Context, *, topics: str):
         """
@@ -199,7 +199,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await ctx.send(embed=embed)
 
     @commands.command(name="/")
-    @BeTheProfessionalPermission.btp_manage.check
+    @BeTheProfessionalPermission.manage.check
     @guild_only()
     async def delete_roles(self, ctx: Context, *, topics: str):
         """
@@ -209,7 +209,7 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         await unregister_roles(ctx, topics, delete_roles=True)
 
     @commands.command(name="%")
-    @BeTheProfessionalPermission.btp_manage.check
+    @BeTheProfessionalPermission.manage.check
     @guild_only()
     async def unregister_roles(self, ctx: Context, *, topics: str):
         """

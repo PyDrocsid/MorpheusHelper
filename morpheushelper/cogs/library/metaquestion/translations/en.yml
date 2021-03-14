@@ -1,5 +1,5 @@
 permissions:
-  mq_reduce: reduce metaquestion embeds
+  reduce: reduce metaquestion embeds
 
 metaquestion_title: Metafragen
 metaquestion_description: >

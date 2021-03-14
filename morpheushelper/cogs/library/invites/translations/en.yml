@@ -1,6 +1,6 @@
 permissions:
-  invite_bypass: bypass invite checks
-  invite_manage: manage allowed invites
+  bypass: bypass invite checks
+  manage: manage allowed invites
 
 illegal_invite_link: >
   :x: Illegal discord invite link!

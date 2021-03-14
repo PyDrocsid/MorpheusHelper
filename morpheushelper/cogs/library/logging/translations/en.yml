@@ -1,5 +1,5 @@
 permissions:
-  log_manage: manage logging
+  manage: manage logging
 
 message_edited: Message Edited
 channel: Channel

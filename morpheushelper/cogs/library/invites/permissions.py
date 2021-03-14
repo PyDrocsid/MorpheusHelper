@@ -9,5 +9,5 @@ class InvitesPermission(BasePermission):
     def description(self) -> str:
         return t.invites.permissions[self.name]
 
-    invite_bypass = auto()
-    invite_manage = auto()
+    bypass = auto()
+    manage = auto()

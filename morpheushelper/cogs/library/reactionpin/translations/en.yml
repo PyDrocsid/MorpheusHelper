@@ -1,6 +1,6 @@
 permissions:
-  rp_pin: pin other user's messages
-  rp_manage: manage reactionpin
+  pin: pin other user's messages
+  manage: manage reactionpin
 
 reactionpin: ReactionPin
 msg_not_pinned_system: Message could not be pinned, because it is a system message.

@@ -9,4 +9,4 @@ class RedditPermission(BasePermission):
     def description(self) -> str:
         return t.reddit.permissions[self.name]
 
-    manage_reddit = auto()
+    manage = auto()

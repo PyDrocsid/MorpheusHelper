@@ -1,7 +1,7 @@
 permissions:
-  cb_list: list cleverbot channels
-  cb_manage: manage cleverbot
-  cb_reset: reset cleverbot sessions
+  list: list cleverbot channels
+  manage: manage cleverbot
+  reset: reset cleverbot sessions
 
 cleverbot: Cleverbot
 whitelisted_channels: Whitelisted Channels

@@ -3,7 +3,7 @@ from typing import Optional, Union, Dict, List
 from PyDrocsid.emojis import name_to_emoji
 
 from PyDrocsid.cog import Cog
-from PyDrocsid.config import Contributor
+from PyDrocsid.config import Contributor, Config
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
@@ -32,7 +32,7 @@ async def configure_role(ctx: Context, role_name: str, role: Role, check_assigna
     await ctx.send(t.role_set)
     await send_to_changelog(
         ctx.guild,
-        t.log_role_set(t.role_names[role_name], role.name, role.id),
+        t.log_role_set(Config.ROLES[role_name][0], role.name, role.id),
     )
 
 
@@ -52,13 +52,10 @@ class RolesCog(Cog, name="Roles"):
 
             return inner
 
-        for name, title, check_assignable in await self.get_configurable_roles():
+        for name, (title, check_assignable) in Config.ROLES.items():
             self.roles_config.command(name=name, help=f"configure {title.lower()} role")(
                 set_role(name, check_assignable)
             )
-
-    async def get_configurable_roles(self) -> list[tuple[str, str, bool]]:
-        return []
 
     @commands.group(aliases=["r"])
     @guild_only()
@@ -71,7 +68,7 @@ class RolesCog(Cog, name="Roles"):
             raise UserInputError
 
     @roles.group(name="config", aliases=["conf", "set", "s"])
-    @RolesPermission.roles_config.check
+    @RolesPermission.config.check
     async def roles_config(self, ctx: Context):
         """
         configure roles
@@ -83,14 +80,14 @@ class RolesCog(Cog, name="Roles"):
             return
 
         embed = Embed(title=t.roles, color=Colors.Roles)
-        for name, title, _ in await self.get_configurable_roles():
+        for name, (title, _) in Config.ROLES.items():
             role = ctx.guild.get_role(await Settings.get(int, name + "_role"))
             val = role.mention if role is not None else t.role_not_set
             embed.add_field(name=title, value=val, inline=True)
         await ctx.send(embed=embed)
 
     @roles.group(name="auth")
-    @RolesPermission.roles_auth.check
+    @RolesPermission.auth.check
     async def roles_auth(self, ctx: Context):
         """
         configure role assignment authorizations

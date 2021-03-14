@@ -74,7 +74,7 @@ class VerificationCog(Cog, name="Verification"):
         await ctx.send(embed=embed)
 
     @commands.group(aliases=["vf"])
-    @VerificationPermission.manage_verification.check
+    @VerificationPermission.manage.check
     @guild_only()
     async def verification(self, ctx: Context):
         """

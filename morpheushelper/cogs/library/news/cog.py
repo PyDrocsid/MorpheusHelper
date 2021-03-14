@@ -34,7 +34,7 @@ class NewsCog(Cog, name="News"):
             raise UserInputError
 
     @news.group(name="auth", aliases=["a"])
-    @NewsPermission.news_manage.check
+    @NewsPermission.manage.check
     async def news_auth(self, ctx: Context):
         """
         manage authorized users and channels

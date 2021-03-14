@@ -11,6 +11,27 @@ languages:
   - en
 default_language: en
 
+roles:
+  admin:
+    name: Administrator
+    check_assignable: false
+
+  mod:
+    name: Moderator
+    check_assignable: false
+
+  supp:
+    name: Supporter
+    check_assignable: false
+
+  team:
+    name: Team
+    check_assignable: false
+
+  mute:
+    name: Mute
+    check_assignable: true
+
 permission_levels:
   administrator:
     name: Administrator

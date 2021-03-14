@@ -1,5 +1,5 @@
 permissions:
-  manage_reddit: manage reddit integration
+  manage: manage reddit integration
 
 reddit: Reddit
 interval: Interval

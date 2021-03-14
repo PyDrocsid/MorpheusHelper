@@ -9,5 +9,5 @@ class MediaOnlyPermission(BasePermission):
     def description(self) -> str:
         return t.mediaonly.permissions[self.name]
 
-    mo_bypass = auto()
-    mo_manage = auto()
+    bypass = auto()
+    manage = auto()

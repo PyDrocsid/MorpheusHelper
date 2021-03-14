@@ -9,6 +9,6 @@ class PermissionsPermission(BasePermission):
     def description(self) -> str:
         return t.permissions.permissions[self.name]
 
-    view_own_permissions = auto()
-    view_all_permissions = auto()
-    manage_permissions = auto()
+    view_own = auto()
+    view_all = auto()
+    manage = auto()

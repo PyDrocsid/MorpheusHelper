@@ -1,7 +1,7 @@
 permissions:
-  vc_private_owner: pretend to be the owner of a private voice channel
-  vc_manage_dyn: manage dynamic voice channels
-  vc_manage_link: manage voice channel links
+  private_owner: pretend to be the owner of a private voice channel
+  manage_dyn: manage dynamic voice channels
+  manage_link: manage voice channel links
 
 updating_voice_roles: Updating voice channel roles
 voice_init_done: Initialization complete

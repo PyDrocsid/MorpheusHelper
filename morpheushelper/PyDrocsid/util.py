@@ -12,7 +12,10 @@ from PyDrocsid.config import Config
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.material_colors import MaterialColors
 from PyDrocsid.permission import BasePermission
-from PyDrocsid.translations import translations
+from PyDrocsid.translations import t
+
+
+t = t.g
 
 
 async def is_teamler(member: Member) -> bool:
@@ -27,12 +30,12 @@ class Color(ColorConverter):
             pass
 
         if not re.match(r"^[0-9a-fA-F]{6}$", argument):
-            raise BadArgument(translations.invalid_color)
+            raise BadArgument(t.invalid_color)
         return int(argument, 16)
 
 
 def make_error(message) -> Embed:
-    return Embed(title=translations.error, colour=MaterialColors.error, description=str(message))
+    return Embed(title=t.error, colour=MaterialColors.error, description=str(message))
 
 
 async def can_run_command(command: Command, ctx: Context) -> bool:
@@ -74,7 +77,7 @@ def measure_latency() -> Optional[float]:
     s = socket(AF_INET, SOCK_STREAM)
     s.settimeout(5)
 
-    t = time()
+    now = time()
 
     try:
         s.connect((host, 443))
@@ -82,7 +85,7 @@ def measure_latency() -> Optional[float]:
     except (timeout, OSError):
         return None
 
-    return time() - t
+    return time() - now
 
 
 def calculate_edit_distance(a: str, b: str) -> int:

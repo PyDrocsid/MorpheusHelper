@@ -9,6 +9,6 @@ class CleverBotPermission(BasePermission):
     def description(self) -> str:
         return t.cleverbot.permissions[self.name]
 
-    cb_list = auto()
-    cb_manage = auto()
-    cb_reset = auto()
+    list = auto()
+    manage = auto()
+    reset = auto()

@@ -115,7 +115,7 @@ class RedditCog(Cog, name="Reddit"):
             self.reddit_loop.restart()
 
     @commands.group()
-    @RedditPermission.manage_reddit.check
+    @RedditPermission.manage.check
     @guild_only()
     async def reddit(self, ctx: Context):
         """

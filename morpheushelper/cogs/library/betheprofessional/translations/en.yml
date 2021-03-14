@@ -1,5 +1,5 @@
 permissions:
-  btp_manage: manage betheprofessional roles
+  manage: manage betheprofessional roles
 
 # betheprofessional
 betheprofessional: BeTheProfessional

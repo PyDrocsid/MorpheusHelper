@@ -1,6 +1,6 @@
 permissions:
-  roles_config: configure roles
-  roles_auth: manage role assignment permissions
+  config: configure roles
+  auth: manage role assignment permissions
   list_members: list role members
 
 roles: Roles

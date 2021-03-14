@@ -8,5 +8,6 @@ members: Members
 status: Status
 delay: Delay
 invalid_duration: Invalid duration.
+invalid_color: Invalid color.
 requested_by: Requested by @{} ({})
 error: ":x: Error"

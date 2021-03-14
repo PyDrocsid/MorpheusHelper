@@ -9,12 +9,9 @@ from discord.ext.commands import check, Context, CheckFailure
 from sqlalchemy import Column, String, Integer
 
 from PyDrocsid.database import db, db_thread
+from PyDrocsid.translations import t
 
 permission_override: ContextVar[BasePermissionLevel] = ContextVar("permission_override")
-
-
-class PermissionDeniedError(CheckFailure):
-    pass
 
 
 class PermissionModel(db.Base):
@@ -70,7 +67,7 @@ class BasePermission(Enum):
     async def resolve(self) -> BasePermissionLevel:
         from PyDrocsid.config import Config
 
-        value: int = await db_thread(PermissionModel.get, self.fullname, self._default_level)
+        value: int = await db_thread(PermissionModel.get, self.fullname, self._default_level.level)
         for level in Config.PERMISSION_LEVELS:  # type: BasePermissionLevel
             if level.level == value:
                 return level
@@ -131,7 +128,7 @@ def check_permission_level(level: Union[BasePermission, BasePermissionLevel]):
         if not isinstance(member, Member):
             member = ctx.bot.guilds[0].get_member(ctx.author.id) or member
         if not await level.check_permissions(member):
-            raise PermissionDeniedError
+            raise CheckFailure(t.g.not_allowed)
 
         return True
 

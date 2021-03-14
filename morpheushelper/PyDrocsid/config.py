@@ -40,6 +40,8 @@ class Config:
         }
     )
 
+    ROLES: dict[str, tuple[str, bool]]
+
     PERMISSION_LEVELS: Type[BasePermissionLevel]
     DEFAULT_PERMISSION_LEVEL: BasePermissionLevel
     DEFAULT_PERMISSION_OVERRIDES: dict[str, dict[str, BasePermissionLevel]] = {}
@@ -67,6 +69,8 @@ def load_config_file(path: Path):
     if (lang := getenv("LANGUAGE", config["default_language"])) not in config["languages"]:
         raise ValueError(f"unknown language: {lang}")
     Translations.LANGUAGE = lang
+
+    Config.ROLES = {k: (v["name"], v["check_assignable"]) for k, v in config["roles"].items()}
 
     permission_levels: dict[str, dict] = {
         k: v for k, v in sorted(config["permission_levels"].items(), key=lambda x: -x[1]["level"])

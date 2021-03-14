@@ -30,7 +30,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         if (
             message.guild is None
             or message.author.bot
-            or await MediaOnlyPermission.mo_bypass.check_permissions(message.author)
+            or await MediaOnlyPermission.bypass.check_permissions(message.author)
         ):
             return
         if await db_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
@@ -57,7 +57,7 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
         raise StopEventHandling
 
     @commands.group(aliases=["mo"])
-    @MediaOnlyPermission.mo_manage.check
+    @MediaOnlyPermission.manage.check
     @guild_only()
     async def mediaonly(self, ctx: Context):
         """

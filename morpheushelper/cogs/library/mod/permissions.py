@@ -15,4 +15,3 @@ class ModPermission(BasePermission):
     ban = auto()
     view_stats = auto()
     init_join_log = auto()
-    manage_roles = auto()

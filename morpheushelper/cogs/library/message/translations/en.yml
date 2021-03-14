@@ -10,7 +10,6 @@ could_not_send_message: Message could not be sent because I don't have `send_mes
 send_message: Now send me the message!
 msg_could_not_be_sent: Message could not be sent.
 msg_sent: "Message has been sent successfully. :white_check_mark:"
-invalid_color: Invalid color
 could_not_send_embed: Message could not be sent because I don't have `embed_links` permission in this channel.
 could_not_edit: This message cannot be edited because the bot is not the author of the message.
 send_new_message: Now send me the new message!

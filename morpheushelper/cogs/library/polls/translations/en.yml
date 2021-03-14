@@ -1,6 +1,6 @@
 permissions:
   team_poll: start a team poll
-  polls_delete: delete polls
+  delete: delete polls
 
 vote_explanation: Vote using the reactions below!
 too_many_options: You specified too many options. The maximum amount is {}.

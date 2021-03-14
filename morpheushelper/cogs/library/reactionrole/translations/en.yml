@@ -1,5 +1,5 @@
 permissions:
-  rr_manage: manage reactionrole
+  manage: manage reactionrole
 
 reactionrole: ReactionRole
 no_reactionrole_links: No ReactionRole links have been created yet.

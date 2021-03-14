@@ -131,7 +131,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise CommandError(t.not_in_private_voice)
 
         if owner_required and dyn_channel.owner != member.id:
-            if not await VoiceChannelPermission.vc_private_owner.check_permissions(member):
+            if not await VoiceChannelPermission.private_owner.check_permissions(member):
                 raise CommandError(t.private_voice_owner_required)
 
         voice_channel: VoiceChannel = self.bot.get_channel(dyn_channel.channel_id)
@@ -300,7 +300,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             raise UserInputError
 
     @voice.group(name="dynamic", aliases=["dyn", "d"])
-    @VoiceChannelPermission.vc_manage_dyn.check
+    @VoiceChannelPermission.manage_dyn.check
     async def voice_dynamic(self, ctx: Context):
         """
         manage dynamic voice channels
@@ -581,7 +581,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             await ctx.send(embed=embed)
 
     @voice.group(name="link", aliases=["l"])
-    @VoiceChannelPermission.vc_manage_link.check
+    @VoiceChannelPermission.manage_link.check
     async def voice_link(self, ctx: Context):
         """
         manage links between voice channels and roles

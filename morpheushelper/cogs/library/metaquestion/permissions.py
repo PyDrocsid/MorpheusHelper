@@ -9,4 +9,4 @@ class MetaQuestionPermission(BasePermission):
     def description(self) -> str:
         return t.metaquestion.permissions[self.name]
 
-    mq_reduce = auto()
+    reduce = auto()

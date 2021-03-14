@@ -1,7 +1,7 @@
 permissions:
-  view_own_permissions: view own permissions
-  view_all_permissions: view all permissions
-  manage_permissions: manage permissions
+  view_own: view own permissions
+  view_all: view all permissions
+  manage: manage permissions
 
 no_permissions: No priviliges granted.
 invalid_permission_level: Invalid permission level.

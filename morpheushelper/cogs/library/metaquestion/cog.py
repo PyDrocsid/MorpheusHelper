@@ -59,7 +59,7 @@ class MetaQuestionCog(Cog, name="Metafragen"):
             await msg.add_reaction(name_to_emoji["wastebasket"])
             raise StopEventHandling
 
-        if await check_wastebasket(message, member, emoji, tg.requested_by, MetaQuestionPermission.mq_reduce):
+        if await check_wastebasket(message, member, emoji, tg.requested_by, MetaQuestionPermission.reduce):
             await message.clear_reactions()
             embed: Embed = message.embeds[0]
             embed.title = embed.url
