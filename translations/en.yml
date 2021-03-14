@@ -584,6 +584,8 @@ permissions:
   edit: edit messages sent by the bot
   delete: delete a message
 
+  user_notes: add notes or a user
+
   rr_manage: manage reactionrole
 
   rp_pin: pin other user's messages
@@ -799,3 +801,6 @@ joined_days: "joined less than a week ago"
 joined_weeks: "joined {} weeks ago"
 joined_months: "joined {} months ago"
 joined_years: "joined {} years ago"
+
+# notes
+user_notes: "User notes"

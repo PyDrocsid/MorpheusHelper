@@ -65,6 +65,7 @@ class Permission(BasePermission):
     aoc_clear = auto()
     aoc_link = auto()
     aoc_role = auto()
+    user_notes = auto()
 
     @property
     def default_permission_level(self) -> "BasePermissionLevel":

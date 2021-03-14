@@ -19,6 +19,7 @@ from cogs.reactionrole import ReactionRoleCog
 from cogs.reddit import RedditCog
 from cogs.rules import RulesCog
 from cogs.run_code import RunCodeCog
+from cogs.user_note import UserNoteCog
 from cogs.verification import VerificationCog
 from cogs.voice_channel import VoiceChannelCog
 from cogs.joined_info import JoinedInfoCog
@@ -48,4 +49,5 @@ COGS = [
     AdventOfCodeCog,
     AlertChannelCog,
     JoinedInfoCog,
+    UserNoteCog
 ]
