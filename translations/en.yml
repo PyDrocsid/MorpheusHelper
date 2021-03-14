@@ -471,6 +471,14 @@ cannot_warn: This member cannot be warned.
 warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: "User warned. :white_check_mark:"
 log_warned: ":warning: Member warned"
+warn_edit: ":warning: Edit warn"
+warn_edit_description: "Here you have a list of <@!{}>'s warns. Please send me the number of the warn you would like to edit."
+no_warns: "<@!{}> has never been warned."
+warn_not_in_list: Please select one of the warns in the list.
+warn_edit_reason: Please send me now the new warn reason.
+warn_edited: "{} just updated your warn on {}: ```\n{}\n```"
+log_warn_edit: ":warning: Warn edited"
+same_reason: This is the same reason as before.
 invalid_duration: Invalid duration.
 invalid_duration_inf: Invalid duration. Try `inf` instead.
 mute: ":mute: Mute"

@@ -6,7 +6,7 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from PyDrocsid.util import send_long_embed
+from PyDrocsid.util import send_long_embed, read_normal_message
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Message
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
@@ -329,6 +329,72 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog_mod(
             ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warned, member, reason
         )
+
+    @commands.command()
+    @Permission.warn.check
+    @guild_only()
+    async def edit_warn(self, ctx: Context, member: Member):
+        """
+        edit a warn
+        """
+
+        if member == self.bot.user:
+            raise CommandError(translations.cannot_warn)
+
+        warns = await db_thread(db.all, Warn, member=member.id, upgraded=False)
+
+        warns_embed = Embed(title=translations.warn_edit,
+                            description=translations.f_warn_edit_description(member.id),
+                            color=Colours.ModTools)
+
+        if len(warns) >= 1:
+            for warn in warns:
+                warns_embed.add_field(name=f"#{warns.index(warn)+1}",
+                                      value=translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason),
+                                      inline=True)
+        else:
+            warns_embed.description = translations.f_no_warns(member.id)
+
+        await ctx.send(embed=warns_embed)
+
+        response, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+
+        try:
+            warn = warns[int(response)-1]
+        except (ValueError, IndexError):
+            raise CommandError(translations.warn_not_in_list)
+
+        reason_embed = Embed(title=translations.warn_edit,
+                             description=translations.warn_edit_reason,
+                             color=Colours.ModTools)
+        await ctx.send(embed=reason_embed)
+
+        reason, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+
+        check_reason_length(reason)
+
+        if reason == warn.reason:
+            raise CommandError(translations.same_reason)
+
+        user_embed = Embed(title=translations.warn,
+                           description=translations.f_warn_edited(ctx.author.mention, ctx.guild.name, reason),
+                           color=Colours.ModTools)
+
+        server_embed = Embed(title=translations.warn, description=translations.warned_response, colour=Colours.ModTools)
+
+        try:
+            await member.send(embed=user_embed)
+        except (Forbidden, HTTPException):
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
+            server_embed.colour = Colours.error
+
+        await db_thread(Warn.upgrade, warn.id)
+        await db_thread(Warn.create, member.id, member.display_name, ctx.author.id, reason, True)
+
+        await ctx.send(embed=server_embed)
+
+        await send_to_changelog_mod(ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warn_edit,
+                                    member, reason)
 
     async def get_user(self, guild: Guild, user: Union[Member, User, int]) -> Union[Member, User]:
         if isinstance(user, Member):
@@ -723,7 +789,7 @@ class ModCog(Cog, name="Mod Tools"):
             out.append((username_update.timestamp, msg))
         for report in await db_thread(db.all, Report, member=user_id):
             out.append((report.timestamp, translations.f_ulog_reported(f"<@{report.reporter}>", report.reason)))
-        for warn in await db_thread(db.all, Warn, member=user_id):
+        for warn in await db_thread(db.all, Warn, member=user_id, upgraded=False):
             out.append((warn.timestamp, translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason)))
         for mute in await db_thread(db.all, Mute, member=user_id):
             text = [translations.ulog_muted, translations.ulog_muted_inf][mute.minutes == -1][mute.is_upgrade].format

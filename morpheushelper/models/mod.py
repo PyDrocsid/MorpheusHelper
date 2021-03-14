@@ -88,12 +88,20 @@ class Warn(db.Base):
     mod: Union[Column, int] = Column(BigInteger)
     timestamp: Union[Column, datetime] = Column(DateTime)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
+    upgraded: Union[Column, bool] = Column(Boolean, default=False)
+    is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, reason: str) -> "Warn":
-        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
+    def create(member: int, member_name: str, mod: int, reason: str, is_upgrade: bool = False) -> "Warn":
+        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason,
+                   is_upgrade=is_upgrade)
         db.add(row)
         return row
+
+    @staticmethod
+    def upgrade(warn_id: int):
+        row = db.get(Warn, warn_id)
+        row.upgraded = True
 
 
 class Mute(db.Base):
