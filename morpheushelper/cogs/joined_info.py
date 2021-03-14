@@ -39,24 +39,24 @@ class JoinedInfoCog(Cog):
             lambda: db.query(Kick, member=user.id, mod=None).order_by(Kick.timestamp.desc()).first()
         )
         if last_auto_kick:
-            last_join_after_kick = await db_thread(
+            relevant_join = await db_thread(
                 lambda: db.query(Join, member=user.id)
                 .filter(Join.timestamp > last_auto_kick.timestamp)
                 .order_by(Join.timestamp.asc())
                 .first()
             )
         else:
-            last_join_after_kick = await db_thread(
+            relevant_join = await db_thread(
                 lambda: db.query(Join, member=user.id).order_by(Join.timestamp.asc()).first()
             )
 
-        if last_join_after_kick is None:
-            last_join_after_kick = user.joined_at
+        if relevant_join is None:
+            relevant_join = user.joined_at
         else:
-            last_join_after_kick = last_join_after_kick.timestamp
+            relevant_join = relevant_join.timestamp
 
         embed = Embed(
             title=translations.joined_info,
-            description=f"{user.mention} {date_diff_to_str(datetime.today(), last_join_after_kick)}",
+            description=f"{user.mention} {date_diff_to_str(datetime.today(), relevant_join)}",
         )
         await ctx.send(embed=embed)

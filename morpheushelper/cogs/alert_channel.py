@@ -64,7 +64,10 @@ class AlertChannelCog(Cog):
         del self.user_hops[member.id]
         embed = Embed(title=translations.alert_channel_hop, color=Colours.AlertChannel)
         embed.add_field(name=translations.member, value=member.mention)
-        embed.add_field(name=translations.alert_channel_hop_current_channel, value=after.channel.name)
+        embed.add_field(name=translations.member_id, value=member.id)
+        embed.set_author(name=str(member), icon_url=member.avatar_url)
+        if after.channel:
+            embed.add_field(name=translations.alert_channel_hop_current_channel, value=after.channel.name)
 
         if ch := await self.get_alert_channel():
             await ch.send(embed=embed)
@@ -79,9 +82,9 @@ class AlertChannelCog(Cog):
 
         self.user_hops = {}
 
-    @commands.group(name="alert")
+    @commands.group()
     @Permission.log_manage.check
-    async def alert_channel(self, ctx: Context):
+    async def alert(self, ctx: Context):
         """
         Configures the alert channel
         """
@@ -99,10 +102,10 @@ class AlertChannelCog(Cog):
         )
         await ctx.send(embed=embed)
 
-    @alert_channel.command(name="set")
-    async def alertch_set(self, ctx: Context, channel: TextChannel):
+    @alert.command(name="channel", aliases=["ch", "c"])
+    async def alert_channel(self, ctx: Context, channel: TextChannel):
         """
-        Updated the alert channel
+        change alert channel
         """
 
         await Settings.set(int, "alert_channel", channel.id)
@@ -114,10 +117,10 @@ class AlertChannelCog(Cog):
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.f_alert_channel_log_updated(channel.mention))
 
-    @alert_channel.command(name="unset")
-    async def alertch_unset(self, ctx: Context):
+    @alert.command(name="disable", aliases=["d"])
+    async def alert_disable(self, ctx: Context):
         """
-        Unsets the alert channel
+        disable alert channel
         """
 
         await Settings.set(int, "alert_channel", 0)
@@ -129,10 +132,11 @@ class AlertChannelCog(Cog):
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, translations.alert_channel_log_unset)
 
-    @alert_channel.command(name="hops")
-    async def alertch_set_hops(self, ctx: Context, amount: Optional[int]):
+    @alert.command(name="hops", aliases=["h"])
+    async def alert_hops(self, ctx: Context, amount: Optional[int]):
         """
-        Updates the value of minimum hops per minute in order for a message to occur (<=0: no limit)
+        Changes the number of maximum channel hops per minute allowed before an alert is issued
+        set this to 0 to disable channel hopping alerts
         """
 
         if amount is not None:
