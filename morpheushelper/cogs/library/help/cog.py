@@ -1,12 +1,12 @@
 from typing import Optional, Union, List
 
-from PyDrocsid.permission import BasePermission
 from discord import Message, Embed
 from discord.ext import commands
 from discord.ext.commands import Command, Cog, Group, CommandError, Context
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.config import Contributor
+from PyDrocsid.permission import BasePermission
 from PyDrocsid.translations import t
 from PyDrocsid.util import can_run_command, send_long_embed
 from .colors import Colors

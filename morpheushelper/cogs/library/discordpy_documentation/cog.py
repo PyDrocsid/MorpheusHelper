@@ -159,6 +159,8 @@ class DiscordpyDocumentationCog(Cog, name="Discordpy Documentation"):
     PERMISSIONS = BasePermission
 
     def __init__(self):
+        super().__init__()
+
         self._cache = {}
 
     async def build_rtfm_lookup_table(self, page_types: Dict[str, str]):

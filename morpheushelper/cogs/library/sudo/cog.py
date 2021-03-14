@@ -30,6 +30,8 @@ class SudoCog(Cog, name="Sudo"):
     PERMISSIONS = SudoPermission
 
     def __init__(self):
+        super().__init__()
+
         self.sudo_cache: dict[TextChannel, Message] = {}
 
     async def on_command_error(self, ctx: Context, _):

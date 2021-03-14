@@ -12,15 +12,13 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
+from PyDrocsid.util import get_prefix
 from PyDrocsid.util import is_teamler, send_long_embed
 from .colors import Colors
 from .models import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from .permissions import ModPermission
 from ..contributor import Contributor
-from ..invites.models import InviteLog
-from ..logging import send_to_changelog
-from ..settings.cog import get_prefix
-
+from ..pubsub import send_to_changelog, log_auto_kick, get_ulog_entries
 
 tg = t.g
 t = t.mod
@@ -151,6 +149,10 @@ class ModCog(Cog, name="Mod Tools"):
                     t.log_unmuted_expired,
                 )
                 await db_thread(Mute.deactivate, mute.id)
+
+    @log_auto_kick.subscribe
+    async def handle_log_auto_kick(self, member: Member):
+        await db_thread(Kick.create, member.id, str(member), None, None)
 
     async def on_member_join(self, member: Member):
         await db_thread(Join.create, member.id, str(member))
@@ -634,11 +636,10 @@ class ModCog(Cog, name="Mod Tools"):
                             t.ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
                         )
                     )
-        for log in await db_thread(db.all, InviteLog, applicant=user_id):  # type: InviteLog
-            if log.approved:
-                out.append((log.timestamp, t.ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
-            else:
-                out.append((log.timestamp, t.ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
+
+        responses = await get_ulog_entries(user_id)
+        for response in responses:
+            out += response
 
         out.sort()
         embed = Embed(title=t.userlogs, color=Colors.userlog)

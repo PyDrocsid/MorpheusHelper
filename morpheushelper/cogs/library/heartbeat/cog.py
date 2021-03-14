@@ -12,7 +12,6 @@ from PyDrocsid.translations import t
 from PyDrocsid.util import send_editable_log
 from ..contributor import Contributor
 
-
 tg = t.g
 t = t.heartbeat
 
@@ -22,6 +21,8 @@ class HeartbeatCog(Cog, name="Heartbeat"):
     PERMISSIONS = BasePermission
 
     def __init__(self):
+        super().__init__()
+
         self.initialized = False
 
     def get_owner(self) -> Optional[User]:

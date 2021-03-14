@@ -21,6 +21,7 @@ topics_removed:
 
 topic_invalid_chars: Topic name `{}` contains invalid characters.
 topic_already_registered: Topic `{}` has already been registered.
+topic_not_registered: Topic `{}` has not been registered.
 topic_not_registered_too_high: Topic could not be registered because `@{}` is higher than `@{}`.
 topic_not_registered_managed_role: Topic could not be registered because `@{}` cannot be assigned manually.
 

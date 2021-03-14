@@ -14,7 +14,7 @@ from .colors import Colors
 from .models import LogExclude
 from .permissions import LoggingPermission
 from ..contributor import Contributor
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.logging
@@ -39,16 +39,6 @@ def add_field(embed: Embed, name: str, text: str):
         first = False
 
 
-async def send_to_changelog(guild: Guild, message: Union[str, Embed]):
-    channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "logging_changelog", -1))
-    if channel is not None:
-        if isinstance(message, str):
-            embed = Embed(colour=Colors.changelog, description=message)
-        else:
-            embed = message
-        await channel.send(embed=embed)
-
-
 class LoggingCog(Cog, name="Logging"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
     PERMISSIONS = LoggingPermission
@@ -58,6 +48,16 @@ class LoggingCog(Cog, name="Logging"):
 
     async def is_logging_channel(self, channel: TextChannel) -> bool:
         return channel.id in [(await self.get_logging_channel(event)).id for event in ["edit", "delete"]]
+
+    @send_to_changelog.subscribe
+    async def handle_send_to_changelog(self, guild: Guild, message: Union[str, Embed]):
+        channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "logging_changelog", -1))
+        if channel is not None:
+            if isinstance(message, str):
+                embed = Embed(colour=Colors.changelog, description=message)
+            else:
+                embed = message
+            await channel.send(embed=embed)
 
     async def on_ready(self):
         try:

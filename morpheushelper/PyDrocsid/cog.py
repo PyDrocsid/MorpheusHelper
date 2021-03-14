@@ -1,8 +1,9 @@
+from __future__ import annotations
+
 from datetime import datetime
 from os import getenv
 from typing import Union, Type
 
-from PyDrocsid.permission import BasePermission
 from discord import (
     Member,
     Message,
@@ -18,13 +19,21 @@ from discord.ext.commands import Cog as DiscordCog, Bot, Context, CommandError
 
 from PyDrocsid.config import Config, Contributor
 from PyDrocsid.events import register_events, event_handlers
+from PyDrocsid.permission import BasePermission
 
 
 class Cog(DiscordCog):
     CONTRIBUTORS: list[Contributor]
     PERMISSIONS: Type[BasePermission]
 
+    instance: Cog
     bot: Bot
+
+    def __init__(self):
+        if hasattr(type(self), "instance"):
+            raise ValueError("Only one instance of this class can be created")
+
+        type(self).instance = self
 
     @staticmethod
     def prepare() -> bool:

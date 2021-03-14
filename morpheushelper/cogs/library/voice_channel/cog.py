@@ -13,13 +13,13 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
+from PyDrocsid.util import get_prefix
 from PyDrocsid.util import send_long_embed, is_teamler
 from .colors import Colors
 from .models import DynamicVoiceChannel, DynamicVoiceGroup, RoleVoiceLink
 from .permissions import VoiceChannelPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-from ..settings.cog import get_prefix
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.voice_channel
@@ -48,6 +48,8 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
     PERMISSIONS = VoiceChannelPermission
 
     def __init__(self):
+        super().__init__()
+
         self.channel_lock = MultiLock()
         self.group_lock = MultiLock()
 

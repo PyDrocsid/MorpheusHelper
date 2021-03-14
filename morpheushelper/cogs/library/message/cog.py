@@ -13,7 +13,6 @@ from .colors import Colors
 from .permissions import MessagePermission
 from ..contributor import Contributor
 
-
 tg = t.g
 t = t.message
 

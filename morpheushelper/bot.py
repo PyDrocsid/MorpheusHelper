@@ -1,19 +1,18 @@
 from typing import Iterable
 
 import sentry_sdk
-from PyDrocsid.database import db
 from discord import Intents, Message
 from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError
 
 from PyDrocsid.cog import load_cogs
 from PyDrocsid.command_edit import add_to_error_cache
+from PyDrocsid.database import db
 from PyDrocsid.environment import TOKEN
 from PyDrocsid.events import listener
-from PyDrocsid.util import make_error
+from PyDrocsid.util import get_prefix, make_error
 from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.help.cog import send_help
-from cogs.library.settings.cog import get_prefix
 
 
 async def fetch_prefix(_, msg: Message) -> Iterable[str]:
@@ -92,6 +91,8 @@ load_cogs(
     UtilsCog(),
     VoiceChannelCog(),
 )
+
+
 # fmt: on
 
 

@@ -1,22 +1,20 @@
 from typing import Optional, Union, Dict, List
 
-from PyDrocsid.emojis import name_to_emoji
-
-from PyDrocsid.cog import Cog
-from PyDrocsid.config import Contributor, Config
-from PyDrocsid.database import db_thread, db
-from PyDrocsid.settings import Settings
-from PyDrocsid.translations import t
-from PyDrocsid.util import send_long_embed
 from discord import Role, Embed, Member
 from discord.ext import commands
 from discord.ext.commands import CommandError, Context, guild_only, UserInputError
 
+from PyDrocsid.cog import Cog
+from PyDrocsid.config import Contributor, Config
+from PyDrocsid.database import db_thread, db
+from PyDrocsid.emojis import name_to_emoji
+from PyDrocsid.settings import Settings
+from PyDrocsid.translations import t
+from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .models import RoleAuth
 from .permissions import RolesPermission
-from ..logging import send_to_changelog
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.roles
@@ -46,6 +44,8 @@ class RolesCog(Cog, name="Roles"):
     PERMISSIONS = RolesPermission
 
     def __init__(self):
+        super().__init__()
+
         def set_role(role_name: str, assignable: bool):
             async def inner(ctx: Context, *, role: Role):
                 await configure_role(ctx, role_name, role, assignable)

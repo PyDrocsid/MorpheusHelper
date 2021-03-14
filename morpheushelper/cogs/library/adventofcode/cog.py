@@ -19,12 +19,10 @@ from .colors import Colors
 from .models import AOCLink
 from .permissions import AdventOfCodePermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.adventofcode
-
 
 BASE_URL = "https://adventofcode.com/"
 
@@ -188,6 +186,8 @@ class AdventOfCodeCog(Cog, name="Advent of Code Integration"):
     PERMISSIONS = AdventOfCodePermission
 
     def __init__(self):
+        super().__init__()
+
         AOCConfig.update_hook = self.update_roles
 
     @staticmethod

@@ -12,10 +12,18 @@ from PyDrocsid.config import Config
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.material_colors import MaterialColors
 from PyDrocsid.permission import BasePermission
+from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
 
-
 t = t.g
+
+
+async def get_prefix() -> str:
+    return await Settings.get(str, "prefix", ".")
+
+
+async def set_prefix(new_prefix: str):
+    await Settings.set(str, "prefix", new_prefix)
 
 
 async def is_teamler(member: Member) -> bool:

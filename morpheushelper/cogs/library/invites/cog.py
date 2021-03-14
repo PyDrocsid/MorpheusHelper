@@ -13,14 +13,13 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import t
+from PyDrocsid.util import get_prefix
 from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .models import InviteLog, AllowedInvite
 from .permissions import InvitesPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-from ..settings.cog import get_prefix
-
+from ..pubsub import send_to_changelog, get_ulog_entries
 
 tg = t.g
 t = t.invites
@@ -72,6 +71,16 @@ def get_discord_invite(url) -> Optional[str]:
 class InvitesCog(Cog, name="Allowed Discord Invites"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu, Contributor.TNT2k, Contributor.Florian]
     PERMISSIONS = InvitesPermission
+
+    @get_ulog_entries.subscribe
+    async def handle_get_ulog_entries(self, user_id: int):
+        out = []
+        for log in await db_thread(db.all, InviteLog, applicant=user_id):  # type: InviteLog
+            if log.approved:
+                out.append((log.timestamp, t.ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
+            else:
+                out.append((log.timestamp, t.ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
+        return out
 
     async def check_message(self, message: Message) -> bool:
         author: Member = message.author

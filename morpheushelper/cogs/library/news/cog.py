@@ -12,8 +12,7 @@ from .colors import Colors
 from .models import NewsAuthorization
 from .permissions import NewsPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.news

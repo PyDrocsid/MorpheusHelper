@@ -13,8 +13,7 @@ from PyDrocsid.util import send_long_embed
 from .colors import Colors
 from .permissions import PermissionsPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.permissions

@@ -15,8 +15,7 @@ from .colors import Colors
 from .models import RedditPost, RedditChannel
 from .permissions import RedditPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.reddit

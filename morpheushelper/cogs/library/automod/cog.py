@@ -7,15 +7,12 @@ from discord.ext import commands
 from discord.ext.commands import guild_only, Context, CommandError, UserInputError
 
 from PyDrocsid.cog import Cog
-from PyDrocsid.database import db_thread
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
 from .colors import Colors
 from .permissions import AutoModPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-from ..mod.models import Kick
-
+from ..pubsub import send_to_changelog, log_auto_kick
 
 tg = t.g
 t = t.automod
@@ -42,7 +39,7 @@ async def kick(member: Member) -> bool:
 
     pending_kicks.add(member.id)
     await member.kick(reason=t.log_autokicked)
-    await db_thread(Kick.create, member.id, str(member), None, None)
+    await log_auto_kick(member)
     return True
 
 
@@ -60,6 +57,8 @@ class AutoModCog(Cog, name="AutoMod"):
     PERMISSIONS = AutoModPermission
 
     def __init__(self):
+        super().__init__()
+
         self.kick_tasks: Dict[Member, Task] = {}
 
     async def get_autokick_role(self) -> Optional[Role]:

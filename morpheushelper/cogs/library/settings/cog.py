@@ -5,23 +5,15 @@ from discord.ext import commands
 from discord.ext.commands import guild_only, Context, CommandError
 
 from PyDrocsid.cog import Cog
-from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
+from PyDrocsid.util import set_prefix
 from .colors import Colors
 from .permissions import SettingsPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.settings
-
-
-async def get_prefix() -> str:
-    return await Settings.get(str, "prefix", ".")
-
-
-async def set_prefix(new_prefix: str):
-    await Settings.set(str, "prefix", new_prefix)
 
 
 class SettingsCog(Cog, name="Settings"):

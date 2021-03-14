@@ -15,7 +15,7 @@ from .colors import Colors
 from .models import ReactionPinChannel
 from .permissions import ReactionPinPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.reactionpin

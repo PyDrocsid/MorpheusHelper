@@ -16,7 +16,7 @@ from .colors import Colors
 from .models import MediaOnlyChannel
 from .permissions import MediaOnlyPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.mediaonly

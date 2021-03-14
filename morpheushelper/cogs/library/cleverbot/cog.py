@@ -4,7 +4,7 @@ from typing import Optional, Dict
 
 from discord import TextChannel, Message, Guild, Embed
 from discord.ext import commands
-from discord.ext.commands import Bot, Context, guild_only, CommandError, UserInputError
+from discord.ext.commands import Context, guild_only, CommandError, UserInputError
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread, db
@@ -15,7 +15,7 @@ from .colors import Colors
 from .models import CleverBotChannel
 from .permissions import CleverBotPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.cleverbot
@@ -25,8 +25,8 @@ class CleverBotCog(Cog, name="CleverBot"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
     PERMISSIONS = CleverBotPermission
 
-    def __init__(self, bot: Bot):
-        super().__init__(bot)
+    def __init__(self):
+        super().__init__()
 
         self.states: Dict[TextChannel, CleverBot] = {}
 

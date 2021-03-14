@@ -14,7 +14,7 @@ from .colors import Colors
 from .models import ReactionRole
 from .permissions import ReactionRolePermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
+from ..pubsub import send_to_changelog
 
 
 async def get_role(message: Message, emoji: PartialEmoji, add: bool) -> Optional[Tuple[Role, bool]]:

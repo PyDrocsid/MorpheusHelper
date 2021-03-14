@@ -1,8 +1,8 @@
 from typing import Optional
 
-from PyDrocsid.database import db_thread, db
 from discord import Member, Role, Guild
 
+from PyDrocsid.database import db_thread, db
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
 from cogs.library import ServerInfoCog

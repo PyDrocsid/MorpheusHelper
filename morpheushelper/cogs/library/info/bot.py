@@ -8,11 +8,10 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.config import Config
 from PyDrocsid.github_api import GitHubUser, get_users, get_repo_description
 from PyDrocsid.translations import t
-from PyDrocsid.util import send_long_embed
+from PyDrocsid.util import send_long_embed, get_prefix
 from .colors import Colors
 from .permissions import InfoPermission
 from ..contributor import Contributor
-from ..settings.cog import get_prefix
 
 tg = t.g
 t = t.info
@@ -23,6 +22,8 @@ class BotInfoCog(Cog, name="Bot Information"):
     PERMISSIONS = InfoPermission
 
     def __init__(self, *, info_icon: Optional[str] = None):
+        super().__init__()
+
         self.info_icon: Optional[str] = info_icon
         self.repo_description: str = ""
         self.github_users: Optional[dict[str, GitHubUser]] = {}

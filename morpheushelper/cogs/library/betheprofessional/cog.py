@@ -13,8 +13,7 @@ from .colors import Colors
 from .models import BTPRole
 from .permissions import BeTheProfessionalPermission
 from ..contributor import Contributor
-from ..logging import send_to_changelog
-
+from ..pubsub import send_to_changelog
 
 tg = t.g
 t = t.betheprofessional
