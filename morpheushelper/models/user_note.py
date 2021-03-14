@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Union
 
 from PyDrocsid.database import db
-from sqlalchemy import Column, String, BigInteger, DateTime, Boolean, Integer
+from sqlalchemy import Column, String, BigInteger, DateTime
 
 
 class UserNote(db.Base):
