@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from PyDrocsid.config import Config, load_config_file, load_version
-from PyDrocsid.database import db
 from PyDrocsid.environment import SENTRY_DSN
 from PyDrocsid.logger import setup_sentry
 

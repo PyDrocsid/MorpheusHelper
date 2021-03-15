@@ -18,7 +18,7 @@ RUN git describe --tags > VERSION
 
 FROM python:3.9-alpine
 
-LABEL org.opencontainers.image.source https://github.com/Defelo/MorpheusHelper
+LABEL org.opencontainers.image.source=https://github.com/Defelo/MorpheusHelper
 
 RUN set -x \
     && apk add --no-cache bash~=5.1 \
@@ -32,7 +32,7 @@ USER bot
 COPY --from=builder /build/.venv/lib /usr/local/lib
 COPY --from=builder /build/VERSION /app/
 
-COPY translations /app/translations/
+COPY config.yml /app/
 COPY morpheushelper /app/morpheushelper/
 
 CMD ["python", "morpheushelper/morpheushelper.py"]
