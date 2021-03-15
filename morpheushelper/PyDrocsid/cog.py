@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from os import getenv
-from typing import Union, Type
+from typing import Union, Type, Optional
 
 from discord import (
     Member,
@@ -26,14 +26,14 @@ class Cog(DiscordCog):
     CONTRIBUTORS: list[Contributor]
     PERMISSIONS: Type[BasePermission]
 
-    instance: Cog
+    instance: Optional[Cog] = None
     bot: Bot
 
-    def __init__(self):
-        if hasattr(type(self), "instance"):
-            raise ValueError("Only one instance of this class can be created")
+    def __new__(cls, *args, **kwargs):
+        if cls.instance is None:
+            cls.instance = super().__new__(cls, *args, **kwargs)
 
-        type(self).instance = self
+        return cls.instance
 
     @staticmethod
     def prepare() -> bool:

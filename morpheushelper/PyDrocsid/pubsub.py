@@ -23,7 +23,7 @@ class PubSubChannel:
                 self._cls = None
 
             async def __call__(self, *args, **kwargs):
-                if hasattr(self._cls, "instance"):
+                if self._cls.instance is not None:
                     return await self._func(self._cls.instance, *args, **kwargs)
 
             def __set_name__(self, owner, name):

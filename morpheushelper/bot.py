@@ -91,8 +91,6 @@ load_cogs(
     UtilsCog(),
     VoiceChannelCog(),
 )
-
-
 # fmt: on
 
 
