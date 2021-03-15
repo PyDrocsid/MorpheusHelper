@@ -6,7 +6,7 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from PyDrocsid.util import send_long_embed, read_normal_message
+from PyDrocsid.util import send_long_embed
 from discord import Role, Guild, Member, Forbidden, HTTPException, User, Embed, NotFound, Message
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, Converter, BadArgument, UserInputError
@@ -16,7 +16,7 @@ from colours import Colours
 from models.allowed_invite import InviteLog
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick, MediaOnlyEntry, VerificationDate
 from permissions import Permission, PermissionLevel
-from util import send_to_changelog, get_prefix, is_teamler
+from util import send_to_changelog, get_prefix, is_teamler, get_message_cancel
 
 
 class DurationConverter(Converter):
@@ -26,7 +26,7 @@ class DurationConverter(Converter):
         if (match := re.match(r"^(\d+y)?(\d+m)?(\d+w)?(\d+d)?(\d+h)?(\d+n)?$", argument)) is None:
             raise BadArgument(translations.invalid_duration)
 
-        minutes = toMinutes.convert([toMinutes.toInt(match.group(i)) for i in range(1, 7)])
+        minutes = ToMinutes.convert([ToMinutes.toint(match.group(i)) for i in range(1, 7)])
 
         if minutes <= 0:
             raise BadArgument(translations.invalid_duration)
@@ -35,39 +35,39 @@ class DurationConverter(Converter):
         return minutes
 
 
-class toMinutes:
+class ToMinutes:
     @staticmethod
     def from_years(years: int) -> int:
-        return toMinutes.from_months(years * 12)
+        return ToMinutes.from_months(years * 12)
 
     @staticmethod
     def from_months(months: int) -> int:
-        return toMinutes.from_days(months * 30)
+        return ToMinutes.from_days(months * 30)
 
     @staticmethod
     def from_weeks(weeks: int) -> int:
-        return toMinutes.from_days(weeks * 7)
+        return ToMinutes.from_days(weeks * 7)
 
     @staticmethod
     def from_days(days: int) -> int:
-        return toMinutes.from_hours(days * 24)
+        return ToMinutes.from_hours(days * 24)
 
     @staticmethod
     def from_hours(hours: int) -> int:
         return hours * 60
 
     @staticmethod
-    def toInt(value: str) -> int:
+    def toint(value: str) -> int:
         return 0 if value is None else int(value[:-1])
 
     @staticmethod
     def convert(values: List[int]) -> int:
         mins = values[5]
-        mins += toMinutes.from_years(values[0])
-        mins += toMinutes.from_months(values[1])
-        mins += toMinutes.from_weeks(values[2])
-        mins += toMinutes.from_days(values[3])
-        mins += toMinutes.from_hours(values[4])
+        mins += ToMinutes.from_years(values[0])
+        mins += ToMinutes.from_months(values[1])
+        mins += ToMinutes.from_weeks(values[2])
+        mins += ToMinutes.from_days(values[3])
+        mins += ToMinutes.from_hours(values[4])
         return mins
 
 
@@ -341,7 +341,7 @@ class ModCog(Cog, name="Mod Tools"):
         warns = await db_thread(db.all, Warn, member=member.id, upgraded=False)
 
         warns_embed = Embed(title=translations.warn_edit,
-                            description=translations.f_warn_edit_description(member.id),
+                            description=translations.f_warn_edit_description(member.id, translations.cancel),
                             color=Colours.ModTools)
 
         if len(warns) >= 1:
@@ -356,7 +356,10 @@ class ModCog(Cog, name="Mod Tools"):
 
         await ctx.send(embed=warns_embed)
 
-        response, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        response, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if response is None:
+            return
 
         try:
             warn = warns[int(response)-1]
@@ -364,11 +367,14 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.warn_not_in_list)
 
         reason_embed = Embed(title=translations.warn_edit,
-                             description=translations.warn_edit_reason,
+                             description=translations.f_warn_edit_reason(translations.cancel),
                              color=Colours.ModTools)
         await ctx.send(embed=reason_embed)
 
-        reason, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        reason, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if reason is None:
+            return
 
         check_reason_length(reason)
 
@@ -565,7 +571,7 @@ class ModCog(Cog, name="Mod Tools"):
         kicks = await db_thread(db.all, Kick, member=member.id, upgraded=False)
 
         kicks_embed = Embed(title=translations.kick_edit,
-                            description=translations.f_kick_edit_description(member.id),
+                            description=translations.f_kick_edit_description(member.id, translations.cancel),
                             color=Colours.ModTools)
 
         if len(kicks) >= 1:
@@ -580,7 +586,10 @@ class ModCog(Cog, name="Mod Tools"):
 
         await ctx.send(embed=kicks_embed)
 
-        response, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        response, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if response is None:
+            return
 
         try:
             kick = kicks[int(response)-1]
@@ -588,11 +597,14 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.warn_not_in_list)
 
         reason_embed = Embed(title=translations.kick_edit,
-                             description=translations.kick_edit_reason,
+                             description=translations.f_kick_edit_reason(translations.cancel),
                              color=Colours.ModTools)
         await ctx.send(embed=reason_embed)
 
-        reason, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        reason, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if reason is None:
+            return
 
         check_reason_length(reason)
 

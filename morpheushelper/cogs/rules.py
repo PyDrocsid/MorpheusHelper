@@ -2,30 +2,19 @@ from http.client import HTTPException
 from typing import Optional
 
 from PyDrocsid.translations import translations
-from PyDrocsid.util import read_normal_message, read_complete_message
-from discord import TextChannel, Message, Forbidden, Permissions, Embed, Member, File
+from PyDrocsid.util import read_complete_message
+from discord import TextChannel, Message, Forbidden, Permissions, Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 
 from colours import Colours
 from permissions import Permission
-from util import Color
+from util import Color, get_message_cancel
 
 
 class RulesCog(Cog, name="Rule Commands"):
     def __init__(self, bot: Bot):
         self.bot = bot
-
-    @staticmethod
-    async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
-        content, files = await read_normal_message(bot, channel, member)
-        if content == translations.cancel:
-            embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
-                          description=translations.msg_send_cancel)
-            await channel.send(embed=embed)
-            return None, []
-
-        return content, files
 
     @commands.group()
     @Permission.send.check
@@ -50,7 +39,7 @@ class RulesCog(Cog, name="Rule Commands"):
         embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
                       description=translations.f_send_message(translations.cancel))
         await ctx.send(embed=embed)
-        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, files = await get_message_cancel(self.bot, ctx.channel, ctx.author)
 
         if content is None:
             return
@@ -78,7 +67,7 @@ class RulesCog(Cog, name="Rule Commands"):
         embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
                       description=translations.f_send_embed_title(translations.cancel))
         await ctx.send(embed=embed)
-        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        title, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
         if title is None:
             return
         if len(title) > 256:
@@ -86,7 +75,7 @@ class RulesCog(Cog, name="Rule Commands"):
 
         embed.description = translations.f_send_embed_content(translations.cancel)
         await ctx.send(embed=embed)
-        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, files = await get_message_cancel(self.bot, ctx.channel, ctx.author)
 
         if content is None:
             return
@@ -145,7 +134,7 @@ class RulesCog(Cog, name="Rule Commands"):
         embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
                       description=translations.f_send_new_message(translations.cancel))
         await ctx.send(embed=embed)
-        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, files = await get_message_cancel(self.bot, ctx.channel, ctx.author)
 
         if content is None:
             return
@@ -169,7 +158,7 @@ class RulesCog(Cog, name="Rule Commands"):
         embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
                       description=translations.f_send_embed_title(translations.cancel))
         await ctx.send(embed=embed)
-        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        title, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
 
         if title is None:
             return
@@ -178,7 +167,7 @@ class RulesCog(Cog, name="Rule Commands"):
 
         embed.description = translations.f_send_embed_content(translations.cancel)
         await ctx.send(embed=embed)
-        content, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
 
         if content is None:
             return

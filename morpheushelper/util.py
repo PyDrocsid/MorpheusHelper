@@ -4,8 +4,9 @@ from typing import Optional, Union
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from discord import Member, TextChannel, Guild, Message, Embed, PartialEmoji, Forbidden
-from discord.ext.commands import ColorConverter, BadArgument
+from PyDrocsid.util import read_normal_message
+from discord import Member, TextChannel, Guild, Message, Embed, PartialEmoji, Forbidden, File
+from discord.ext.commands import ColorConverter, BadArgument, Bot
 
 from colours import Colours
 from permissions import PermissionLevel, Permission
@@ -74,3 +75,14 @@ async def check_wastebasket(
         return author_id
 
     return None
+
+
+async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
+    content, files = await read_normal_message(bot, channel, member)
+    if content == translations.cancel:
+        embed = Embed(title=translations.rule, colour=Colours.RuleCommands,
+                        description=translations.msg_send_cancel)
+        await channel.send(embed=embed)
+        return None, []
+
+    return content, files
