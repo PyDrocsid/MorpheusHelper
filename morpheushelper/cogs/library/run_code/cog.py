@@ -1,9 +1,10 @@
 import re
 
+from aiohttp import ClientError
 from discord import Embed
 from discord.ext import commands
 from discord.ext.commands import CommandError, UserInputError
-from requests import RequestException
+from sentry_sdk import capture_exception
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.material_colors import MaterialColors
@@ -18,11 +19,13 @@ t = t.run_code
 
 N_CHARS = 1000
 
-LANGUAGES = (
-    "awk,bash,brainfuck,c,cpp,crystal,csharp,d,dash,deno,elixir,emacs,go,haskell,java,jelly,julia,"
-    "kotlin,lisp,lua,nasm,nasm64,nim,node,osabie,paradoc,perl,php,python2,python3,ruby,rust,swift,"
-    "typescript,zig"
-).split(",")
+# fmt: off
+LANGUAGES = [
+    "awk", "bash", "brainfuck", "c", "cpp", "crystal", "csharp", "d", "dash", "deno", "elixir", "emacs", "go",
+    "haskell", "java", "jelly", "julia", "kotlin", "lisp", "lua", "nasm", "nasm64", "nim", "node", "osabie",
+    "paradoc", "perl", "php", "python2", "python3", "ruby", "rust", "swift", "typescript", "zig"
+]
+# fmt: on
 
 
 def supported_languages_docs(f):
@@ -41,10 +44,10 @@ class RunCodeCog(Cog):
         run some code
         """
 
-        if not (match := re.fullmatch(r"```([a-zA-Z\d]+)\n(.+?)```", args, re.DOTALL)):
+        if not (match := re.fullmatch(r"((```)?)([a-zA-Z\d]+)\n(.+?)\1", args, re.DOTALL)):
             raise UserInputError
 
-        language, source = match.groups()
+        *_, language, source = match.groups()
 
         await ctx.trigger_typing()
 
@@ -53,8 +56,11 @@ class RunCodeCog(Cog):
         except EmkcAPIException as e:
             if e.message == "Supplied language is not supported by Piston":
                 raise CommandError(t.error_unsupported_language(language))
+
+            capture_exception()
             raise CommandError(f"{t.error_run_code}: {e.message}")
-        except RequestException:
+        except ClientError:
+            capture_exception()
             raise CommandError(t.error_run_code)
 
         output: str = api_result["output"]
