@@ -163,12 +163,19 @@ class Kick(db.Base):
     mod: Union[Column, int] = Column(BigInteger)
     timestamp: Union[Column, datetime] = Column(DateTime)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
+    upgraded: Union[Column, bool] = Column(Boolean, default=False)
+    is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, reason: str) -> "Kick":
+    def create(member: int, member_name: str, mod: int, reason: str, is_upgrade: bool = False) -> "Kick":
         row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
         db.add(row)
         return row
+
+    @staticmethod
+    def upgrade(kick_id: int):
+        row = db.get(Kick, kick_id)
+        row.upgraded = True
 
 
 class Ban(db.Base):

@@ -330,16 +330,13 @@ class ModCog(Cog, name="Mod Tools"):
             ctx.guild, ctx.message, Colours.changelog["warn"], translations.log_warned, member, reason
         )
 
-    @commands.command()
+    @commands.command(name="edit_warn", aliases=["upgrade_warn", "warn_edit", "warn_upgrade", "ew"])
     @Permission.warn.check
     @guild_only()
     async def edit_warn(self, ctx: Context, member: Member):
         """
-        edit a warn
+        edit a warns reason
         """
-
-        if member == self.bot.user:
-            raise CommandError(translations.cannot_warn)
 
         warns = await db_thread(db.all, Warn, member=member.id, upgraded=False)
 
@@ -354,6 +351,8 @@ class ModCog(Cog, name="Mod Tools"):
                                       inline=True)
         else:
             warns_embed.description = translations.f_no_warns(member.id)
+            await ctx.send(embed=warns_embed)
+            return
 
         await ctx.send(embed=warns_embed)
 
@@ -377,7 +376,7 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(translations.same_reason)
 
         user_embed = Embed(title=translations.warn,
-                           description=translations.f_warn_edited(ctx.author.mention, ctx.guild.name, reason),
+                           description=translations.f_warn_edited(ctx.author.id, ctx.guild.name, reason),
                            color=Colours.ModTools)
 
         server_embed = Embed(title=translations.warn, description=translations.warned_response, colour=Colours.ModTools)
@@ -554,6 +553,71 @@ class ModCog(Cog, name="Mod Tools"):
         await member.kick(reason=reason)
 
         await ctx.send(embed=server_embed)
+
+    @commands.command(name="edit_kick", aliases=["upgrade_kick", "kick_upgrade", "kick_edit", "ek"])
+    @Permission.kick.check
+    @guild_only()
+    async def edit_kick(self, ctx: Context, member: Member):
+        """
+        Edit a kicks reason
+        """
+
+        kicks = await db_thread(db.all, Kick, member=member.id, upgraded=False)
+
+        kicks_embed = Embed(title=translations.kick_edit,
+                            description=translations.f_kick_edit_description(member.id),
+                            color=Colours.ModTools)
+
+        if len(kicks) >= 1:
+            for kick in kicks:
+                kicks_embed.add_field(name=f"#{kicks.index(kick) + 1}",
+                                      value=translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason),
+                                      inline=True)
+        else:
+            kicks_embed.description = translations.f_no_kicks(member.id)
+            await ctx.send(embed=kicks_embed)
+            return
+
+        await ctx.send(embed=kicks_embed)
+
+        response, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+
+        try:
+            kick = kicks[int(response)-1]
+        except (ValueError, IndexError):
+            raise CommandError(translations.warn_not_in_list)
+
+        reason_embed = Embed(title=translations.kick_edit,
+                             description=translations.kick_edit_reason,
+                             color=Colours.ModTools)
+        await ctx.send(embed=reason_embed)
+
+        reason, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+
+        check_reason_length(reason)
+
+        if reason == kick.reason:
+            raise CommandError(translations.same_reason)
+
+        user_embed = Embed(title=translations.kick,
+                           description=translations.f_kick_edited(ctx.author.id, ctx.guild.name, reason),
+                           color=Colours.ModTools)
+
+        server_embed = Embed(title=translations.kick, description=translations.reason_edited, colour=Colours.ModTools)
+
+        try:
+            await member.send(embed=user_embed)
+        except (Forbidden, HTTPException):
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
+            server_embed.colour = Colours.error
+
+        await db_thread(Kick.upgrade, kick.id)
+        await db_thread(Kick.create, member.id, member.display_name, ctx.author.id, reason, True)
+
+        await ctx.send(embed=server_embed)
+
+        await send_to_changelog_mod(ctx.guild, ctx.message, Colours.changelog["kick"], translations.log_kick_edit,
+                                    member, reason)
 
     @commands.command()
     @Permission.ban.check
@@ -807,7 +871,7 @@ class ModCog(Cog, name="Mod Tools"):
                             translations.f_ulog_unmuted(f"<@{mute.unmute_mod}>", mute.unmute_reason),
                         )
                     )
-        for kick in await db_thread(db.all, Kick, member=user_id):
+        for kick in await db_thread(db.all, Kick, member=user_id, upgraded=False):
             if kick.mod is not None:
                 out.append((kick.timestamp, translations.f_ulog_kicked(f"<@{kick.mod}>", kick.reason)))
             else:
