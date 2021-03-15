@@ -100,6 +100,7 @@ pipenv run bot
 | DB_DATABASE   | Name of the database in which morpheushelper should store data.                 | test          |
 | DB_USER       | Username for the database account                                               | test          |
 | DB_PASSWORD   | Password for the database account                                               | test          |
+| GITHUB_TOKEN  | GitHub Personal Access Token (PAT) with public access                           |               |
 | SENTRY_DSN    | [Optional] Sentry DSN for logging                                               |               |
 | OWNER_ID      | [Optional] Discord User ID of the person who should recieve status information. |               |
 | DISABLED_COGS | [Optional] Cogs you'd like to disable.                                          |               |
