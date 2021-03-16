@@ -5,7 +5,7 @@ from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
 from discord import TextChannel, Embed, Member, VoiceState
 from discord.ext import commands, tasks
-from discord.ext.commands import Cog, Bot, Context
+from discord.ext.commands import Cog, Bot, Context, CommandError
 
 from colours import Colours
 from permissions import Permission
@@ -107,6 +107,9 @@ class AlertChannelCog(Cog):
         """
         change alert channel
         """
+
+        if not channel.permissions_for(channel.guild.me).send_messages:
+            raise CommandError(translations.log_not_changed_no_permissions)
 
         await Settings.set(int, "alert_channel", channel.id)
 
