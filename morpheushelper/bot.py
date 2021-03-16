@@ -9,10 +9,13 @@ from PyDrocsid.command_edit import add_to_error_cache
 from PyDrocsid.database import db
 from PyDrocsid.environment import TOKEN
 from PyDrocsid.events import listener
+from PyDrocsid.logger import get_logger
 from PyDrocsid.util import get_prefix, make_error
 from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
-from cogs.library.help.cog import send_help
+from cogs.library.information.help.cog import send_help
+
+logger = get_logger(__name__)
 
 
 async def fetch_prefix(_, msg: Message) -> Iterable[str]:
@@ -30,7 +33,7 @@ bot.remove_command("help")
 
 @listener
 async def on_ready():
-    print(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
+    logger.info(f"\033[1m\033[36mLogged in as {bot.user}\033[0m")
 
 
 @bot.event
@@ -56,12 +59,12 @@ load_cogs(
     bot,
 
     # Administration
+    RolesCog(),
     PermissionsCog(),
     SettingsCog(),
     SudoCog(),
 
     # Moderation
-    RolesCog(),
     ModCog(),
     LoggingCog(),
     MessageCog(),
@@ -84,6 +87,7 @@ load_cogs(
     RedditCog(),
     RunCodeCog(),
 
+    # General
     BeTheProfessionalCog(),
     PollsCog(),
     ReactionPinCog(),
@@ -97,4 +101,5 @@ load_cogs(
 def run():
     db.create_tables()
 
+    logger.debug("logging in")
     bot.run(TOKEN)

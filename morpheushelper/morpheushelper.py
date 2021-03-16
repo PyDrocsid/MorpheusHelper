@@ -2,12 +2,19 @@ from pathlib import Path
 
 from PyDrocsid.config import Config, load_config_file, load_version
 from PyDrocsid.environment import SENTRY_DSN
-from PyDrocsid.logger import setup_sentry
+from PyDrocsid.logger import setup_sentry, get_logger
 
+logger = get_logger(__name__)
+
+logger.debug("loading config")
 load_config_file(Path("config.yml"))
+
+logger.debug("loading version")
 load_version()
 
-banner = r"""
+print(
+    "\033[1m\033[36m"
+    r"""
 
         __  ___                 __                    __  __     __
        /  |/  /___  _________  / /_  ___  __  _______/ / / /__  / /___  ___  _____
@@ -16,11 +23,14 @@ banner = r"""
     /_/  /_/\____/_/  / .___/_/ /_/\___/\__,_/____/_/ /_/\___/_/ .___/\___/_/
                      /_/                                      /_/
 
-""".splitlines()
-print("\n".join(f"\033[1m\033[36m{line}\033[0m" for line in banner))
-print(f"Starting {Config.NAME} v{Config.VERSION} ({Config.REPO_LINK})\n")
+    """
+    "\033[0m"
+)
+
+logger.info(f"Starting {Config.NAME} v{Config.VERSION} ({Config.REPO_LINK})\n")
 
 if SENTRY_DSN:
+    logger.debug("initializing sentry")
     setup_sentry(SENTRY_DSN, Config.NAME, Config.VERSION)
 
 __import__("bot").run()

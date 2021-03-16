@@ -19,7 +19,10 @@ from discord.ext.commands import Cog as DiscordCog, Bot, Context, CommandError
 
 from PyDrocsid.config import Config, Contributor
 from PyDrocsid.events import register_events, event_handlers
+from PyDrocsid.logger import get_logger
 from PyDrocsid.permission import BasePermission
+
+logger = get_logger(__name__)
 
 
 class Cog(DiscordCog):
@@ -143,11 +146,15 @@ def load_cogs(bot: Bot, *cogs: Cog):
     register_cogs(bot, *enabled_cogs)
 
     if bot.cogs:
-        print(f"\033[1m\033[32m{len(bot.cogs)} Cog{'s' * (len(bot.cogs) > 1)} enabled:\033[0m")
+        logger.info("\033[1m\033[32m%s Cog%s enabled:\033[0m", len(bot.cogs), "s" * (len(bot.cogs) > 1))
         for cog in bot.cogs.values():
             commands = ", ".join(cmd.name for cmd in cog.get_commands())
-            print(f" + {cog.__class__.__name__}" + f" ({commands})" * bool(commands))
+            if commands:
+                commands = f"({commands})"
+
+            logger.info(" + %s %s", cog.__class__.__name__, commands)
+
     if disabled_cogs:
-        print(f"\033[1m\033[31m{len(disabled_cogs)} Cog{'s' * (len(disabled_cogs) > 1)} disabled:\033[0m")
+        logger.info("\033[1m\033[31m%s Cog%s disabled:\033[0m", len(disabled_cogs), "s" * (len(disabled_cogs) > 1))
         for name in disabled_cogs:
-            print(f" - {name.__class__.__name__}")
+            logger.info(" - %s", name.__class__.__name__)

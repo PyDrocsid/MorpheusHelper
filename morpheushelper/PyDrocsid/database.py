@@ -10,8 +10,12 @@ from sqlalchemy.orm import sessionmaker, scoped_session, Query, Session
 
 from PyDrocsid.async_thread import run_in_thread
 from PyDrocsid.environment import DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+from PyDrocsid.logger import get_logger
 
 T = TypeVar("T")
+
+
+logger = get_logger(__name__)
 
 
 class DB:
@@ -31,6 +35,7 @@ class DB:
         self.thread_semaphore = BoundedSemaphore(5)
 
     def create_tables(self):
+        logger.debug("creating tables")
         self.Base.metadata.create_all(bind=self.engine)
 
     def close(self):

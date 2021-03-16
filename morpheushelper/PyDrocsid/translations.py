@@ -5,6 +5,10 @@ from typing import Any
 
 import yaml
 
+from PyDrocsid.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class _FormatString(str):
     __call__ = str.format
@@ -89,7 +93,10 @@ class Translations:
 
     def register_namespace(self, name: str, path: Path, prio: int = 0):
         if name not in self._namespaces:
+            logger.debug("creating new translation namespace '%s'", name)
             self._namespaces[name] = _Namespace()
+        else:
+            logger.debug("extending translation namespace '%s'", name)
 
         # noinspection PyProtectedMember
         self._namespaces[name]._add_source(prio, path)

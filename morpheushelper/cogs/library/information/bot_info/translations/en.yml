@@ -1,0 +1,21 @@
+permissions:
+  admininfo: view admininfo
+
+features_title: Features
+author_title: Author
+contributors_title: Contributors
+github_title: GitHub
+version_title: Version
+prefix_title: Prefix
+help_command_title: Help Command
+bugs_features_title: Bug Reports / Feature Requests
+
+profile_status:
+  - Developed by Defelo#2022
+
+bot_description: Default Bot Description
+features:
+  - Feature
+admin_features:
+  - Admin Feature
+bugs_features: Please [create an issue]({repo}/issues/new) in the GitHub repository.

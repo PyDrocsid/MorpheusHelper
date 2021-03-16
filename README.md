@@ -95,11 +95,12 @@ pipenv run bot
 | Variable Name |                                   Description                                   | Default Value |
 |:--------------|:--------------------------------------------------------------------------------|:--------------|
 | TOKEN         | Discord Bot Token                                                               |               |
-| DB_HOST       | Hostname of the database server                                                 | localhost     |
-| DB_PORT       | Port on which the database server is running                                    | 3306          |
-| DB_DATABASE   | Name of the database in which morpheushelper should store data.                 | test          |
-| DB_USER       | Username for the database account                                               | test          |
-| DB_PASSWORD   | Password for the database account                                               | test          |
+| LOG_LEVEL     | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                          | `INFO`        |
+| DB_HOST       | Hostname of the database server                                                 | `localhost`   |
+| DB_PORT       | Port on which the database server is running                                    | `3306`        |
+| DB_DATABASE   | Name of the database in which morpheushelper should store data.                 | `test`        |
+| DB_USER       | Username for the database account                                               | `test`        |
+| DB_PASSWORD   | Password for the database account                                               | `test`        |
 | GITHUB_TOKEN  | GitHub Personal Access Token (PAT) with public access                           |               |
 | SENTRY_DSN    | [Optional] Sentry DSN for logging                                               |               |
 | OWNER_ID      | [Optional] Discord User ID of the person who should recieve status information. |               |

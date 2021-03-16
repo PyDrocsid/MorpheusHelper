@@ -6,7 +6,7 @@ def get_bool(key: str, default: bool) -> bool:
 
 
 TOKEN: str = environ["TOKEN"]
-DEBUG: bool = get_bool("DEBUG", False)
+LOG_LEVEL: str = getenv("LOG_LEVEL", "INFO")
 DB_HOST: str = getenv("DB_HOST", "localhost")
 DB_PORT: int = int(getenv("DB_PORT", "3306"))
 DB_DATABASE: str = getenv("DB_DATABASE", "bot")

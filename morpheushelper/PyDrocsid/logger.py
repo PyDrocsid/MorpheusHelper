@@ -1,11 +1,12 @@
 import logging
+import sys
 
 import sentry_sdk
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
-from PyDrocsid.environment import DEBUG
+from PyDrocsid.environment import LOG_LEVEL
 
 
 def setup_sentry(dsn: str, name: str, version: str):
@@ -25,14 +26,15 @@ def setup_sentry(dsn: str, name: str, version: str):
     )
 
 
-logging_handler = logging.StreamHandler()
-logging_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s")
+logging_formatter = logging.Formatter("[%(asctime)s] [%(levelname)s] %(message)s")
+
+logging_handler = logging.StreamHandler(sys.stdout)
+logging_handler.setFormatter(logging_formatter)
 
 
-def get_logger() -> logging.Logger:
-    logger: logging.Logger = logging.getLogger(__name__)
-    logging_handler.setFormatter(logging_formatter)
+def get_logger(name: str) -> logging.Logger:
+    logger: logging.Logger = logging.getLogger(name)
     logger.addHandler(logging_handler)
-    logger.setLevel(logging.DEBUG if DEBUG else logging.INFO)
+    logger.setLevel(LOG_LEVEL.upper())
 
     return logger
