@@ -798,3 +798,9 @@ joined_days: "joined less than a week ago"
 joined_weeks: "joined {} weeks ago"
 joined_months: "joined {} months ago"
 joined_years: "joined {} years ago"
+
+# teamrole ping
+team_role_pinged: "Teamrole Ping"
+message: "Message"
+message_link: "Jump to Message"
+link_click_here: "Click Here"

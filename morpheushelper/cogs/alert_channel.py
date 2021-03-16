@@ -3,7 +3,7 @@ from typing import Optional
 
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
-from discord import TextChannel, Embed, Member, VoiceState
+from discord import TextChannel, Embed, Member, VoiceState, Message
 from discord.ext import commands, tasks
 from discord.ext.commands import Cog, Bot, Context
 
@@ -70,6 +70,31 @@ class AlertChannelCog(Cog):
             await ch.send(embed=embed)
         else:
             logging.warning("No alert channel so far")
+
+    async def on_message(self, message: Message):
+        """
+        Checks whether a message contains the teamrole mention and sends an alert if necessary
+        """
+        channel: TextChannel = await self.get_alert_channel()
+        if channel is None:
+            return
+
+        teamrole_id: int = await Settings.get(int, "team_role", -1)
+        if teamrole_id == -1:
+            return
+
+        teamrole: int = message.guild.get_role(teamrole_id)
+        if teamrole not in message.role_mentions:
+            return
+
+        embed = Embed(title=translations.team_role_pinged, color=Colours.AlertChannel, timestamp=message.created_at)
+        embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+        embed.add_field(name=translations.channel, value=message.channel.mention)
+        embed.add_field(name=translations.member, value=message.author.mention)
+        embed.add_field(name=translations.message_link,
+                        value="[" + translations.link_click_here + "](" + message.jump_url + ")")
+        embed.add_field(name=translations.message, value=message.content, inline=False)
+        await channel.send(embed=embed)
 
     @tasks.loop(minutes=1)
     async def hop_loop(self):
