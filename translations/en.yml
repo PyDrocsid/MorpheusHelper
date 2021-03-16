@@ -330,22 +330,24 @@ rr_link_auto_remove: "{} -> {} (auto remove)"
 
 # rule commands
 rule: Send Messages
-send_embed_title: Send me the title of the embed!
-send_embed_content: Ok, now send me the content of the embed!
+send_embed_title: "Send me the title of the embed! Send {} to cancel."
+send_embed_content: "Ok, now send me the content of the embed! Send {} to cancel."
 could_not_send_message: Message could not be sent because I don't have `send_messages` permission in this channel.
-send_message: Now send me the message!
+send_message: "Now send me the message! Send {} to cancel."
 msg_could_not_be_sent: Message could not be sent.
 msg_sent: "Message has been sent successfully. :white_check_mark:"
+msg_send_cancel: "Sending a message has been cancelled :x:"
 invalid_color: Invalid color
 could_not_send_embed: Message could not be sent because I don't have `embed_links` permission in this channel.
 could_not_edit: This message cannot be edited because the bot is not the author of the message.
-send_new_message: Now send me the new message!
+send_new_message: "Now send me the new message! Send {} to cancel!"
 msg_edited: "Message has been edited successfully. :white_check_mark:"
 cannot_delete_dm: Private messages cannot be deleted.
 could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
 msg_deleted: "Message has been deleted successfully. :white_check_mark:"
 title_too_long: Title is too long.
 cannot_edit_files: Files cannot be edited.
+cancel: CANCEL
 
 # voice channel
 updating_voice_roles: Updating voice channel roles
@@ -771,3 +773,29 @@ run_usage: |
   your code
   `​`​`
 run_output: Run Output
+
+# Alert Channel
+member: Member
+member_id: Member ID
+none: None
+alert_channel: Alert Channel
+alert_channel_set: The alert channel has been changed.
+alert_channel_get: Current Alert Channel
+
+alert_channel_log_updated: "**Alerts** will now be **sent** to {}. :white_check_mark:"
+alert_channel_log_unset: "**Alerts** won't be sent anymore."
+
+# Channel hopping
+alert_channel_hop: Channel Hopping
+alert_channel_hop_current_channel: Current Channel
+alert_channel_hop_set_amount: The maximum amount of channel hops per minute has been changed.
+alert_channel_hop_log_updated: "**Alerts**\nThe maximum amount of channel hops has been set to {}. :white_check_mark:"
+alert_channel_hop_new_amount: New amount
+alert_channel_hop_current_amount: Maximum channel hops per minute
+
+# membership info
+joined_info: "Joined Info"
+joined_days: "joined less than a week ago"
+joined_weeks: "joined {} weeks ago"
+joined_months: "joined {} months ago"
+joined_years: "joined {} years ago"

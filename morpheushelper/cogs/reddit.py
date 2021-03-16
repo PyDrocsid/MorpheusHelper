@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 import requests
+import html
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import translations
@@ -14,6 +15,9 @@ from info import VERSION
 from models.reddit import RedditPost, RedditChannel
 from permissions import Permission
 from util import send_to_changelog
+import logging
+
+reddit_logger = logging.getLogger("base_logger")
 
 
 def exists_subreddit(subreddit: str) -> bool:
@@ -36,7 +40,9 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
     )
 
     if not response.ok:
-        print(f"could not fetch reddit posts of r/{subreddit}", response, response.status_code)
+        reddit_logger.warning(
+            "could not fetch reddit posts of r/%s - %s - %s", subreddit, response.status_code, response.text
+        )
         return []
 
     posts: List[dict] = []
@@ -47,7 +53,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
                 {
                     "id": post["data"]["id"],
                     "author": post["data"]["author"],
-                    "title": post["data"]["title"],
+                    "title": html.unescape(post["data"]["title"]),  # parse html special characters
                     "created_utc": post["data"]["created_utc"],
                     "score": post["data"]["score"],
                     "num_comments": post["data"]["num_comments"],
@@ -87,7 +93,7 @@ class RedditCog(Cog, name="Reddit"):
         await self.pull_hot_posts()
 
     async def pull_hot_posts(self):
-        print("pulling hot reddit posts")
+        reddit_logger.info("pulling hot reddit posts")
         limit = await Settings.get(int, "reddit_limit", 4)
         for reddit_channel in await db_thread(db.all, RedditChannel):  # type: RedditChannel
             text_channel: Optional[TextChannel] = self.bot.get_channel(reddit_channel.channel)
