@@ -20,7 +20,7 @@ async def get_max_hops() -> int:
     return await Settings.get(int, "alert_channel_warn_channel_hops", 5)
 
 
-class AlertChannelCog(Cog):
+class AlertChannelCog(Cog, name="Alert Channel"):
     def __init__(self, bot: Bot):
         self.bot = bot
         self.user_hops: dict[int, int] = {}

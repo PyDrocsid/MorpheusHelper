@@ -27,7 +27,7 @@ def supported_languages_docs(f):
     return f
 
 
-class RunCodeCog(Cog):
+class RunCodeCog(Cog, name="Run Code"):
     def __init__(self, bot: Bot):
         self.bot = bot
 

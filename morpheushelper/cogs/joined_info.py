@@ -21,7 +21,7 @@ def date_diff_to_str(date1: datetime, date2: datetime):
     return translations.joined_days
 
 
-class JoinedInfoCog(Cog):
+class JoinedInfoCog(Cog, name="Joined Info"):
     def __init__(self, bot: Bot):
         self.bot = bot
 
