@@ -12,9 +12,9 @@ from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread, db
 from PyDrocsid.emojis import name_to_emoji
 from PyDrocsid.events import StopEventHandling
+from PyDrocsid.logger import get_logger
 from PyDrocsid.translations import t
-from PyDrocsid.util import get_prefix
-from PyDrocsid.util import send_long_embed
+from PyDrocsid.util import get_prefix, send_long_embed
 from .colors import Colors
 from .models import InviteLog, AllowedInvite
 from .permissions import InvitesPermission
@@ -23,6 +23,8 @@ from cogs.library.pubsub import send_to_changelog, get_ulog_entries
 
 tg = t.g
 t = t.invites
+
+logger = get_logger(__name__)
 
 
 class AllowedServerConverter(Converter):
@@ -55,7 +57,7 @@ def get_discord_invite(url) -> Optional[str]:
     try:
         url = requests.head(url, allow_redirects=True, timeout=10).url
     except (KeyError, AttributeError, requests.RequestException, UnicodeError, ConnectionError, LocationParseError):
-        print("URL could not be resolved:", url)
+        logger.info("URL could not be resolved: %s", url)
         return None
 
     if match := re.match(

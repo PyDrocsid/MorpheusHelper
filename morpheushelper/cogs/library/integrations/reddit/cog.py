@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 import requests
+import html
 from discord import Embed, TextChannel
 from discord.ext import commands, tasks
 from discord.ext.commands import guild_only, Context, CommandError, UserInputError
@@ -9,6 +10,7 @@ from discord.ext.commands import guild_only, Context, CommandError, UserInputErr
 from PyDrocsid.cog import Cog
 from PyDrocsid.config import Config
 from PyDrocsid.database import db_thread, db
+from PyDrocsid.logger import get_logger
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
 from .colors import Colors
@@ -19,6 +21,8 @@ from cogs.library.pubsub import send_to_changelog
 
 tg = t.g
 t = t.reddit
+
+logger = get_logger(__name__)
 
 
 def exists_subreddit(subreddit: str) -> bool:
@@ -41,7 +45,9 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
     )
 
     if not response.ok:
-        print(f"could not fetch reddit posts of r/{subreddit}", response, response.status_code)
+        logger.warning(
+            "could not fetch reddit posts of r/%s - %s - %s", subreddit, response.status_code, response.text
+        )
         return []
 
     posts: List[dict] = []
@@ -52,7 +58,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
                 {
                     "id": post["data"]["id"],
                     "author": post["data"]["author"],
-                    "title": post["data"]["title"],
+                    "title": html.unescape(post["data"]["title"]),  # parse html special characters
                     "created_utc": post["data"]["created_utc"],
                     "score": post["data"]["score"],
                     "num_comments": post["data"]["num_comments"],
@@ -92,7 +98,7 @@ class RedditCog(Cog, name="Reddit"):
         await self.pull_hot_posts()
 
     async def pull_hot_posts(self):
-        print("pulling hot reddit posts")
+        logger.info("pulling hot reddit posts")
         limit = await Settings.get(int, "reddit_limit", 4)
         for reddit_channel in await db_thread(db.all, RedditChannel):  # type: RedditChannel
             text_channel: Optional[TextChannel] = self.bot.get_channel(reddit_channel.channel)

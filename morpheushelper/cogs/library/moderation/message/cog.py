@@ -1,7 +1,7 @@
 from http.client import HTTPException
 from typing import Optional
 
-from discord import TextChannel, Message, Forbidden, Permissions, Embed
+from discord import TextChannel, Message, Forbidden, Permissions, Embed, Member, File
 from discord.ext import commands
 from discord.ext.commands import guild_only, Context, CommandError, UserInputError
 
@@ -20,6 +20,18 @@ t = t.message
 class MessageCog(Cog, name="Message Commands"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
     PERMISSIONS = MessagePermission
+
+    @staticmethod
+    async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
+        content, files = await read_normal_message(bot, channel, member)
+        if content == translations.cancel:
+            embed = Embed(
+                title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_send_cancel
+            )
+            await channel.send(embed=embed)
+            return None, []
+
+        return content, files
 
     @commands.group()
     @MessagePermission.send.check
@@ -41,9 +53,17 @@ class MessageCog(Cog, name="Message Commands"):
         if not channel.permissions_for(channel.guild.me).send_messages:
             raise CommandError(t.could_not_send_message)
 
-        embed = Embed(title=t.messages, colour=Colors.MessageCommands, description=t.send_message)
+        embed = Embed(
+            title=t.messages,
+            colour=Colors.MessageCommands,
+            description=t.send_message(t.cancel),
+        )
         await ctx.send(embed=embed)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
+
         try:
             await channel.send(content=content, files=files)
         except (HTTPException, Forbidden):
@@ -64,15 +84,24 @@ class MessageCog(Cog, name="Message Commands"):
         if not permissions.embed_links:
             raise CommandError(t.could_not_send_embed)
 
-        embed = Embed(title=t.messages, colour=Colors.MessageCommands, description=t.send_embed_title)
+        embed = Embed(
+            title=t.messages,
+            colour=Colors.MessageCommands,
+            description=t.send_embed_title(t.cancel),
+        )
         await ctx.send(embed=embed)
-        title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        if title is None:
+            return
         if len(title) > 256:
             raise CommandError(t.title_too_long)
 
-        embed.description = t.send_embed_content
+        embed.description = t.send_embed_content(t.cancel)
         await ctx.send(embed=embed)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
 
         send_embed = Embed(title=title, description=content)
 
@@ -125,9 +154,17 @@ class MessageCog(Cog, name="Message Commands"):
         if message.author != self.bot.user:
             raise CommandError(t.could_not_edit)
 
-        embed = Embed(title=t.messages, colour=Colors.MessageCommands, description=t.send_new_message)
+        embed = Embed(
+            title=t.messages,
+            colour=Colors.MessageCommands,
+            description=t.send_new_message(t.cancel),
+        )
         await ctx.send(embed=embed)
-        content, files = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
+
         if files:
             raise CommandError(t.cannot_edit_files)
 
@@ -144,15 +181,25 @@ class MessageCog(Cog, name="Message Commands"):
         if message.author != self.bot.user:
             raise CommandError(t.could_not_edit)
 
-        embed = Embed(title=t.messages, colour=Colors.MessageCommands, description=t.send_embed_title)
+        embed = Embed(
+            title=t.messages,
+            colour=Colors.MessageCommands,
+            description=t.send_embed_title(t.cancel),
+        )
         await ctx.send(embed=embed)
-        title, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if title is None:
+            return
         if len(title) > 256:
             raise CommandError(t.title_too_long)
 
-        embed.description = t.send_embed_content
+        embed.description = t.send_embed_content(t.cancel)
         await ctx.send(embed=embed)
-        content, _ = await read_normal_message(self.bot, ctx.channel, ctx.author)
+        content, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if content is None:
+            return
 
         send_embed = Embed(title=title, description=content)
 

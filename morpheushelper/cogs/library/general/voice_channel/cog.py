@@ -10,6 +10,7 @@ from discord.ext.commands import guild_only, Context, CommandError, UserInputErr
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.database import db_thread, db
+from PyDrocsid.logger import get_logger
 from PyDrocsid.multilock import MultiLock
 from PyDrocsid.settings import Settings
 from PyDrocsid.translations import t
@@ -23,6 +24,8 @@ from cogs.library.pubsub import send_to_changelog
 
 tg = t.g
 t = t.voice_channel
+
+logger = get_logger(__name__)
 
 
 async def gather_roles(guild: Guild, channel_id: int) -> List[Role]:
@@ -68,7 +71,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
     async def on_ready(self):
         guild: Guild = self.bot.guilds[0]
-        print(t.updating_voice_roles)
+        logger.info(t.updating_voice_roles)
         linked_roles: Dict[Role, Set[VoiceChannel]] = {}
         for link in await db_thread(db.all, RoleVoiceLink):
             role = guild.get_role(link.role)
@@ -116,7 +119,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
                     await db_thread(db.delete, dyn_channel)
             await self.update_dynamic_voice_group(group)
 
-        print(t.voice_init_done)
+        logger.info(t.voice_init_done)
 
     async def get_dynamic_voice_channel(
         self, member: Member, owner_required: bool

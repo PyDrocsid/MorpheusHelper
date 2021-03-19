@@ -58,6 +58,8 @@ Project
 - Click on `Pipenv Environment`
 - Select `Python 3.9` as `Base interpreter`
 - Confirm with `OK`
+- Change the working directory to root path  ➔ `Edit Configurations`  ➔ `Working directory`
+
 
 Finally, please remember to mark the `morpheushelper` directory as `Sources Root` (right click on `morpheushelper` ➔ `Mark Directory as` ➔ `Sources Root`).
 
