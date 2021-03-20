@@ -4,6 +4,7 @@ user_not_found: User not found.
 role: Role
 enabled: ":white_check_mark: Enabled"
 disabled: ":x: Disabled"
+member: Member
 members: Members
 status: Status
 delay: Delay
@@ -11,3 +12,6 @@ invalid_duration: Invalid duration.
 invalid_color: Invalid color.
 requested_by: Requested by @{} ({})
 error: ":x: Error"
+x_days:
+  one: "{cnt} day"
+  many: "{cnt} days"

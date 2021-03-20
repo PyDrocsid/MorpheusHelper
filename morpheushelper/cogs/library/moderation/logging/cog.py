@@ -14,7 +14,7 @@ from .colors import Colors
 from .models import LogExclude
 from .permissions import LoggingPermission
 from cogs.library.contributor import Contributor
-from cogs.library.pubsub import send_to_changelog
+from cogs.library.pubsub import send_to_changelog, send_alert
 
 tg = t.g
 t = t.logging
@@ -52,12 +52,26 @@ class LoggingCog(Cog, name="Logging"):
     @send_to_changelog.subscribe
     async def handle_send_to_changelog(self, guild: Guild, message: Union[str, Embed]):
         channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "logging_changelog", -1))
-        if channel is not None:
-            if isinstance(message, str):
-                embed = Embed(colour=Colors.changelog, description=message)
-            else:
-                embed = message
-            await channel.send(embed=embed)
+        if not channel:
+            return
+
+        if isinstance(message, str):
+            embed = Embed(colour=Colors.changelog, description=message)
+        else:
+            embed = message
+        await channel.send(embed=embed)
+
+    @send_alert.subscribe
+    async def handle_send_alert(self, guild: Guild, message: Union[str, Embed]):
+        channel: Optional[TextChannel] = guild.get_channel(await Settings.get(int, "logging_alert", -1))
+        if not channel:
+            return
+
+        if isinstance(message, str):
+            embed = Embed(colour=Colors.changelog, description=message)
+        else:
+            embed = message
+        await channel.send(embed=embed)
 
     async def on_ready(self):
         try:
@@ -189,13 +203,14 @@ class LoggingCog(Cog, name="Logging"):
 
         edit_channel: Optional[TextChannel] = await self.get_logging_channel("edit")
         delete_channel: Optional[TextChannel] = await self.get_logging_channel("delete")
+        alert_channel: Optional[TextChannel] = await self.get_logging_channel("alert")
         changelog_channel: Optional[TextChannel] = await self.get_logging_channel("changelog")
         maxage: int = await Settings.get(int, "logging_maxage", -1)
 
         embed = Embed(title=t.logging, color=Colors.Logging)
 
         if maxage != -1:
-            embed.add_field(name=t.maxage, value=t.x_days(cnt=maxage), inline=False)
+            embed.add_field(name=t.maxage, value=tg.x_days(cnt=maxage), inline=False)
         else:
             embed.add_field(name=t.maxage, value=tg.disabled, inline=False)
 
@@ -210,6 +225,11 @@ class LoggingCog(Cog, name="Logging"):
             embed.add_field(name=t.msg_delete, value=delete_channel.mention, inline=False)
         else:
             embed.add_field(name=t.msg_delete, value=t.logging_disabled, inline=False)
+
+        if alert_channel is not None:
+            embed.add_field(name=t.alert_channel, value=alert_channel.mention, inline=False)
+        else:
+            embed.add_field(name=t.alert_channel, value=tg.disabled, inline=False)
 
         if changelog_channel is not None:
             embed.add_field(name=t.changelog, value=changelog_channel.mention, inline=False)
@@ -328,6 +348,44 @@ class LoggingCog(Cog, name="Logging"):
         embed = Embed(title=t.logging, description=t.log_delete_disabled, color=Colors.Logging)
         await ctx.send(embed=embed)
         await send_to_changelog(ctx.guild, t.log_delete_disabled)
+
+    @logging.group(name="alert", aliases=["al", "a"])
+    async def logging_alert(self, ctx: Context):
+        """
+        change settings for internal alert channel
+        """
+
+        if ctx.invoked_subcommand is None:
+            raise UserInputError
+
+    @logging_alert.command(name="channel", aliases=["ch", "c"])
+    async def logging_alert_channel(self, ctx: Context, channel: TextChannel):
+        """
+        change alert channel
+        """
+
+        if not channel.permissions_for(channel.guild.me).send_messages:
+            raise CommandError(t.log_not_changed_no_permissions)
+
+        await Settings.set(int, "logging_alert", channel.id)
+        embed = Embed(
+            title=t.logging,
+            description=t.log_alert_updated(channel.mention),
+            color=Colors.Logging,
+        )
+        await ctx.send(embed=embed)
+        await send_to_changelog(ctx.guild, t.log_alert_updated(channel.mention))
+
+    @logging_alert.command(name="disable", aliases=["d"])
+    async def logging_alert_disable(self, ctx: Context):
+        """
+        disable alert channel
+        """
+
+        await send_to_changelog(ctx.guild, t.log_alert_disabled)
+        await Settings.set(int, "logging_alert", -1)
+        embed = Embed(title=t.logging, description=t.log_alert_disabled, color=Colors.Logging)
+        await ctx.send(embed=embed)
 
     @logging.group(name="changelog", aliases=["cl", "c", "change"])
     async def logging_changelog(self, ctx: Context):

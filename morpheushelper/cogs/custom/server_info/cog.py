@@ -12,7 +12,7 @@ from cogs.library.moderation.invites.models import AllowedInvite
 t = t.server_info
 
 
-class CustomServerInfoCog(ServerInfoCog):
+class CustomServerInfoCog(ServerInfoCog, name="Server Information"):
     async def get_users(self, guild: Guild) -> list[tuple[str, list[Member]]]:
         async def get_role(role_name) -> Optional[Role]:
             return guild.get_role(await Settings.get(int, role_name + "_role"))

@@ -21,13 +21,10 @@ class MessageCog(Cog, name="Message Commands"):
     CONTRIBUTORS = [Contributor.Defelo, Contributor.wolflu]
     PERMISSIONS = MessagePermission
 
-    @staticmethod
-    async def get_message_cancel(bot: Bot, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
-        content, files = await read_normal_message(bot, channel, member)
-        if content == translations.cancel:
-            embed = Embed(
-                title=translations.rule, colour=Colours.RuleCommands, description=translations.msg_send_cancel
-            )
+    async def get_message_cancel(self, channel: TextChannel, member: Member) -> tuple[Optional[str], list[File]]:
+        content, files = await read_normal_message(self.bot, channel, member)
+        if content == t.cancel:
+            embed = Embed(title=t.messages, colour=Colors.MessageCommands, description=t.msg_send_cancel)
             await channel.send(embed=embed)
             return None, []
 
@@ -59,7 +56,7 @@ class MessageCog(Cog, name="Message Commands"):
             description=t.send_message(t.cancel),
         )
         await ctx.send(embed=embed)
-        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(ctx.channel, ctx.author)
 
         if content is None:
             return
@@ -90,7 +87,7 @@ class MessageCog(Cog, name="Message Commands"):
             description=t.send_embed_title(t.cancel),
         )
         await ctx.send(embed=embed)
-        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        title, _ = await self.get_message_cancel(ctx.channel, ctx.author)
         if title is None:
             return
         if len(title) > 256:
@@ -98,7 +95,7 @@ class MessageCog(Cog, name="Message Commands"):
 
         embed.description = t.send_embed_content(t.cancel)
         await ctx.send(embed=embed)
-        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(ctx.channel, ctx.author)
 
         if content is None:
             return
@@ -160,7 +157,7 @@ class MessageCog(Cog, name="Message Commands"):
             description=t.send_new_message(t.cancel),
         )
         await ctx.send(embed=embed)
-        content, files = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, files = await self.get_message_cancel(ctx.channel, ctx.author)
 
         if content is None:
             return
@@ -187,7 +184,7 @@ class MessageCog(Cog, name="Message Commands"):
             description=t.send_embed_title(t.cancel),
         )
         await ctx.send(embed=embed)
-        title, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        title, _ = await self.get_message_cancel(ctx.channel, ctx.author)
 
         if title is None:
             return
@@ -196,7 +193,7 @@ class MessageCog(Cog, name="Message Commands"):
 
         embed.description = t.send_embed_content(t.cancel)
         await ctx.send(embed=embed)
-        content, _ = await self.get_message_cancel(self.bot, ctx.channel, ctx.author)
+        content, _ = await self.get_message_cancel(ctx.channel, ctx.author)
 
         if content is None:
             return

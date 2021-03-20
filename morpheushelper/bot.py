@@ -72,6 +72,7 @@ load_cogs(
     InvitesCog(),
     AutoModCog(),
     VerificationCog(),
+    SpamDetectionCog(),
 
     # Information
     CustomBotInfoCog(),
@@ -80,6 +81,7 @@ load_cogs(
     HelpCog(),
     MetaQuestionCog(),
     CustomServerInfoCog(),
+    MemberInfoCog(),
 
     # Integrations
     AdventOfCodeCog(),

@@ -1,0 +1,14 @@
+permissions:
+  manage: manage spam detection
+
+spam_detection: Spam Detection
+max_x_hops:
+  one: "Max.: {cnt} channel hop per minute"
+  many: "Max.: {cnt} channel hops per minute"
+member_id: Member ID
+channel_hopping: Channel Hopping Detection
+current_channel: Current Channel
+hop_amount_set: "The **maximum amount** of **channel hops per minute** has been **set to {}**."
+hop_detection_disabled: "**Channel Hopping Detection** has been **disabled**."
+new_amount: New amount
+max_hops: Maximum channel hops per minute

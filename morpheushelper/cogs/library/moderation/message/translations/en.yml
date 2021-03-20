@@ -4,18 +4,20 @@ permissions:
   delete: delete a message
 
 messages: Messages
-send_embed_title: Send me the title of the embed!
-send_embed_content: Ok, now send me the content of the embed!
+send_embed_title: "Send me the title of the embed! Send {} to cancel."
+send_embed_content: "Ok, now send me the content of the embed! Send {} to cancel."
 could_not_send_message: Message could not be sent because I don't have `send_messages` permission in this channel.
-send_message: Now send me the message!
+send_message: "Now send me the message! Send {} to cancel."
 msg_could_not_be_sent: Message could not be sent.
 msg_sent: "Message has been sent successfully. :white_check_mark:"
+msg_send_cancel: "Sending a message has been cancelled :x:"
 could_not_send_embed: Message could not be sent because I don't have `embed_links` permission in this channel.
 could_not_edit: This message cannot be edited because the bot is not the author of the message.
-send_new_message: Now send me the new message!
+send_new_message: "Now send me the new message! Send {} to cancel!"
 msg_edited: "Message has been edited successfully. :white_check_mark:"
 cannot_delete_dm: Private messages cannot be deleted.
 could_not_delete: Message could not be deleted because I don't have `manage_messages` permission in this channel.
 msg_deleted: "Message has been deleted successfully. :white_check_mark:"
 title_too_long: Title is too long.
 cannot_edit_files: Files cannot be edited.
+cancel: CANCEL

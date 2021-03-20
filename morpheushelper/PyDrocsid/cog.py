@@ -28,6 +28,7 @@ logger = get_logger(__name__)
 class Cog(DiscordCog):
     CONTRIBUTORS: list[Contributor]
     PERMISSIONS: Type[BasePermission]
+    DEPENDENCIES: list[Type[Cog]] = []
 
     instance: Optional[Cog] = None
     bot: Bot
@@ -118,6 +119,35 @@ class Cog(DiscordCog):
         pass
 
 
+def check_dependencies(cogs: list[Cog]) -> set[Type[Cog]]:
+    available: set[Type[Cog]] = {type(cog) for cog in cogs}
+    required_by: dict[Type[Cog], list[Cog]] = {}
+    for cog in cogs:
+        for dependency in cog.DEPENDENCIES:
+            required_by.setdefault(dependency, []).append(cog)
+
+    disabled: set[Type[Cog]] = set()
+    not_available: list[Type[Cog]] = [dependency for dependency in required_by if dependency not in available]
+    while not_available:
+        dependency: Type[Cog] = not_available.pop()
+        if dependency not in required_by:
+            continue
+
+        for cog in required_by[dependency]:
+            if type(cog) in disabled:
+                continue
+
+            logger.warning(
+                "Cog '%s' has been disabled because the dependency '%s' is missing.",
+                cog.__class__.__name__,
+                dependency.__name__,
+            )
+            disabled.add(type(cog))
+            not_available.append(type(cog))
+
+    return disabled
+
+
 def register_cogs(bot: Bot, *cogs: Cog):
     register_events(bot)
 
@@ -142,6 +172,10 @@ def load_cogs(bot: Bot, *cogs: Cog):
             continue
 
         enabled_cogs.append(cog)
+
+    disabled: set[Type[Cog]] = check_dependencies(enabled_cogs)
+    disabled_cogs += [cog for cog in enabled_cogs if type(cog) in disabled]
+    enabled_cogs = [cog for cog in enabled_cogs if type(cog) not in disabled]
 
     register_cogs(bot, *enabled_cogs)
 
