@@ -1,0 +1,197 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+env:
+  PYTHON_VERSION: 3.9
+  IMAGE_NAME: defelo/mh-dev
+  GHCR_NAME: pydrocsid/mh-dev
+
+jobs:
+  flake8:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pipenv
+          pipenv sync --dev
+
+      - name: Lint with flake8
+        run: echo todo  # pipenv run flake8
+
+  black:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pipenv
+          pipenv sync --dev
+
+      - name: Check code formatting with black
+        run: pipenv run black --diff --check
+
+  docker:
+    needs: [ flake8, black ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2.1.4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-${{ matrix.platform }}-
+
+      - name: Create Version
+        id: version
+        run: |
+          set -x
+
+          name=$IMAGE_NAME
+          ghcr_name=$GHCR_NAME
+
+          tag=${GITHUB_REF#refs/tags/v}
+          branch=${GITHUB_REF#refs/heads/}
+          platform=${{ matrix.platform }}
+
+          hub=0
+
+          if [[ $GITHUB_REF = refs/tags/v* ]]; then
+            tags="v$tag latest"
+            hub=1
+          elif [[ $GITHUB_REF = refs/heads/* ]]; then
+            tags="$branch"
+            if [[ $branch == develop ]]; then
+              hub=1
+            fi
+          fi
+          tags="$(echo $tags | tr / -)"
+
+          out=""
+          for t in $tags; do
+            [[ $hub == "1" ]] && out="$out,$name:$t-$(echo $platform | tr / -)"
+            out="$out,ghcr.io/$ghcr_name:$t-$(echo $platform | tr / -)"
+            if [[ $platform == linux/amd64 ]]; then
+              [[ $hub == "1" ]] && out="$out,$name:$t"
+              out="$out,ghcr.io/$ghcr_name:$t"
+            fi
+          done
+
+          echo ::set-output name=tags::${out:1}
+          echo ::set-output name=push_to_hub::${hub}
+
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          push: false
+          load: true
+          tags: ${{ steps.version.outputs.tags }}
+          platforms: ${{ matrix.platform }}
+          file: Dockerfile
+          context: .
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Build Docker Image Archive
+        id: archive
+        env:
+          TAGS: ${{ steps.version.outputs.tags }}
+        run: |
+          set -ex
+          platform=${{ matrix.platform }}
+          name=$(echo $IMAGE_NAME | tr / _)_$(echo $platform | tr / -).tar.gz
+          echo ::set-output name=name::${name}
+          docker save $(echo $TAGS | tr , ' ') | gzip > $name
+
+      - name: Upload Docker Image Archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.archive.outputs.name }}
+          path: ${{ steps.archive.outputs.name }}
+
+      - name: Login to DockerHub
+        id: login_dockerhub
+        uses: docker/login-action@v1
+        continue-on-error: true
+        env:
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        if: ${{ steps.version.outputs.push_to_hub == '1' }}
+        with:
+          username: ${{ env.USERNAME }}
+          password: ${{ env.PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        id: login_ghcr
+        uses: docker/login-action@v1
+        continue-on-error: true
+        env:
+          USERNAME: ${{ github.repository_owner }}
+          PASSWORD: ${{ secrets.CR_PAT }}
+        with:
+          registry: ghcr.io
+          username: ${{ env.USERNAME }}
+          password: ${{ env.PASSWORD }}
+
+      - name: Push to Registries
+        uses: docker/build-push-action@v2
+        if: ${{ steps.login_ghcr.outcome != 'failure' && steps.login_dockerhub.outcome != 'failure' }}
+        with:
+          push: true
+          tags: ${{ steps.version.outputs.tags }}
+          platforms: ${{ matrix.platform }}
+          file: Dockerfile
+          context: .
+          cache-from: type=local,src=/tmp/.buildx-cache
+
+      - name: Clear
+        if: always()
+        run: rm -f ${HOME}/.docker/config.json
