@@ -16,6 +16,7 @@ aiohttp = "*"
 pydrocsid = "*"
 "discord.py" = "*"
 aioredis = "*"
+python-dateutil = "*"
 
 [dev-packages]
 flake8 = "*"
