@@ -257,13 +257,14 @@ class ModCog(Cog, name="Mod Tools"):
             await user.move_to(None)
 
         active_mutes: List[Mute] = await db_thread(db.all, Mute, active=True, member=user.id)
-        if any(
-            mute.days == -1
-            or days is not None
-            and datetime.utcnow() + timedelta(days=days) <= mute.timestamp + timedelta(days=mute.days)
-            for mute in active_mutes
-        ):
-            raise CommandError(t.already_muted)
+        for mute in active_mutes:
+            if mute.days == -1:
+                raise CommandError(t.already_muted)
+
+            ts = mute.timestamp + timedelta(days=mute.days)
+            if days is not None and datetime.utcnow() + timedelta(days=days) <= ts:
+                raise CommandError(t.already_muted)
+
         for mute in active_mutes:
             await db_thread(Mute.upgrade, mute.id, ctx.author.id)
 
@@ -407,13 +408,14 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(t.cannot_ban)
 
         active_bans: List[Ban] = await db_thread(db.all, Ban, active=True, member=user.id)
-        if any(
-            ban.days == -1
-            or ban_days is not None
-            and datetime.utcnow() + timedelta(days=ban_days) <= ban.timestamp + timedelta(days=ban.days)
-            for ban in active_bans
-        ):
-            raise CommandError(t.already_banned)
+        for ban in active_bans:
+            if ban.days == -1:
+                raise CommandError(t.already_banned)
+
+            ts = ban.timestamp + timedelta(days=ban.days)
+            if ban_days is not None and datetime.utcnow() + timedelta(days=ban_days) <= ts:
+                raise CommandError(t.already_banned)
+
         for ban in active_bans:
             await db_thread(Ban.upgrade, ban.id, ctx.author.id)
         for mute in await db_thread(db.all, Mute, active=True, member=user.id):

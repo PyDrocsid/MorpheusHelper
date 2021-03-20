@@ -113,13 +113,11 @@ class CleverBot:
             self.result = result
 
             self.set_cookie("CBALT", "1~" + out)
-            self.set_cookie(
-                "CBSTATE",
-                "&&0&&0&"
-                + str(self.ns)
-                + "&"
-                + "&".join([self.history[i] for i in range(len(self.history) - 1, -1, -1)]),
-            )
+
+            cbstate = f"&&0&&0&{self.ns}&"
+            cbstate += "&".join([self.history[i] for i in range(len(self.history) - 1, -1, -1)])
+            self.set_cookie("CBSTATE", cbstate)
+
         self.ns += 1
         return out
 

@@ -136,10 +136,8 @@ def make_member_stats(member: dict) -> tuple[int, list[str]]:
                 break
 
             completed += 1
-            delta = timedelta(
-                seconds=int(day[part]["get_star_ts"])
-                - datetime(AOCConfig.YEAR, 12, i + 1, 5, 0, 0, tzinfo=timezone.utc).timestamp()
-            )
+            release_ts = datetime(AOCConfig.YEAR, 12, i + 1, 5, 0, 0, tzinfo=timezone.utc).timestamp()
+            delta = timedelta(seconds=int(day[part]["get_star_ts"]) - release_ts)
             avg.append(delta.total_seconds())
             d, h, m, s = delta.days, delta.seconds // 3600, delta.seconds // 60 % 60, delta.seconds % 60
             line += f"  {d:2}d {h:2}h {m:2}m {s:2}s"
