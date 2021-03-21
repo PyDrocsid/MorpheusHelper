@@ -2,7 +2,7 @@ from typing import Optional, Union, List
 
 from discord import Message, Embed
 from discord.ext import commands
-from discord.ext.commands import Command, Cog, Group, CommandError, Context
+from discord.ext.commands import Command, Group, CommandError, Context
 
 from PyDrocsid.cog import Cog
 from PyDrocsid.config import Contributor

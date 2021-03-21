@@ -27,11 +27,9 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
     PERMISSIONS = MediaOnlyPermission
 
     async def on_message(self, message: Message):
-        if (
-            message.guild is None
-            or message.author.bot
-            or await MediaOnlyPermission.bypass.check_permissions(message.author)
-        ):
+        if message.guild is None or message.author.bot:
+            return
+        if await MediaOnlyPermission.bypass.check_permissions(message.author):
             return
         if await db_thread(db.get, MediaOnlyChannel, message.channel.id) is None:
             return

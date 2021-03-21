@@ -159,11 +159,11 @@ class LoggingCog(Cog, name="Logging"):
             out = []
             for attachment in message.attachments:
                 size = attachment.size
-                for unit in "BKMG":
+                for _unit in "BKMG":
                     if size < 1000:
                         break
                     size /= 1000
-                out.append(f"{attachment.filename} ({size:.1f} {unit})")
+                out.append(f"{attachment.filename} ({size:.1f} {_unit})")
             embed.add_field(name=t.attachments, value="\n".join(out), inline=False)
         await delete_channel.send(embed=embed)
 

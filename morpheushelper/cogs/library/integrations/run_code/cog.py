@@ -23,7 +23,7 @@ N_CHARS = 1000
 LANGUAGES = [
     "awk", "bash", "brainfuck", "c", "cpp", "crystal", "csharp", "d", "dash", "deno", "elixir", "emacs", "go",
     "haskell", "java", "jelly", "julia", "kotlin", "lisp", "lua", "nasm", "nasm64", "nim", "node", "osabie",
-    "paradoc", "perl", "php", "python2", "python3", "ruby", "rust", "swift", "typescript", "zig"
+    "paradoc", "perl", "php", "python2", "python3", "ruby", "rust", "swift", "typescript", "zig",
 ]
 # fmt: on
 
@@ -54,11 +54,11 @@ class RunCodeCog(Cog):
         try:
             api_result: dict = await Emkc.run_code(language, source)
         except EmkcAPIException as e:
-            if e.message == "Supplied language is not supported by Piston":
+            if e.error == "Supplied language is not supported by Piston":
                 raise CommandError(t.error_unsupported_language(language))
 
             capture_exception()
-            raise CommandError(f"{t.error_run_code}: {e.message}")
+            raise CommandError(f"{t.error_run_code}: {e.error}")
         except ClientError:
             capture_exception()
             raise CommandError(t.error_run_code)

@@ -44,7 +44,8 @@ class CleverBotCog(Cog, name="CleverBot"):
             else:
                 cleverbot = self.states[message.channel] = CleverBot()
             response = await asyncio.get_running_loop().run_in_executor(
-                None, lambda: cleverbot.say(message.clean_content)
+                None,
+                lambda: cleverbot.say(message.clean_content),
             )
             if not response:
                 response = "..."

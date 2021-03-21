@@ -123,7 +123,10 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         embed = Embed(title=t.reactionrole, colour=Colors.ReactionRole)
         out = []
         for link in await db_thread(
-            db.all, ReactionRole, channel_id=msg.channel.id, message_id=msg.id
+            db.all,
+            ReactionRole,
+            channel_id=msg.channel.id,
+            message_id=msg.id,
         ):  # type: ReactionRole
             channel: Optional[TextChannel] = ctx.guild.get_channel(link.channel_id)
             if channel is None:
@@ -196,5 +199,6 @@ class ReactionRoleCog(Cog, name="ReactionRole"):
         embed = Embed(title=t.reactionrole, colour=Colors.ReactionRole, description=t.rr_link_removed)
         await ctx.send(embed=embed)
         await send_to_changelog(
-            ctx.guild, t.log_rr_link_removed(emoji, link.role_id, msg.jump_url, msg.channel.mention)
+            ctx.guild,
+            t.log_rr_link_removed(emoji, link.role_id, msg.jump_url, msg.channel.mention),
         )

@@ -122,7 +122,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
         logger.info(t.voice_init_done)
 
     async def get_dynamic_voice_channel(
-        self, member: Member, owner_required: bool
+        self,
+        member: Member,
+        owner_required: bool,
     ) -> Tuple[DynamicVoiceGroup, DynamicVoiceChannel, VoiceChannel, Optional[TextChannel]]:
         if member.voice is None or member.voice.channel is None:
             raise CommandError(t.not_in_private_voice)
@@ -237,7 +239,7 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
 
         members: List[Member] = [member for member in channel.members if not member.bot]
         if not group.public and member.id == dyn_channel.owner and len(members) > 0:
-            new_owner: Member = random.choice(members)
+            new_owner: Member = random.choice(members)  # noqa: S311
             await db_thread(DynamicVoiceChannel.change_owner, dyn_channel.channel_id, new_owner.id)
             if text_chat is not None:
                 await self.send_voice_msg(
@@ -402,7 +404,9 @@ class VoiceChannelCog(Cog, name="Voice Channels"):
             channel = member.voice.channel
 
         dyn_channel: Optional[DynamicVoiceChannel] = await db_thread(
-            db.first, DynamicVoiceChannel, channel_id=channel.id
+            db.first,
+            DynamicVoiceChannel,
+            channel_id=channel.id,
         )
         if not dyn_channel:
             raise CommandError(t.dyn_group_not_found)

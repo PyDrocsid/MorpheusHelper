@@ -1,7 +1,7 @@
 from collections import Counter
 from os import getenv
 from pathlib import Path
-from subprocess import getoutput
+from subprocess import getoutput  # noqa: S404
 from typing import Type, Union
 
 import yaml
@@ -37,7 +37,7 @@ class Config:
             Contributor.wolflu: 50,
             Contributor.MaxiHuHe04: 10,
             Contributor.ce_phox: 10,
-        }
+        },
     )
 
     ROLES: dict[str, tuple[str, bool]]
@@ -110,7 +110,8 @@ def load_config_file(path: Path):
     for cog, overrides in config.get("default_permission_overrides", {}).items():
         for permission, level in overrides.items():
             Config.DEFAULT_PERMISSION_OVERRIDES.setdefault(cog.lower(), {}).setdefault(
-                permission.lower(), getattr(Config.PERMISSION_LEVELS, level.upper())
+                permission.lower(),
+                getattr(Config.PERMISSION_LEVELS, level.upper()),
             )
 
     Config.TEAMLER_LEVEL = getattr(Config.PERMISSION_LEVELS, config["teamler_level"].upper())

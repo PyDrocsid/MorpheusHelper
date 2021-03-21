@@ -257,13 +257,14 @@ class ModCog(Cog, name="Mod Tools"):
             await user.move_to(None)
 
         active_mutes: List[Mute] = await db_thread(db.all, Mute, active=True, member=user.id)
-        if any(
-            mute.days == -1
-            or days is not None
-            and datetime.utcnow() + timedelta(days=days) <= mute.timestamp + timedelta(days=mute.days)
-            for mute in active_mutes
-        ):
-            raise CommandError(t.already_muted)
+        for mute in active_mutes:
+            if mute.days == -1:
+                raise CommandError(t.already_muted)
+
+            ts = mute.timestamp + timedelta(days=mute.days)
+            if days is not None and datetime.utcnow() + timedelta(days=days) <= ts:
+                raise CommandError(t.already_muted)
+
         for mute in active_mutes:
             await db_thread(Mute.upgrade, mute.id, ctx.author.id)
 
@@ -407,13 +408,14 @@ class ModCog(Cog, name="Mod Tools"):
             raise CommandError(t.cannot_ban)
 
         active_bans: List[Ban] = await db_thread(db.all, Ban, active=True, member=user.id)
-        if any(
-            ban.days == -1
-            or ban_days is not None
-            and datetime.utcnow() + timedelta(days=ban_days) <= ban.timestamp + timedelta(days=ban.days)
-            for ban in active_bans
-        ):
-            raise CommandError(t.already_banned)
+        for ban in active_bans:
+            if ban.days == -1:
+                raise CommandError(t.already_banned)
+
+            ts = ban.timestamp + timedelta(days=ban.days)
+            if ban_days is not None and datetime.utcnow() + timedelta(days=ban_days) <= ts:
+                raise CommandError(t.already_banned)
+
         for ban in active_bans:
             await db_thread(Ban.upgrade, ban.id, ctx.author.id)
         for mute in await db_thread(db.all, Mute, active=True, member=user.id):
@@ -490,7 +492,9 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog_mod(ctx.guild, ctx.message, Colors.unban, t.log_unbanned, user, reason)
 
     async def get_stats_user(
-        self, ctx: Context, user: Optional[Union[User, int]]
+        self,
+        ctx: Context,
+        user: Optional[Union[User, int]],
     ) -> Tuple[Union[User, int], int, bool]:
         arg_passed = len(ctx.message.content.strip(await get_prefix()).split()) >= 2
         if user is None:
@@ -613,7 +617,7 @@ class ModCog(Cog, name="Mod Tools"):
                         (
                             mute.deactivation_timestamp,
                             t.ulog_unmuted(f"<@{mute.unmute_mod}>", mute.unmute_reason),
-                        )
+                        ),
                     )
         for kick in await db_thread(db.all, Kick, member=user_id):
             if kick.mod is not None:
@@ -634,7 +638,7 @@ class ModCog(Cog, name="Mod Tools"):
                         (
                             ban.deactivation_timestamp,
                             t.ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
-                        )
+                        ),
                     )
 
         responses = await get_ulog_entries(user_id)

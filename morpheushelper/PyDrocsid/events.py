@@ -32,7 +32,8 @@ class StopEventHandling(Exception):
 
 
 async def extract_from_raw_reaction_event(
-    bot: Bot, event: RawReactionActionEvent
+    bot: Bot,
+    event: RawReactionActionEvent,
 ) -> Optional[Tuple[Message, PartialEmoji, Union[User, Member]]]:
     channel: Optional[Messageable] = bot.get_channel(event.channel_id)
     if channel is None:

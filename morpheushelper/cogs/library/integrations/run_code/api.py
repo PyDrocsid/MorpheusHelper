@@ -3,7 +3,7 @@ from aiohttp import ClientSession
 
 class EmkcAPIException(BaseException):
     @property
-    def message(self) -> str:
+    def error(self) -> str:
         return self.args[0]["message"]
 
 
@@ -13,7 +13,8 @@ class Emkc:
     @staticmethod
     async def run_code(language: str, source: str) -> dict:
         async with ClientSession() as session, session.post(
-            Emkc.URL, json={"language": language, "source": source}
+            Emkc.URL,
+            json={"language": language, "source": source},
         ) as response:
             if response.status != 200:
                 raise EmkcAPIException(await response.json())
