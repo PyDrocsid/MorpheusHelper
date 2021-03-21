@@ -423,8 +423,9 @@ class ModCog(Cog, name="Mod Tools"):
     @guild_only()
     async def mute(self, ctx: Context, user: Union[Member, User, int], time: DurationConverter, *, reason: str):
         """
-        mute a member
-        set time to `inf` for a permanent mute
+        Mute a member
+        Time format: `ymwdhn`
+        Set time to `inf` for a permanent mute
         """
 
         time: Optional[int]
@@ -451,7 +452,7 @@ class ModCog(Cog, name="Mod Tools"):
         ):
             raise CommandError(translations.already_muted)
         for mute in active_mutes:
-            await db_thread(Mute.upgrade, mute.id, ctx.author.id)
+            await db_thread(Mute.update, mute.id, ctx.author.id)
 
         user_embed = Embed(title=translations.mute, colour=Colours.ModTools)
         server_embed = Embed(title=translations.mute, description=translations.muted_response, colour=Colours.ModTools)
@@ -480,6 +481,187 @@ class ModCog(Cog, name="Mod Tools"):
                 ctx.message,
                 Colours.changelog["mute"],
                 translations.log_muted,
+                user,
+                reason,
+                duration=translations.log_field_days_infinity,
+            )
+
+        try:
+            await user.send(embed=user_embed)
+        except (Forbidden, HTTPException):
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
+            server_embed.colour = Colours.error
+
+        await ctx.send(embed=server_embed)
+
+    @commands.group(name="edit_mute")
+    @Permission.mute.check
+    @guild_only()
+    async def edit_mute(self, ctx: Context):
+        """
+        Edit a mute
+        """
+
+        if ctx.invoked_subcommand is None:
+            raise UserInputError
+
+    @edit_mute.command(name="reason")
+    async def edit_mute_reason(self, ctx: Context, user: Union[Member, User, int]):
+        """
+        Edit a mute reason
+        """
+
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
+
+        mutes = await db_thread(db.all, Mute, member=user.id)
+
+        mutes_embed = Embed(title=translations.mute_edit,
+                            description=translations.f_mute_edit_description(user.id, translations.cancel),
+                            color=Colours.ModTools)
+
+        if len(mutes) >= 1:
+            for mute in mutes:
+                text = [translations.ulog_muted, translations.ulog_muted_inf][mute.minutes == -1][
+                        mute.is_update].format
+
+                if mute.minutes == -1:
+                    text = text(f"<@{mute.mod}>", mute.reason)
+                else:
+                    text = text(f"<@{mute.mod}>", minutes_to_days(mute.minutes), mute.reason)
+
+                mutes_embed.add_field(name=f"#{mutes.index(mute) + 1} | {mute.timestamp.strftime('%d.%m.%Y %H:%M:%S')}",
+                                      value=text,
+                                      inline=True)
+        else:
+            mutes_embed.description = translations.f_no_bans(user.id)
+            await ctx.send(embed=mutes_embed)
+            return
+
+        await ctx.send(embed=mutes_embed)
+
+        mute_no, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if mute_no is None:
+            return
+
+        try:
+            mute_id = mutes[int(mute_no) - 1].id
+        except (ValueError, IndexError):
+            raise CommandError(translations.mute_not_in_list)
+
+        instruction_embed = Embed(title=translations.mute_edit,
+                                  description=translations.f_mute_edit_reason(translations.cancel),
+                                  color=Colours.ModTools)
+        await ctx.send(embed=instruction_embed)
+
+        reason, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if reason is None:
+            return
+        check_reason_length(reason)
+
+        user_embed = Embed(title=translations.mute_edit, colour=Colours.ModTools)
+        server_embed = Embed(title=translations.mute_edit, description=translations.mute_edit_response,
+                             colour=Colours.ModTools)
+
+        mute = await db_thread(Mute.edit, mute_id, reason)
+
+        minutes = mute.minutes if not mute.minutes == -1 else None
+
+        if minutes is not None:
+            if (days := (minutes / 60) / 24) >= 1:
+                user_embed.description = translations.f_muted_days(ctx.author.mention, ctx.guild.name, days, reason)
+            else:
+                user_embed.description = translations.f_muted_minutes(ctx.author.mention, ctx.guild.name, minutes,
+                                                                      reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["mute"],
+                translations.log_mute_edited,
+                user,
+                reason,
+                duration=translations.f_log_field_days(days),
+            )
+        else:
+            user_embed.description = translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["mute"],
+                translations.log_mute_edited,
+                user,
+                reason,
+                duration=translations.log_field_days_infinity,
+            )
+
+        try:
+            await user.send(embed=user_embed)
+        except (Forbidden, HTTPException):
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
+            server_embed.colour = Colours.error
+
+        await ctx.send(embed=server_embed)
+
+    @edit_mute.command(name="duration")
+    async def edit_mute_duration(
+        self,
+        ctx: Context,
+        user: Union[User, Member, int],
+        time: DurationConverter,
+        *,
+        reason: Optional[str]
+    ):
+        """
+        Edit a mute duration
+        Time format: `ymwdhn`
+        Set time to `inf` for a permanent ban
+        """
+
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
+        time: Optional[int]
+        minutes = time
+
+        active_mutes: List[Ban] = await db_thread(db.all, Mute, active=True, member=user.id)
+
+        if not bool(active_mutes):
+            raise CommandError(translations.not_muted)
+
+        mute = sorted(active_mutes, key=lambda active_mute: active_mute.timestamp)[0]
+        reason = mute.reason if reason is None else reason
+        check_reason_length(reason)
+
+        for mute in active_mutes:
+            await db_thread(Mute.update, mute.id, ctx.author.id)
+
+        user_embed = Embed(title=translations.mute_edit, colour=Colours.ModTools)
+        server_embed = Embed(title=translations.mute_edit, description=translations.mute_edit_response,
+                             colour=Colours.ModTools)
+
+        if minutes is not None:
+            await db_thread(Mute.create, user.id, str(user), ctx.author.id, minutes, reason, True)
+            if (days := (minutes / 60) / 24) >= 1:
+                user_embed.description = translations.f_muted_days(ctx.author.mention, ctx.guild.name, days, reason)
+            else:
+                user_embed.description = translations.f_muted_minutes(ctx.author.mention, ctx.guild.name, minutes,
+                                                                      reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["mute"],
+                translations.log_mute_edited,
+                user,
+                reason,
+                duration=translations.f_log_field_days(days),
+            )
+        else:
+            await db_thread(Mute.create, user.id, str(user), ctx.author.id, -1, reason, True)
+            user_embed.description = translations.f_muted_inf(ctx.author.mention, ctx.guild.name, reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["mute"],
+                translations.log_mute_edited,
                 user,
                 reason,
                 duration=translations.log_field_days_infinity,
@@ -1054,12 +1236,12 @@ class ModCog(Cog, name="Mod Tools"):
         for warn in await db_thread(db.all, Warn, member=user_id, upgraded=False):
             out.append((warn.timestamp, translations.f_ulog_warned(f"<@{warn.mod}>", warn.reason)))
         for mute in await db_thread(db.all, Mute, member=user_id):
-            text = [translations.ulog_muted, translations.ulog_muted_inf][mute.minutes == -1][mute.is_upgrade].format
+            text = [translations.ulog_muted, translations.ulog_muted_inf][mute.minutes == -1][mute.is_update].format
             if mute.minutes == -1:
                 out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.reason)))
             else:
                 out.append((mute.timestamp, text(f"<@{mute.mod}>", minutes_to_days(mute.minutes), mute.reason)))
-            if not mute.active and not mute.upgraded:
+            if not mute.active and not mute.updated:
                 if mute.unmute_mod is None:
                     out.append((mute.deactivation_timestamp, translations.ulog_unmuted_expired))
                 else:

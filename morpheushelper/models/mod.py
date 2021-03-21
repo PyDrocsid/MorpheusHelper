@@ -118,11 +118,11 @@ class Mute(db.Base):
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
     unmute_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
     unmute_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"), nullable=True)
-    upgraded: Union[Column, bool] = Column(Boolean, default=False)
-    is_upgrade: Union[Column, bool] = Column(Boolean)
+    updated: Union[Column, bool] = Column(Boolean, default=False)
+    is_update: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, minutes: int, reason: str, is_upgrade: bool = False) -> "Mute":
+    def create(member: int, member_name: str, mod: int, minutes: int, reason: str, is_update: bool = False) -> "Mute":
         row = Mute(
             member=member,
             member_name=member_name,
@@ -134,7 +134,7 @@ class Mute(db.Base):
             deactivation_timestamp=None,
             unmute_mod=None,
             unmute_reason=None,
-            is_upgrade=is_upgrade,
+            is_update=is_update,
         )
         db.add(row)
         return row
@@ -149,9 +149,15 @@ class Mute(db.Base):
         return row
 
     @staticmethod
-    def upgrade(mute_id: int, mod: int):
+    def update(mute_id: int, mod: int):
         mute = Mute.deactivate(mute_id, mod)
-        mute.upgraded = True
+        mute.updated = True
+
+    @staticmethod
+    def edit(mute_id: int, reason: str):
+        row: Ban = db.get(Mute, mute_id)
+        row.reason = reason
+        return row
 
 
 class Kick(db.Base):

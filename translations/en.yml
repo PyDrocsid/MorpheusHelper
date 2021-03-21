@@ -473,7 +473,7 @@ warned: "{} just warned you on {}:```\n{}\n```"
 warned_response: "User warned. :white_check_mark:"
 log_warned: ":warning: Member warned"
 warn_edit: ":warning: Edit warn"
-warn_edit_description: "Here you have a list of <@!{}>'s warns. Please send me the number of the warn you would like to edit. Send {} to cancel."
+warn_edit_description: "Here you have a list of <@{}>'s warns. Please send me the number of the warn you would like to edit. Send {} to cancel."
 no_warns: "<@!{}> has never been warned."
 warn_not_in_list: Please send me the number of one of the warns in the list.
 warn_edit_reason: "Please send me now the new warn reason. Send {} to cancel."
@@ -484,7 +484,12 @@ reason_edited: "Reason updated :white_check_mark:"
 invalid_duration: Invalid duration.
 invalid_duration_inf: Invalid duration. Try `inf` instead.
 mute: ":mute: Mute"
+mute_edit: ":mute: Edit mute"
 unmute: ":loud_sound: Mute"
+mute_edit_description: "Here you have a list of <@{}>'s mutes. Please send me the number of the mute you would like to edit. Send {} to cancel."
+mute_not_in_list: Please send me the number of one of the mutes in the list!
+mute_edit_reason: "Please send me now the new mute reason. Send {} to cancel."
+mute_edit_response: "Mute updated :white_check_mark:"
 mute_role_not_set: User could not be muted because no mute role is configured.
 cannot_mute: This member cannot be muted.
 already_muted: User is already muted for the given period of time.
@@ -494,6 +499,7 @@ muted_inf: "{} just muted you on {}:```\n{}\n```"
 muted_response: "User muted. :white_check_mark:"
 log_muted: ":mute: Member muted"
 log_unmuted_expired: "Unmuted automatically because the mute time for this user has expired."
+log_mute_edited: ":mute: Mute edited"
 unmuted_response: "User unmuted. :white_check_mark:"
 log_unmuted: ":loud_sound: Member unmuted"
 not_muted: User is not muted.
@@ -567,10 +573,10 @@ ulog_reported: ":speech_balloon:  **Reported** by {} because of `{}`"
 ulog_warned: ":warning:  **Warned** by {} because of `{}`"
 ulog_muted:
   - ":mute:  **Muted** by {} for {} days because of `{}`"
-  - ":mute:  **Mute upgraded** by {} to {} days because of `{}`"
+  - ":mute:  **Mute updated** by {} to {} days because of `{}`"
 ulog_muted_inf:
   - ":mute:  **Muted** permanently by {} because of `{}`"
-  - ":mute:  **Mute upgraded** to permanent by {} because of `{}`"
+  - ":mute:  **Mute updated** to permanent by {} because of `{}`"
 ulog_unmuted: ":loud_sound:  **Unmuted** by {} because of `{}`"
 ulog_unmuted_expired: ":loud_sound:  **Unmuted** because the mute time has expired."
 ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
