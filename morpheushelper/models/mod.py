@@ -88,20 +88,17 @@ class Warn(db.Base):
     mod: Union[Column, int] = Column(BigInteger)
     timestamp: Union[Column, datetime] = Column(DateTime)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
-    upgraded: Union[Column, bool] = Column(Boolean, default=False)
-    is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, reason: str, is_upgrade: bool = False) -> "Warn":
-        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason,
-                   is_upgrade=is_upgrade)
+    def create(member: int, member_name: str, mod: int, reason: str) -> "Warn":
+        row = Warn(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
         db.add(row)
         return row
 
     @staticmethod
-    def upgrade(warn_id: int):
+    def edit(warn_id: int, reason: str):
         row = db.get(Warn, warn_id)
-        row.upgraded = True
+        row.reason = reason
 
 
 class Mute(db.Base):
@@ -169,20 +166,17 @@ class Kick(db.Base):
     mod: Union[Column, int] = Column(BigInteger)
     timestamp: Union[Column, datetime] = Column(DateTime)
     reason: Union[Column, str] = Column(Text(collation="utf8mb4_bin"))
-    upgraded: Union[Column, bool] = Column(Boolean, default=False)
-    is_upgrade: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, reason: str, is_upgrade: bool = False) -> "Kick":
-        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason,
-                   is_upgrade=is_upgrade)
+        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
         db.add(row)
         return row
 
     @staticmethod
-    def upgrade(kick_id: int):
+    def edit(kick_id: int, reason: str):
         row = db.get(Kick, kick_id)
-        row.upgraded = True
+        row.reason = reason
 
 
 class Ban(db.Base):
