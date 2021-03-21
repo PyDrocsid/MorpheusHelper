@@ -336,7 +336,7 @@ could_not_send_message: Message could not be sent because I don't have `send_mes
 send_message: "Now send me the message! Send {} to cancel."
 msg_could_not_be_sent: Message could not be sent.
 msg_sent: "Message has been sent successfully. :white_check_mark:"
-msg_send_cancel: "Sending a message has been cancelled :x:"
+msg_send_cancel: "Action has been cancelled :x:"
 invalid_color: Invalid color
 could_not_send_embed: Message could not be sent because I don't have `embed_links` permission in this channel.
 could_not_edit: This message cannot be edited because the bot is not the author of the message.
@@ -347,6 +347,7 @@ could_not_delete: Message could not be deleted because I don't have `manage_mess
 msg_deleted: "Message has been deleted successfully. :white_check_mark:"
 title_too_long: Title is too long.
 cannot_edit_files: Files cannot be edited.
+cancel_title: Cancelled
 cancel: CANCEL
 
 # voice channel
@@ -474,7 +475,7 @@ log_warned: ":warning: Member warned"
 warn_edit: ":warning: Edit warn"
 warn_edit_description: "Here you have a list of <@!{}>'s warns. Please send me the number of the warn you would like to edit. Send {} to cancel."
 no_warns: "<@!{}> has never been warned."
-warn_not_in_list: Please select one of the warns in the list.
+warn_not_in_list: Please send me the number of one of the warns in the list.
 warn_edit_reason: "Please send me now the new warn reason. Send {} to cancel."
 warn_edited: "<@!{}> just updated your warn on {}: ```\n{}\n```"
 log_warn_edit: ":warning: Warn edited"
@@ -504,6 +505,7 @@ kick_edit_description: "Here you have a list of <@!{}>'s kick. Please send me th
 no_kicks: "<@!{}> has never been kicked."
 kick_edit_reason: "Please send me now the new reason for the kick. Send {} to cancel."
 kick_edited: "<@!{}> just updated your kick on {}: ```\n{}\n```"
+kick_not_in_list: Please send the number of one of the kicks in the list.
 log_kicked: ":x: Member kicked"
 log_kick_edit: ":x: Kick edited"
 cannot_kick: This member cannot be kicked.
@@ -517,8 +519,16 @@ banned_days: "{} just banned you from {} for {} days:```\n{}\n```"
 banned_minutes: "{} just banned you from {} for {} minutes:```\n{}\n```"
 banned_inf: "{} just banned you from {}:```\n{}\n```"
 banned_response: "User banned. :white_check_mark:"
+ban_edit: ":no_entry: Edit ban"
+ban_edit_reason: "Please send me now the new ban reason. Send {} to cancel."
+ban_edit_response: "Ban updated :white_check_mark:"
+ban_edit_description: "Here you have a list of <@!{}>'s bans. Please send me the number of the ban you would like to edit. Send {} to cancel."
+no_bans: "<@!{}> has never been banned."
+ban_not_in_list: Please send me the number of one of the bans in the list.
+ban_reason_edited: "Ban reason has been updated to ```{}```"
 log_banned: ":no_entry: Member Banned"
 log_unbanned_expired: "Unbanned automatically because the ban time for this user has expired."
+log_ban_edited: ":no_entry: Ban edited"
 not_banned: This member is not banned.
 unbanned_response: "User unbanned. :white_check_mark:"
 log_unbanned: ":white_check_mark: Member Unbanned"
@@ -567,10 +577,10 @@ ulog_kicked: ":x:  **Kicked** by {} because of `{}`"
 ulog_autokicked: ":hourglass:  **Kicked** automatically."
 ulog_banned:
   - ":no_entry:  **Banned** by {} for {} days because of `{}`"
-  - ":no_entry:  **Ban upgraded** by {} to {} days because of `{}`"
+  - ":no_entry:  **Ban updated** by {} to {} days because of `{}`"
 ulog_banned_inf:
   - ":no_entry:  **Banned** permanently by {} because of `{}`"
-  - ":no_entry:  **Ban upgraded** to permanent by {} because of `{}`"
+  - ":no_entry:  **Ban updated** to permanent by {} because of `{}`"
 ulog_unbanned: ":white_check_mark:  **Unbanned** by {} because of `{}`"
 ulog_unbanned_expired: ":white_check_mark:  **Unbanned** because the ban time has expired."
 ulog_invite_approved: ":+1:  **Invite approved** by {}: {}"

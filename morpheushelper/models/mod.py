@@ -168,7 +168,8 @@ class Kick(db.Base):
 
     @staticmethod
     def create(member: int, member_name: str, mod: int, reason: str, is_upgrade: bool = False) -> "Kick":
-        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason)
+        row = Kick(member=member, member_name=member_name, mod=mod, timestamp=datetime.utcnow(), reason=reason,
+                   is_upgrade=is_upgrade)
         db.add(row)
         return row
 
@@ -192,11 +193,11 @@ class Ban(db.Base):
     deactivation_timestamp: Union[Column, Optional[datetime]] = Column(DateTime, nullable=True)
     unban_reason: Union[Column, Optional[str]] = Column(Text(collation="utf8mb4_bin"), nullable=True)
     unban_mod: Union[Column, Optional[int]] = Column(BigInteger, nullable=True)
-    upgraded: Union[Column, bool] = Column(Boolean, default=False)
-    is_upgrade: Union[Column, bool] = Column(Boolean)
+    updated: Union[Column, bool] = Column(Boolean, default=False)
+    is_update: Union[Column, bool] = Column(Boolean)
 
     @staticmethod
-    def create(member: int, member_name: str, mod: int, minutes: int, reason: str, is_upgrade: bool = False) -> "Ban":
+    def create(member: int, member_name: str, mod: int, minutes: int, reason: str, is_update: bool = False) -> "Ban":
         row = Ban(
             member=member,
             member_name=member_name,
@@ -208,7 +209,7 @@ class Ban(db.Base):
             deactivation_timestamp=None,
             unban_reason=None,
             unban_mod=None,
-            is_upgrade=is_upgrade,
+            is_update=is_update,
         )
         db.add(row)
         return row
@@ -223,9 +224,15 @@ class Ban(db.Base):
         return row
 
     @staticmethod
-    def upgrade(ban_id: int, mod: int):
+    def update(ban_id: int, mod: int):
         ban = Ban.deactivate(ban_id, mod)
-        ban.upgraded = True
+        ban.updated = True
+
+    @staticmethod
+    def edit(ban_id: int, reason: str):
+        row: Ban = db.get(Ban, ban_id)
+        row.reason = reason
+        return row
 
 
 class MediaOnlyEntry(db.Base):

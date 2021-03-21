@@ -142,6 +142,10 @@ def check_reason_length(reason):
         raise CommandError(translations.reason_too_long)
 
 
+def minutes_to_days(minutes) -> int:
+    return (minutes / 60) / 24
+
+
 class ModCog(Cog, name="Mod Tools"):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -594,7 +598,7 @@ class ModCog(Cog, name="Mod Tools"):
         try:
             kick = kicks[int(response)-1]
         except (ValueError, IndexError):
-            raise CommandError(translations.warn_not_in_list)
+            raise CommandError(translations.kick_not_in_list)
 
         reason_embed = Embed(title=translations.kick_edit,
                              description=translations.f_kick_edit_reason(translations.cancel),
@@ -644,8 +648,9 @@ class ModCog(Cog, name="Mod Tools"):
         reason: str,
     ):
         """
-        ban a user
-        set time to `inf` for a permanent ban
+        Ban a user
+        Time format: `ymwdhn`
+        Set time to `inf` for a permanent ban
         """
 
         time: Optional[int]
@@ -718,6 +723,187 @@ class ModCog(Cog, name="Mod Tools"):
             server_embed.colour = Colours.error
 
         await ctx.guild.ban(user, delete_message_days=delete_days, reason=reason)
+
+        await ctx.send(embed=server_embed)
+
+    @commands.group(name="edit_ban")
+    @Permission.ban.check
+    @guild_only()
+    async def edit_ban(self, ctx: Context):
+        """
+        Edit a ban
+        """
+
+        if ctx.invoked_subcommand is None:
+            raise UserInputError
+
+    @edit_ban.command(name="reason")
+    async def edit_ban_reason(self, ctx: Context, user: Union[User, Member, int]):
+        """
+        Edit a ban reason
+        """
+
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
+
+        bans = await db_thread(db.all, Ban, member=user.id)
+
+        bans_embed = Embed(title=translations.ban_edit,
+                           description=translations.f_ban_edit_description(user.id, translations.cancel),
+                           color=Colours.ModTools)
+
+        if len(bans) >= 1:
+            for ban in bans:
+                text = [translations.ulog_banned, translations.ulog_banned_inf][ban.minutes == -1][
+                    ban.is_update].format
+
+                if ban.minutes == -1:
+                    text = text(f"<@{ban.mod}>", ban.reason)
+                else:
+                    text = text(f"<@{ban.mod}>", minutes_to_days(ban.minutes), ban.reason)
+
+                bans_embed.add_field(name=f"#{bans.index(ban) + 1} | {ban.timestamp.strftime('%d.%m.%Y %H:%M:%S')}",
+                                     value=text,
+                                     inline=True)
+        else:
+            bans_embed.description = translations.f_no_bans(user.id)
+            await ctx.send(embed=bans_embed)
+            return
+
+        await ctx.send(embed=bans_embed)
+
+        ban_no, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if ban_no is None:
+            return
+
+        try:
+            ban_id = bans[int(ban_no) - 1].id
+        except (ValueError, IndexError):
+            raise CommandError(translations.ban_not_in_list)
+
+        instruction_embed = Embed(title=translations.ban_edit,
+                                  description=translations.f_ban_edit_reason(translations.cancel),
+                                  color=Colours.ModTools)
+        await ctx.send(embed=instruction_embed)
+
+        reason, _ = await get_message_cancel(self.bot, ctx.channel, ctx.author)
+
+        if reason is None:
+            return
+        check_reason_length(reason)
+
+        user_embed = Embed(title=translations.ban_edit, colour=Colours.ModTools)
+        server_embed = Embed(title=translations.ban_edit, description=translations.ban_edit_response,
+                             colour=Colours.ModTools)
+
+        ban = await db_thread(Ban.edit, ban_id, reason)
+
+        minutes = ban.minutes if not ban.minutes == -1 else None
+
+        if minutes is not None:
+            if (days := (minutes / 60) / 24) >= 1:
+                user_embed.description = translations.f_banned_days(ctx.author.mention, ctx.guild.name, days, reason)
+            else:
+                user_embed.description = translations.f_banned_minutes(ctx.author.mention, ctx.guild.name, minutes,
+                                                                       reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["ban"],
+                translations.log_ban_edited,
+                user,
+                reason,
+                duration=translations.f_log_field_days(days),
+            )
+        else:
+            user_embed.description = translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["ban"],
+                translations.log_ban_edited,
+                user,
+                reason,
+                duration=translations.log_field_days_infinity,
+            )
+
+        try:
+            await user.send(embed=user_embed)
+        except (Forbidden, HTTPException):
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
+            server_embed.colour = Colours.error
+
+        await ctx.send(embed=server_embed)
+
+    @edit_ban.command(name="duration")
+    async def edit_ban_duration(
+        self,
+        ctx: Context,
+        user: Union[User, Member, int],
+        time: DurationConverter,
+        *,
+        reason: Optional[str]
+    ):
+        """
+        Edit a ban duration
+        Time format: `ymwdhn`
+        Set time to `inf` for a permanent ban
+        """
+
+        user: Union[Member, User] = await self.get_user(ctx.guild, user)
+        time: Optional[int]
+        minutes = time
+
+        active_bans: List[Ban] = await db_thread(db.all, Ban, active=True, member=user.id)
+
+        if not bool(active_bans):
+            raise CommandError(translations.not_banned)
+
+        ban = sorted(active_bans, key=lambda active_ban: active_ban.timestamp)[0]
+
+        reason = ban.reason if reason is None else reason
+
+        for ban in active_bans:
+            await db_thread(Ban.update, ban.id, ctx.author.id)
+
+        user_embed = Embed(title=translations.ban_edit, colour=Colours.ModTools)
+        server_embed = Embed(title=translations.ban_edit, description=translations.ban_edit_response,
+                             colour=Colours.ModTools)
+
+        if minutes is not None:
+            await db_thread(Ban.create, user.id, str(user), ctx.author.id, minutes, reason, True)
+            if (days := (minutes / 60) / 24) >= 1:
+                user_embed.description = translations.f_banned_days(ctx.author.mention, ctx.guild.name, days, reason)
+            else:
+                user_embed.description = translations.f_banned_minutes(ctx.author.mention, ctx.guild.name, minutes,
+                                                                       reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["ban"],
+                translations.log_ban_edited,
+                user,
+                reason,
+                duration=translations.f_log_field_days(days),
+            )
+        else:
+            await db_thread(Ban.create, user.id, str(user), ctx.author.id, -1, reason, True)
+            user_embed.description = translations.f_banned_inf(ctx.author.mention, ctx.guild.name, reason)
+            await send_to_changelog_mod(
+                ctx.guild,
+                ctx.message,
+                Colours.changelog["ban"],
+                translations.log_ban_edited,
+                user,
+                reason,
+                duration=translations.log_field_days_infinity,
+            )
+
+        try:
+            await user.send(embed=user_embed)
+        except (Forbidden, HTTPException):
+            server_embed.description = translations.no_dm + "\n\n" + server_embed.description
+            server_embed.colour = Colours.error
 
         await ctx.send(embed=server_embed)
 
@@ -872,7 +1058,7 @@ class ModCog(Cog, name="Mod Tools"):
             if mute.minutes == -1:
                 out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.reason)))
             else:
-                out.append((mute.timestamp, text(f"<@{mute.mod}>", mute.minutes, mute.reason)))
+                out.append((mute.timestamp, text(f"<@{mute.mod}>", minutes_to_days(mute.minutes), mute.reason)))
             if not mute.active and not mute.upgraded:
                 if mute.unmute_mod is None:
                     out.append((mute.deactivation_timestamp, translations.ulog_unmuted_expired))
@@ -889,12 +1075,12 @@ class ModCog(Cog, name="Mod Tools"):
             else:
                 out.append((kick.timestamp, translations.ulog_autokicked))
         for ban in await db_thread(db.all, Ban, member=user_id):
-            text = [translations.ulog_banned, translations.ulog_banned_inf][ban.minutes == -1][ban.is_upgrade].format
+            text = [translations.ulog_banned, translations.ulog_banned_inf][ban.minutes == -1][ban.is_update].format
             if ban.minutes == -1:
                 out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.reason)))
             else:
-                out.append((ban.timestamp, text(f"<@{ban.mod}>", ban.minutes, ban.reason)))
-            if not ban.active and not ban.upgraded:
+                out.append((ban.timestamp, text(f"<@{ban.mod}>", minutes_to_days(ban.minutes), ban.reason)))
+            if not ban.active and not ban.updated:
                 if ban.unban_mod is None:
                     out.append((ban.deactivation_timestamp, translations.ulog_unbanned_expired))
                 else:
