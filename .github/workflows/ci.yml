@@ -50,13 +50,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
 
-  docker:
+  docker_build:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
     needs: [ codestyle, linter ]
     runs-on: ubuntu-latest
-    environment: docker
     strategy:
-      fail-fast: false
       matrix:
         platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
 
@@ -121,7 +119,6 @@ jobs:
           done
 
           echo ::set-output name=tags::${out:1}
-          echo ::set-output name=push_to_hub::${hub}
 
       - name: Build
         uses: docker/build-push-action@v2
@@ -157,39 +154,54 @@ jobs:
           name: ${{ steps.archive.outputs.name }}
           path: ${{ steps.archive.outputs.name }}
 
+  docker_push:
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: [ docker_build ]
+    environment: docker
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
+
+    steps:
+      - name: Get Archive Name
+        id: archive
+        run: |
+          set -ex
+          platform=${{ matrix.platform }}
+          name=$(echo $IMAGE_NAME | tr / _)_$(echo $platform | tr / -).tar.gz
+          echo ::set-output name=name::${name}
+
+      - name: Download Docker Image Archive
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ steps.archive.outputs.name }}
+
       - name: Login to DockerHub
         id: login_dockerhub
         uses: docker/login-action@v1
         env:
           USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        if: ${{ steps.version.outputs.push_to_hub == '1' && env.USERNAME != null && env.PASSWORD != null }}
+        if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop' }}
         with:
           username: ${{ env.USERNAME }}
           password: ${{ env.PASSWORD }}
 
       - name: Login to GitHub Container Registry
-        id: login_ghcr
         uses: docker/login-action@v1
         env:
           USERNAME: ${{ github.repository_owner }}
           PASSWORD: ${{ secrets.CR_PAT }}
-        if: ${{ env.PASSWORD != null }}
         with:
           registry: ghcr.io
           username: ${{ env.USERNAME }}
           password: ${{ env.PASSWORD }}
 
-      - name: Push to Registries
-        uses: docker/build-push-action@v2
-        if: ${{ steps.login_ghcr.outcome == 'success' }}
-        with:
-          push: true
-          tags: ${{ steps.version.outputs.tags }}
-          platforms: ${{ matrix.platform }}
-          file: Dockerfile
-          context: .
-          cache-from: type=local,src=/tmp/.buildx-cache
+      - name: Push Docker Image
+        env:
+          NAME: ${{ steps.archive.outputs.name }}
+        run: docker load -qi $NAME | cut -d' ' -f3 | xargs -L1 docker push
 
       - name: Clear
         if: always()
