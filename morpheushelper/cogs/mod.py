@@ -459,7 +459,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if minutes is not None:
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, minutes, reason, bool(active_mutes))
-            if (days := (minutes / 60) / 24) >= 1:
+            if (days := minutes_to_days(minutes)) >= 1:
                 user_embed.description = translations.f_muted_days(ctx.author.mention, ctx.guild.name, days, reason)
             else:
                 user_embed.description = translations.f_muted_minutes(ctx.author.mention, ctx.guild.name, minutes,
@@ -569,7 +569,7 @@ class ModCog(Cog, name="Mod Tools"):
         minutes = mute.minutes if not mute.minutes == -1 else None
 
         if minutes is not None:
-            if (days := (minutes / 60) / 24) >= 1:
+            if (days := minutes_to_days(minutes)) >= 1:
                 user_embed.description = translations.f_muted_days(ctx.author.mention, ctx.guild.name, days, reason)
             else:
                 user_embed.description = translations.f_muted_minutes(ctx.author.mention, ctx.guild.name, minutes,
@@ -640,7 +640,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if minutes is not None:
             await db_thread(Mute.create, user.id, str(user), ctx.author.id, minutes, reason, True)
-            if (days := (minutes / 60) / 24) >= 1:
+            if (days := minutes_to_days(minutes)) >= 1:
                 user_embed.description = translations.f_muted_days(ctx.author.mention, ctx.guild.name, days, reason)
             else:
                 user_embed.description = translations.f_muted_minutes(ctx.author.mention, ctx.guild.name, minutes,
@@ -871,7 +871,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if minutes is not None:
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, minutes, reason, bool(active_bans))
-            if (days := (minutes / 60) / 24) >= 1:
+            if (days := minutes_to_days(minutes)) >= 1:
                 user_embed.description = translations.f_banned_days(ctx.author.mention, ctx.guild.name, days, reason)
             else:
                 user_embed.description = translations.f_banned_minutes(ctx.author.mention, ctx.guild.name, minutes,
@@ -983,7 +983,7 @@ class ModCog(Cog, name="Mod Tools"):
         minutes = ban.minutes if not ban.minutes == -1 else None
 
         if minutes is not None:
-            if (days := (minutes / 60) / 24) >= 1:
+            if (days := minutes_to_days(minutes)) >= 1:
                 user_embed.description = translations.f_banned_days(ctx.author.mention, ctx.guild.name, days, reason)
             else:
                 user_embed.description = translations.f_banned_minutes(ctx.author.mention, ctx.guild.name, minutes,
@@ -1054,7 +1054,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         if minutes is not None:
             await db_thread(Ban.create, user.id, str(user), ctx.author.id, minutes, reason, True)
-            if (days := (minutes / 60) / 24) >= 1:
+            if (days := minutes_to_days(minutes)) >= 1:
                 user_embed.description = translations.f_banned_days(ctx.author.mention, ctx.guild.name, days, reason)
             else:
                 user_embed.description = translations.f_banned_minutes(ctx.author.mention, ctx.guild.name, minutes,
