@@ -155,7 +155,7 @@ jobs:
           path: ${{ steps.archive.outputs.name }}
 
   docker_push:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     needs: [ docker_build ]
     environment: docker
     runs-on: ubuntu-latest
