@@ -21,5 +21,5 @@ class CodeblocksCog(Cog, name="Codeblocks command"):
                 title=t.title,
                 description=t.description,
                 colour=Colors.CodeBlocks,
-            )
+            ),
         )

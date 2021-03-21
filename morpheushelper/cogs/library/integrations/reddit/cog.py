@@ -27,13 +27,15 @@ logger = get_logger(__name__)
 
 def exists_subreddit(subreddit: str) -> bool:
     return requests.head(
-        f"https://www.reddit.com/r/{subreddit}/hot.json", headers={"User-agent": f"MorpheusHelper/{Config.VERSION}"}
+        f"https://www.reddit.com/r/{subreddit}/hot.json",
+        headers={"User-agent": f"MorpheusHelper/{Config.VERSION}"},
     ).ok
 
 
 def get_subreddit_name(subreddit: str) -> str:
     return requests.get(
-        f"https://www.reddit.com/r/{subreddit}/about.json", headers={"User-agent": f"MorpheusHelper/{Config.VERSION}"}
+        f"https://www.reddit.com/r/{subreddit}/about.json",
+        headers={"User-agent": f"MorpheusHelper/{Config.VERSION}"},
     ).json()["data"]["display_name"]
 
 
@@ -63,7 +65,7 @@ def fetch_reddit_posts(subreddit: str, limit: int) -> List[dict]:
                     "permalink": post["data"]["permalink"],
                     "url": post["data"]["url"],
                     "subreddit": post["data"]["subreddit"],
-                }
+                },
             )
     return posts
 
@@ -179,7 +181,10 @@ class RedditCog(Cog, name="Reddit"):
 
         subreddit = get_subreddit_name(subreddit)
         link: Optional[RedditChannel] = await db_thread(
-            db.first, RedditChannel, subreddit=subreddit, channel=channel.id
+            db.first,
+            RedditChannel,
+            subreddit=subreddit,
+            channel=channel.id,
         )
         if link is None:
             raise CommandError(t.reddit_link_not_found)

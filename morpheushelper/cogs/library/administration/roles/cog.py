@@ -54,7 +54,7 @@ class RolesCog(Cog, name="Roles"):
 
         for name, (title, check_assignable) in Config.ROLES.items():
             self.roles_config.command(name=name, help=f"configure {title.lower()} role")(
-                set_role(name, check_assignable)
+                set_role(name, check_assignable),
             )
 
     @commands.group(aliases=["r"])

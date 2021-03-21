@@ -25,7 +25,7 @@ async def list_permissions(ctx: Context, title: str, min_level: BasePermissionLe
     for permission, level in zip(Config.PERMISSIONS, levels):
         if min_level.level >= level.level:
             out.setdefault((level.level, level.description), []).append(
-                f"`{permission.fullname}` - {permission.description}"
+                f"`{permission.fullname}` - {permission.description}",
             )
 
     embed = Embed(title=title, colour=Colors.error)

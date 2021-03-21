@@ -54,7 +54,11 @@ class UsernameUpdate(db.Base):
     @staticmethod
     def create(member: int, member_name: str, new_name: str, nick: bool) -> "UsernameUpdate":
         row = UsernameUpdate(
-            member=member, member_name=member_name, new_name=new_name, nick=nick, timestamp=datetime.utcnow()
+            member=member,
+            member_name=member_name,
+            new_name=new_name,
+            nick=nick,
+            timestamp=datetime.utcnow(),
         )
         db.add(row)
         return row
@@ -73,7 +77,11 @@ class Report(db.Base):
     @staticmethod
     def create(member: int, member_name: str, reporter: int, reason: str) -> "Report":
         row = Report(
-            member=member, member_name=member_name, reporter=reporter, timestamp=datetime.utcnow(), reason=reason
+            member=member,
+            member_name=member_name,
+            reporter=reporter,
+            timestamp=datetime.utcnow(),
+            reason=reason,
         )
         db.add(row)
         return row

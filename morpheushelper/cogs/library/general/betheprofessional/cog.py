@@ -35,9 +35,11 @@ async def parse_topics(guild: Guild, topics: str, author: Member) -> List[Role]:
                     raise CommandError(t.youre_not_the_first_one(topic, author.mention))
         else:
             if all_topics:
-                best_match = min(
-                    [r.name for r in all_topics], key=lambda a: calculate_edit_distance(a.lower(), topic.lower())
-                )
+
+                def dist(name: str) -> int:
+                    return calculate_edit_distance(name.lower(), topic.lower())
+
+                best_match = min([r.name for r in all_topics], key=dist)
                 raise CommandError(t.topic_not_found_did_you_mean(topic, best_match))
             raise CommandError(t.topic_not_found(topic))
         roles.append(role)
@@ -82,7 +84,8 @@ async def unregister_roles(ctx: Context, topics: str, *, delete_roles: bool):
     embed = Embed(title=t.betheprofessional, colour=Colors.BeTheProfessional)
     embed.description = t.topics_unregistered(cnt=len(roles))
     await send_to_changelog(
-        ctx.guild, t.log_topics_unregistered(cnt=len(roles), topics=", ".join(f"`{r}`" for r in roles))
+        ctx.guild,
+        t.log_topics_unregistered(cnt=len(roles), topics=", ".join(f"`{r}`" for r in roles)),
     )
     await send_long_embed(ctx, embed)
 
@@ -193,7 +196,8 @@ class BeTheProfessionalCog(Cog, name="Self Assignable Topic Roles"):
         embed = Embed(title=t.betheprofessional, colour=Colors.BeTheProfessional)
         embed.description = t.topics_registered(cnt=len(roles))
         await send_to_changelog(
-            ctx.guild, t.log_topics_registered(cnt=len(roles), topics=", ".join(f"`{r}`" for r in roles))
+            ctx.guild,
+            t.log_topics_registered(cnt=len(roles), topics=", ".join(f"`{r}`" for r in roles)),
         )
         await ctx.send(embed=embed)
 

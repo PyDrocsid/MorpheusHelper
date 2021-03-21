@@ -36,18 +36,18 @@ class MemberInfoCog(Cog, name="Member Information"):
     @classmethod
     async def get_relevant_join(cls, member: Member) -> datetime:
         last_auto_kick = await db_thread(
-            lambda: db.query(Kick, member=member.id, mod=None).order_by(Kick.timestamp.desc()).first()
+            lambda: db.query(Kick, member=member.id, mod=None).order_by(Kick.timestamp.desc()).first(),
         )
         if last_auto_kick:
             relevant_join = await db_thread(
                 lambda: db.query(Join, member=member.id)
                 .filter(Join.timestamp > last_auto_kick.timestamp)
                 .order_by(Join.timestamp.asc())
-                .first()
+                .first(),
             )
         else:
             relevant_join = await db_thread(
-                lambda: db.query(Join, member=member.id).order_by(Join.timestamp.asc()).first()
+                lambda: db.query(Join, member=member.id).order_by(Join.timestamp.asc()).first(),
             )
 
         if relevant_join is None:

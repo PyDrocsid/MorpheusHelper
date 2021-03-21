@@ -54,7 +54,11 @@ async def can_run_command(command: Command, ctx: Context) -> bool:
 
 
 async def check_wastebasket(
-    message: Message, member: Member, emoji: PartialEmoji, footer: str, permission: BasePermission
+    message: Message,
+    member: Member,
+    emoji: PartialEmoji,
+    footer: str,
+    permission: BasePermission,
 ) -> Optional[int]:
     if emoji.name != name_to_emoji["wastebasket"]:
         return None
@@ -63,7 +67,7 @@ async def check_wastebasket(
         if embed.footer.text == Embed.Empty:
             continue
 
-        pattern = re.escape(footer).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")
+        pattern = re.escape(footer).replace("\\{\\}", "{}").format(r".*?#\d{4}", r"(\d+)")  # noqa: P103
         if (match := re.match("^" + pattern + "$", embed.footer.text)) is None:
             continue
 
@@ -121,7 +125,11 @@ def split_lines(text: str, max_size: int, *, first_max_size: Optional[int] = Non
 
 
 async def send_long_embed(
-    channel: Messageable, embed: Embed, *, repeat_title: bool = False, repeat_name: bool = False
+    channel: Messageable,
+    embed: Embed,
+    *,
+    repeat_title: bool = False,
+    repeat_name: bool = False,
 ) -> List[Message]:
     messages = []
     fields = embed.fields.copy()

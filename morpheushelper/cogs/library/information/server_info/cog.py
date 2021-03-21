@@ -81,11 +81,13 @@ class ServerInfoCog(Cog, name="Server Information"):
 
         if cnt := len(online):
             embed.add_field(
-                name=t.online(cnt=cnt), value="\n".join(":small_orange_diamond: " + m.mention for m in online)
+                name=t.online(cnt=cnt),
+                value="\n".join(":small_orange_diamond: " + m.mention for m in online),
             )
         if cnt := len(offline):
             embed.add_field(
-                name=t.offline(cnt=cnt), value="\n".join(":small_blue_diamond: " + m.mention for m in offline)
+                name=t.offline(cnt=cnt),
+                value="\n".join(":small_blue_diamond: " + m.mention for m in offline),
             )
 
         await ctx.send(embed=embed)

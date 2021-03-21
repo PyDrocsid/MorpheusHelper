@@ -97,7 +97,10 @@ class NewsCog(Cog, name="News"):
         """
 
         authorization: Optional[NewsAuthorization] = await db_thread(
-            db.first, NewsAuthorization, user_id=user.id, channel_id=channel.id
+            db.first,
+            NewsAuthorization,
+            user_id=user.id,
+            channel_id=channel.id,
         )
         if authorization is None:
             raise CommandError(t.news_not_authorized)
@@ -109,14 +112,22 @@ class NewsCog(Cog, name="News"):
 
     @news.command(name="send", aliases=["s"])
     async def news_send(
-        self, ctx: Context, channel: TextChannel, color: Optional[Color] = None, *, message: Optional[str]
+        self,
+        ctx: Context,
+        channel: TextChannel,
+        color: Optional[Color] = None,
+        *,
+        message: Optional[str],
     ):
         """
         send a news message
         """
 
         authorization: Optional[NewsAuthorization] = await db_thread(
-            db.first, NewsAuthorization, user_id=ctx.author.id, channel_id=channel.id
+            db.first,
+            NewsAuthorization,
+            user_id=ctx.author.id,
+            channel_id=channel.id,
         )
         if authorization is None:
             raise CommandError(t.news_you_are_not_authorized)

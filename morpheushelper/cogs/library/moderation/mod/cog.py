@@ -492,7 +492,9 @@ class ModCog(Cog, name="Mod Tools"):
         await send_to_changelog_mod(ctx.guild, ctx.message, Colors.unban, t.log_unbanned, user, reason)
 
     async def get_stats_user(
-        self, ctx: Context, user: Optional[Union[User, int]]
+        self,
+        ctx: Context,
+        user: Optional[Union[User, int]],
     ) -> Tuple[Union[User, int], int, bool]:
         arg_passed = len(ctx.message.content.strip(await get_prefix()).split()) >= 2
         if user is None:
@@ -615,7 +617,7 @@ class ModCog(Cog, name="Mod Tools"):
                         (
                             mute.deactivation_timestamp,
                             t.ulog_unmuted(f"<@{mute.unmute_mod}>", mute.unmute_reason),
-                        )
+                        ),
                     )
         for kick in await db_thread(db.all, Kick, member=user_id):
             if kick.mod is not None:
@@ -636,7 +638,7 @@ class ModCog(Cog, name="Mod Tools"):
                         (
                             ban.deactivation_timestamp,
                             t.ulog_unbanned(f"<@{ban.unban_mod}>", ban.unban_reason),
-                        )
+                        ),
                     )
 
         responses = await get_ulog_entries(user_id)

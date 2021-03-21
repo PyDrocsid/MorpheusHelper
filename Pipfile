@@ -21,6 +21,7 @@ python-dateutil = "*"
 [dev-packages]
 flake8 = "*"
 black = "==20.8b1"
+wemake-python-styleguide = "*"
 
 [scripts]
 bot = "python morpheushelper/morpheushelper.py"

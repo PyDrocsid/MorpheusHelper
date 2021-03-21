@@ -7,8 +7,7 @@ import requests
 
 
 def md5(data):
-    # skipcq: PTC-W1003
-    return hashlib.md5(data[7:33]).hexdigest().encode()
+    return hashlib.md5(data[7:33]).hexdigest().encode()  # noqa: S303
 
 
 class CleverBot:
@@ -34,7 +33,7 @@ class CleverBot:
                     "cb_settings_scripting": "no",
                     "islearning": "1",
                     "icognoid": "wsf",
-                }
+                },
             ).encode()
             d += b"&icognocheck="
             d += md5(d)
@@ -80,7 +79,7 @@ class CleverBot:
                     "cb_settings_scripting": "no",
                     "islearning": "1",
                     "icognoid": "wsf",
-                }
+                },
             ).encode()
             d += b"&icognocheck="
             d += md5(d)
