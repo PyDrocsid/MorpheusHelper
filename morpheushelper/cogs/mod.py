@@ -493,7 +493,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         await ctx.send(embed=server_embed)
 
-    @commands.group(name="edit_mute")
+    @commands.group(name="edit_mute", aliases=["mute_edit", "em"])
     @Permission.mute.check
     @guild_only()
     async def edit_mute(self, ctx: Context):
@@ -906,7 +906,7 @@ class ModCog(Cog, name="Mod Tools"):
 
         await ctx.send(embed=server_embed)
 
-    @commands.group(name="edit_ban")
+    @commands.group(name="edit_ban", aliases=["ban_edit", "eb"])
     @Permission.ban.check
     @guild_only()
     async def edit_ban(self, ctx: Context):
