@@ -27,3 +27,10 @@ updates:
       interval: "daily"
     reviewers:
       - "Defelo"
+
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    reviewers:
+      - "Defelo"
