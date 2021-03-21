@@ -1,8 +1,0 @@
-permissions:
-  change_prefix: change bot prefix
-
-prefix: Prefix
-invalid_prefix_length: Length of prefix must be between 1 and 16
-prefix_invalid_chars: Prefix contains invalid characters.
-prefix_updated: "Prefix has been updated. :white_check_mark:"
-log_prefix_updated: "**Bot prefix** has been **changed** to `{}`"

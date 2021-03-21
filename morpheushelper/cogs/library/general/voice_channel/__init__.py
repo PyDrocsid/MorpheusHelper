@@ -1,1 +1,0 @@
-from .cog import VoiceChannelCog

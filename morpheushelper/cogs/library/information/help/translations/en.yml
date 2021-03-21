@@ -1,8 +1,0 @@
-cog_or_command_not_found: This cog or command does not exist.
-description: Description
-subcommands: Subcommands
-no_category: No category
-help: Help
-help_usage: |
-  Type `{0}help <command>` for more info on a command.
-  Type `{0}help <cog>` for more info on a cog.
