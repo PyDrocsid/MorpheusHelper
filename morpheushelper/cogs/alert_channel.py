@@ -10,7 +10,7 @@ from discord.ext.commands import Cog, Bot, Context
 from colours import Colours
 from permissions import Permission
 from util import send_to_changelog
-
+import re
 
 async def get_max_hops() -> int:
     """
@@ -70,6 +70,16 @@ class AlertChannelCog(Cog):
             await ch.send(embed=embed)
         else:
             logging.warning("No alert channel so far")
+
+    async def on_member_join(self, member: Member):
+        if re.match(r"^[a-zA-Z0-9 ./<>?;:\"'`!@#$%^&*()\[\]{}_+=|\\-]+$", member.display_name):
+            return
+
+        embed = Embed(title=translations.illegal_username, color=Colours.AlertChannel)
+        embed.add_field(name=translations.member, value=member.mention)
+
+        if (channel := await self.get_alert_channel()) is not None:
+            await channel.send(embed=embed)
 
     async def on_message(self, message: Message):
         """

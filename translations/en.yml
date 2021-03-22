@@ -804,3 +804,6 @@ team_role_pinged: "Teamrole Ping"
 message: "Message"
 message_link: "Jump to Message"
 link_click_here: "Click Here"
+
+# Illegal username
+illegal_username: "Illegal Username"
