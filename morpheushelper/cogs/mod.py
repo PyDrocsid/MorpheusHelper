@@ -14,6 +14,7 @@ from discord.utils import snowflake_time
 
 from colours import Colours
 from models.allowed_invite import InviteLog
+from models.forbidden_invites import ForbiddenInvites
 from models.mod import Join, Mute, Ban, Leave, UsernameUpdate, Report, Warn, Kick
 from permissions import Permission, PermissionLevel
 from util import send_to_changelog, get_prefix, is_teamler
@@ -716,6 +717,8 @@ class ModCog(Cog, name="Mod Tools"):
                 out.append((log.timestamp, translations.f_ulog_invite_approved(f"<@{log.mod}>", log.guild_name)))
             else:
                 out.append((log.timestamp, translations.f_ulog_invite_removed(f"<@{log.mod}>", log.guild_name)))
+        for forbidden_invite in await db_thread(db.all, ForbiddenInvites, member=user_id):
+            out.append((forbidden_invite.timestamp, translations.ulog_forbidden_invite))
 
         out.sort()
         embed = Embed(title=translations.userlogs, color=Colours.userlog)
