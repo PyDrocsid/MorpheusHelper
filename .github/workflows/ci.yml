@@ -6,8 +6,8 @@ on:
 
 env:
   PYTHON_VERSION: 3.9
-  IMAGE_NAME: defelo/mh-dev
-  GHCR_NAME: pydrocsid/mh-dev
+  IMAGE_NAME: defelo/morpheushelper
+  GHCR_NAME: pydrocsid/morpheushelper
 
 jobs:
   codestyle:

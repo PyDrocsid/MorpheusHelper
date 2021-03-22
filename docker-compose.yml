@@ -10,7 +10,7 @@ services:
   morpheushelper:
     << : *defaults
     image: defelo/morpheushelper
-#    image: defelo/morpheushelper:experimental
+#    image: defelo/morpheushelper:develop
     tty: true
     depends_on:
       - db

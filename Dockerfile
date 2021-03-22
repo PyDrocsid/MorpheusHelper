@@ -18,7 +18,7 @@ RUN git describe --tags > VERSION
 
 FROM python:3.9-alpine
 
-LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/dev
+LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/MorpheusHelper
 
 RUN set -x \
     && apk add --no-cache bash~=5.1 \
