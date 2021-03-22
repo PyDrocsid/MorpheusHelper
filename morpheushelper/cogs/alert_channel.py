@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Optional
 
 from PyDrocsid.settings import Settings
@@ -10,7 +11,7 @@ from discord.ext.commands import Cog, Bot, Context
 from colours import Colours
 from permissions import Permission
 from util import send_to_changelog
-import re
+
 
 async def get_max_hops() -> int:
     """
