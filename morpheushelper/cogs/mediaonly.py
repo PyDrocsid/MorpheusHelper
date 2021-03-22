@@ -6,7 +6,7 @@ from PyDrocsid.database import db_thread, db
 from PyDrocsid.events import StopEventHandling
 from PyDrocsid.translations import translations
 from PyDrocsid.util import send_long_embed
-from discord import Guild, TextChannel, Message, Embed
+from discord import Guild, TextChannel, Message, Embed, Forbidden
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, guild_only, Context, CommandError, UserInputError
 from requests import RequestException
@@ -41,12 +41,24 @@ class MediaOnlyCog(Cog, name="MediaOnly"):
                 return
 
         channel: TextChannel = message.channel
-        await message.delete()
+
+        try:
+            await message.delete()
+            await send_to_alert_channel(
+                message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
+            )
+        except Forbidden:
+            embed = Embed(title=translations.missing_bot_permissions, color=Colours.AlertChannel)
+            embed.description = translations.f_cannot_delete(message.author.mention, message.channel.mention)
+            embed.add_field(
+                name=translations.message_link,
+                value="[%s](%s)" % (translations.link_click_here, message.jump_url)
+            )
+            await send_to_alert_channel(message.guild, embed)
+
         embed = Embed(title=translations.mediaonly, description=translations.deleted_nomedia, colour=Colours.error)
         await channel.send(content=message.author.mention, embed=embed, delete_after=30)
-        await send_to_alert_channel(
-            message.guild, translations.f_log_deleted_nomedia(message.author.mention, message.channel.mention)
-        )
+
         raise StopEventHandling
 
     @commands.group(aliases=["mo"])
