@@ -20,7 +20,13 @@ services:
     image: mariadb
 #    image: jsurf/rpi-mariadb
     volumes:
-      - './mysql_data:/var/lib/mysql'
+      - './data/mariadb:/var/lib/mysql'
+
+  redis:
+    << : *defaults
+    image: redis:alpine
+    volumes:
+      - ./data/redis:/data
 
 networks:
   morpheushelper:
