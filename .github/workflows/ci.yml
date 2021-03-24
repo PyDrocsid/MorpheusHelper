@@ -206,3 +206,16 @@ jobs:
       - name: Clear
         if: always()
         run: rm -f ${HOME}/.docker/config.json
+
+  docker_deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+    needs: [ docker_push ]
+    environment: server-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        env:
+          CREDENTIALS: ${{ secrets.UPDATE_CREDENTIALS }}
+          URL: ${{ secrets.UPDATE_URL }}
+        run: curl -u $CREDENTIALS $URL
