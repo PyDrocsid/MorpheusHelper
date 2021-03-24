@@ -14,13 +14,14 @@ services:
     tty: true
     depends_on:
       - db
+      - redis
 
   db:
     << : *defaults
     image: mariadb
 #    image: jsurf/rpi-mariadb
     volumes:
-      - './data/mariadb:/var/lib/mysql'
+      - ./data/mariadb:/var/lib/mysql
 
   redis:
     << : *defaults
