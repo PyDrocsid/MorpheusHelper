@@ -2,20 +2,22 @@ from typing import Iterable
 
 import sentry_sdk
 from discord import Intents, Message
-from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError
+from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError, CommandInvokeError
 
 from PyDrocsid.cog import load_cogs
-from PyDrocsid.command_edit import add_to_error_cache
 from PyDrocsid.database import db
 from PyDrocsid.environment import TOKEN
 from PyDrocsid.events import listener
 from PyDrocsid.logger import get_logger
-from PyDrocsid.util import get_prefix, make_error
+from PyDrocsid.translations import t
+from PyDrocsid.util import get_prefix, make_error, reply
 from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
 
 logger = get_logger(__name__)
+
+t = t.g
 
 
 async def fetch_prefix(_, msg: Message) -> Iterable[str]:
@@ -44,14 +46,16 @@ async def on_error(*_, **__):
 
 @listener
 async def on_command_error(ctx: Context, error: CommandError):
-    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
-        messages = []
-    elif isinstance(error, UserInputError):
-        messages = await send_help(ctx, ctx.command)
-    else:
-        messages = [await ctx.send(embed=make_error(error))]
+    if isinstance(error, CommandInvokeError):
+        await reply(ctx, embed=make_error(t.internal_error))
+        raise error.original
 
-    add_to_error_cache(ctx.message, messages)
+    if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
+        return
+    if isinstance(error, UserInputError):
+        await send_help(ctx, ctx.command)
+    else:
+        await reply(ctx, embed=make_error(error))
 
 
 # fmt: off
