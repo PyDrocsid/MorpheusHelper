@@ -2,3 +2,7 @@
 	path = morpheushelper/cogs/library
 	url = git@github.com:PyDrocsid/cogs.git
 	branch = develop
+[submodule "morpheushelper/library"]
+	path = morpheushelper/library
+	url = git@github.com:PyDrocsid/library.git
+	branch = develop
