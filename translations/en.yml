@@ -779,3 +779,10 @@ discordbottoken_description: >
     - Select the Application
     - Click on "Bot" in the Side Menu
     - Click on "Regenerate" to regenerate the Token
+discordbottoken_description_sended_token: >
+  You sended a message with a Discord Bot Token into this Channel.
+  I deleted this message because other people can use this Token to control this Bot!
+  You can regenerate the Discord Bot Token in the Discord Developer Portal (https://discord.com/developers/applications):
+    - Select the Application
+    - Click on "Bot" in the Side Menu
+    - Click on "Regenerate" to regenerate the Token

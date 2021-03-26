@@ -30,7 +30,10 @@ class DiscordBotTokenCog(Cog):
         display information about discord bot toktens
         """
 
-        await ctx.send(embed=make_embed(ctx.author))
+        embed = Embed(title=translations.discordbottoken_title, colour=Colours.DiscordBotToken)
+        embed.description = translations.discordbottoken_description
+        embed.set_footer(text=translations.f_requested_by(ctx.author, ctx.author.id),
+                         icon_url=ctx.author.avatar_url)
         try:
             await ctx.message.delete()
         except (Forbidden, NotFound, HTTPException) as error:
@@ -43,7 +46,10 @@ class DiscordBotTokenCog(Cog):
 
         if self.RE_DC_TOKEN.findall(msg.content):
             return
-        await msg.author.send(embed=make_embed(msg.author))
+        embed = Embed(title=translations.discordbottoken_title, colour=Colours.DiscordBotToken)
+        embed.description = translations.discordbottoken_description_sended_token
+        embed.set_footer(text=translations.f_requested_by(msg.author, msg.author.id),
+                         icon_url=msg.author.avatar_url)
         try:
             await msg.delete()
         except (Forbidden, NotFound, HTTPException) as error:
