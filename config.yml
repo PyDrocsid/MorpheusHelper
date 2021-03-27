@@ -58,6 +58,7 @@ permission_levels:
 default_permission_level: administrator
 default_permission_overrides:
   sudo:
+    clear_cache: owner
     reload: owner
     stop: owner
     kill: owner
