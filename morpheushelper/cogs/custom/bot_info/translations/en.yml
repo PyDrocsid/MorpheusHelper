@@ -1,7 +1,3 @@
-profile_status:
-  - github.com/Defelo/MorpheusHelper
-  - Developed by Defelo#2022
-
 bot_description: Helper Bot for the Discord Server of The Morpheus Tutorials
 features:
   - Role system for topics you are interested in
