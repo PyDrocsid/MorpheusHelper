@@ -7,16 +7,10 @@ verify_ssl = true
 python_version = "3.9"
 
 [packages]
+pydrocsid = "==2.0.0.dev4"
 sqlalchemy = "*"
-pymysql = "*"
-requests = "*"
-sentry-sdk = "*"
-pyyaml = "*"
-aiohttp = "*"
-pydrocsid = "==2.0.0.dev3"
-"discord.py" = "*"
-aioredis = "*"
 python-dateutil = "*"
+requests = "*"
 
 [dev-packages]
 flake8 = "*"

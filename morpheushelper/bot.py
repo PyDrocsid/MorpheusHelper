@@ -105,7 +105,7 @@ load_cogs(
 
 
 def run():
-    db.create_tables()
+    bot.loop.run_until_complete(db.create_tables())
 
     logger.debug("logging in")
     bot.run(TOKEN)
