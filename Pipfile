@@ -1,0 +1,24 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[requires]
+python_version = "3.9"
+
+[packages]
+pydrocsid = "==2.0.0.dev4"
+sqlalchemy = "*"
+aiohttp = "*"
+python-dateutil = "*"
+requests = "*"
+
+[dev-packages]
+flake8 = "*"
+black = "==20.8b1"
+wemake-python-styleguide = "*"
+
+[scripts]
+bot = "python bot/pydrocsid_bot.py"
+flake8 = "flake8 . --count --statistics --show-source"
+black = "black -l 120 ."

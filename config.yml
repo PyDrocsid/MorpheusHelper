@@ -1,0 +1,51 @@
+name: PyDrocsid Bot
+
+repo:
+  owner: PyDrocsid
+  name: template
+  icon: "https://github.com/Defelo.png"
+
+author: Defelo
+
+languages:
+  - en
+default_language: en
+
+roles:
+  admin:
+    name: Administrator
+    check_assignable: false
+
+  mod:
+    name: Moderator
+    check_assignable: false
+
+  mute:
+    name: Mute
+    check_assignable: true
+
+permission_levels:
+  administrator:
+    name: Administrator
+    level: 2
+    aliases: [admin, a]
+    if:
+      permissions: [administrator]
+      roles: [admin]
+
+  moderator:
+    name: Moderator
+    level: 1
+    aliases: [mod, m]
+    if:
+      roles: [mod]
+
+default_permission_level: administrator
+default_permission_overrides:
+  sudo:
+    clear_cache: owner
+    reload: owner
+    stop: owner
+    kill: owner
+
+teamler_level: moderator

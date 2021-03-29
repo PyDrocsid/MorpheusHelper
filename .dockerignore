@@ -1,0 +1,10 @@
+.github
+.dockerignore
+*.env
+.gitignore
+docker-compose.yml
+Dockerfile
+.idea
+__pycache__
+README.md
+LICENSE

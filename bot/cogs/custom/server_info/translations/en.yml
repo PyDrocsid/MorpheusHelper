@@ -1,0 +1,6 @@
+cnt_admins:
+  one: "{cnt} Administrator"
+  many: "{cnt} Administrators"
+cnt_mods:
+  one: "{cnt} Moderator"
+  many: "{cnt} Moderators"

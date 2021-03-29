@@ -1,0 +1,33 @@
+version: '3.7'
+
+x-defaults: &defaults
+  env_file: bot.env
+  restart: always
+  networks:
+    - bot
+
+services:
+  bot:
+    << : *defaults
+    image: pydrocsid/bot
+#    image: pydrocsid/bot:develop
+    tty: true
+    depends_on:
+      - db
+      - redis
+
+  db:
+    << : *defaults
+    image: mariadb
+#    image: jsurf/rpi-mariadb
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+
+  redis:
+    << : *defaults
+    image: redis:alpine
+    volumes:
+      - ./data/redis:/data
+
+networks:
+  bot:
