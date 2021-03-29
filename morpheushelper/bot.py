@@ -75,6 +75,7 @@ load_cogs(
     MediaOnlyCog(),
     InvitesCog(),
     AutoModCog(),
+    AutoRoleCog(),
     VerificationCog(),
     SpamDetectionCog(),
 
