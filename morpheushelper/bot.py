@@ -95,11 +95,11 @@ load_cogs(
 
     # General
     BeTheProfessionalCog(),
-    PollsCog(),
+    PollsCog(team_roles=["team"]),
     ReactionPinCog(),
     ReactionRoleCog(),
     UtilsCog(),
-    VoiceChannelCog(),
+    VoiceChannelCog(team_roles=["team"]),
 )
 # fmt: on
 
