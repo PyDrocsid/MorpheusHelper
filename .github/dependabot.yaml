@@ -20,7 +20,7 @@ updates:
       interval: "daily"
     reviewers:
       - "Defelo"
-  
+
   - package-ecosystem: "pip"
     directory: "/"
     schedule:

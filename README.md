@@ -30,10 +30,10 @@ After you have cloned the repository, you should create a virtual environment an
 pipenv install --dev
 ```
 
-### Environment variables 
+### Environment variables
 To set the required environment variables it is necessary to create a file named `.env` in the root directory (there is a template for this file in [`morpheushelper.env`](morpheushelper.env)). If you need a token, generate one by following these instructions: [Creating a Bot Account](https://discordpy.readthedocs.io/en/latest/discord.html) (Note you need to enable the options under `Privileged Gateway Intents`)
 
-### Project structure 
+### Project structure
 
 ```
 Project
@@ -73,11 +73,11 @@ Project
 └── config.yml
 ```
 
-### PyCharm configuration 
+### PyCharm configuration
 
 - Open PyCharm and go to `Settings` ➔ `Project: MorpheusHelper` ➔ `Python Interpreter`
 - Open the menu `Python Interpreter` and click on `Show All...`
-- Click on the plus symbol 
+- Click on the plus symbol
 - Click on `Pipenv Environment`
 - Select `Python 3.9` as `Base interpreter`
 - Confirm with `OK`
@@ -98,7 +98,7 @@ cd MorpheusHelper
 # build docker image
 sudo docker build -t pydrocsid/morpheushelper .
 
-# adjust the docker-compose.yml and create the .env file 
+# adjust the docker-compose.yml and create the .env file
 cp morpheushelper.env .env
 vim .env
 vim docker-compose.yml

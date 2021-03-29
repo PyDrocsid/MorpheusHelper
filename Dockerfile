@@ -14,7 +14,7 @@ ARG PIPENV_VENV_IN_PROJECT=true
 RUN pipenv install --deploy --ignore-pipfile
 
 COPY .git /build/.git/
-RUN git describe --tags > VERSION
+RUN git describe --tags --always > VERSION
 
 FROM python:3.9-alpine
 
