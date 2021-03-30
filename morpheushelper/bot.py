@@ -76,6 +76,7 @@ load_cogs(
     InvitesCog(),
     AutoModCog(),
     AutoRoleCog(),
+    RoleNotificationsCog(),
     VerificationCog(),
     SpamDetectionCog(),
 
