@@ -28,6 +28,10 @@ roles:
     name: Team
     check_assignable: false
 
+  verified:
+    name: Verified
+    check_assignable: true
+
   mute:
     name: Mute
     check_assignable: true

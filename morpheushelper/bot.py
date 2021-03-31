@@ -87,7 +87,7 @@ load_cogs(
     HelpCog(),
     MetaQuestionCog(),
     CustomServerInfoCog(),
-    MemberInfoCog(),
+    UserInfoCog(),
 
     # Integrations
     AdventOfCodeCog(),
