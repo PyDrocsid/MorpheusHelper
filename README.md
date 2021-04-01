@@ -1,3 +1,11 @@
+<p>
+  
+  [![CI](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml)
+  [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+  [![DockerHub - MorpheusHelper](https://img.shields.io/docker/pulls/defelo/morpheushelper?style=flat-square&label=DockerHub%20-%20MorpheusHelper)](https://hub.docker.com/r/defelo/morpheushelper)
+
+</p>
+
 # MorpheusHelper
 Bot for the [Discord Server of The Morpheus Tutorials](https://discord.gg/themorpheus)
 
