@@ -159,23 +159,10 @@ jobs:
     needs: [ docker_build ]
     environment: docker
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
 
     steps:
-      - name: Get Archive Name
-        id: archive
-        run: |
-          set -ex
-          platform=${{ matrix.platform }}
-          name=$(echo $IMAGE_NAME | tr / _)_$(echo $platform | tr / -).tar.gz
-          echo ::set-output name=name::${name}
-
       - name: Download Docker Image Archive
         uses: actions/download-artifact@v2
-        with:
-          name: ${{ steps.archive.outputs.name }}
 
       - name: Login to DockerHub
         id: login_dockerhub
@@ -201,7 +188,13 @@ jobs:
       - name: Push Docker Image
         env:
           NAME: ${{ steps.archive.outputs.name }}
-        run: docker load -qi $NAME | cut -d' ' -f3 | xargs -L1 docker push
+        run: |
+          set -ex
+
+          for file in $(ls */*); do
+            echo Loading $file
+            docker load -qi $file | cut -d' ' -f3 | xargs -L1 docker push
+          done
 
       - name: Clear
         if: always()
