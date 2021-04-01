@@ -33,4 +33,6 @@ if SENTRY_DSN:
     logger.debug("initializing sentry")
     setup_sentry(SENTRY_DSN, Config.NAME, Config.VERSION)
 
-__import__("bot").run()
+from bot import run  # noqa: E402
+
+run()
