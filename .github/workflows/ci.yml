@@ -52,7 +52,6 @@ jobs:
 
   docker_build:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
-    needs: [ codestyle, linter ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -156,7 +155,7 @@ jobs:
 
   docker_push:
     if: "false" # ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
-    needs: [ docker_build ]
+    needs: [ codestyle, linter, docker_build ]
     environment: docker
     runs-on: ubuntu-latest
 
@@ -199,6 +198,24 @@ jobs:
       - name: Clear
         if: always()
         run: rm -f ${HOME}/.docker/config.json
+
+      - name: Prune old Docker Images
+        env:
+          TOKEN: ${{ secrets.CR_PAT }}
+          USER: "orgs/pydrocsid"
+          NAME: "template"
+        run: |
+          set -ex
+
+          AUTH="Authorization: Bearer ${TOKEN}"
+          URL="https://api.github.com/${USER}/packages/container/${NAME}/versions"
+
+          for version in $(curl -H "${AUTH}" "${URL}" | jq -c '.[] | select(.metadata.container.tags==[])'); do
+              id=$(echo "${version}" | jq -r .id)
+              name=$(echo "${version}" | jq -r .name)
+              echo pruning $id $name
+              curl -X DELETE -H "${AUTH}" "${URL}/${id}"
+          done
 
   docker_deploy:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
