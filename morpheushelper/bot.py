@@ -14,6 +14,7 @@ from PyDrocsid.util import get_prefix, make_error, reply
 from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
+from cogs.library.moderation.mod.cog import ModCommandError
 
 logger = get_logger(__name__)
 
@@ -54,6 +55,8 @@ async def on_command_error(ctx: Context, error: CommandError):
         return
     if isinstance(error, UserInputError):
         await send_help(ctx, ctx.command)
+    elif isinstance(error, ModCommandError):
+        await reply(ctx, embed=make_error(error, error.user))
     else:
         await reply(ctx, embed=make_error(error))
 
