@@ -14,7 +14,7 @@ from PyDrocsid.util import get_prefix, make_error, reply
 from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
-from cogs.moderation.mod.cog import ModCommandError
+from cogs.library.moderation.mod.cog import ModCommandError
 
 logger = get_logger(__name__)
 
