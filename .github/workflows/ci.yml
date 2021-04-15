@@ -25,14 +25,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
+      - name: Install black
         run: |
           pip install --upgrade pip
-          pip install pipenv
-          pipenv sync --dev
+          pip install black==20.8b1
 
       - name: Check code formatting with black
-        run: pipenv run black --diff --check
+        run: black -l 120 . --diff --check
 
   linter:
     runs-on: ubuntu-latest
