@@ -1,12 +1,12 @@
 cnt_admins:
   one: "{cnt} Administrator"
   many: "{cnt} Administrators"
+cnt_ops:
+  one: "{cnt} Operator"
+  many: "{cnt} Operators"
 cnt_mods:
   one: "{cnt} Moderator"
   many: "{cnt} Moderators"
-cnt_supps:
-  one: "{cnt} Supporter"
-  many: "{cnt} Supporters"
 
 topics: Topics
 cnt_topics:
