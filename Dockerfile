@@ -18,7 +18,7 @@ RUN git describe --tags --always > VERSION
 
 FROM python:3.9-alpine
 
-LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/template
+LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/MorpheusHelper
 
 RUN set -x \
     && apk add --no-cache bash~=5.1 \
@@ -33,6 +33,6 @@ COPY --from=builder /build/.venv/lib /usr/local/lib
 COPY --from=builder /build/VERSION /app/
 
 COPY config.yml /app/
-COPY bot /app/bot/
+COPY morpheushelper /app/morpheushelper/
 
-CMD ["python", "bot/pydrocsid_bot.py"]
+CMD ["python", "morpheushelper/morpheushelper.py"]

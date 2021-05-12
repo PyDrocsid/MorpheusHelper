@@ -6,8 +6,8 @@ on:
 
 env:
   PYTHON_VERSION: 3.9
-  IMAGE_NAME: pydrocsid/bot
-  GHCR_NAME: pydrocsid/bot
+  IMAGE_NAME: defelo/morpheushelper
+  GHCR_NAME: pydrocsid/morpheushelper
 
 jobs:
   codestyle:
@@ -21,7 +21,7 @@ jobs:
           submodules: recursive
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -153,7 +153,7 @@ jobs:
           path: ${{ steps.archive.outputs.name }}
 
   docker_push:
-    if: "false" # ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
+    if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     needs: [ codestyle, linter, docker_build ]
     environment: docker
     runs-on: ubuntu-latest
@@ -202,7 +202,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.CR_PAT }}
           USER: "orgs/pydrocsid"
-          NAME: "template"
+          NAME: "morpheushelper"
         run: |
           set -ex
 

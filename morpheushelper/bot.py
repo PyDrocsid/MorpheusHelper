@@ -11,7 +11,7 @@ from PyDrocsid.events import listener
 from PyDrocsid.logger import get_logger
 from PyDrocsid.translations import t
 from PyDrocsid.util import get_prefix, make_error, reply
-from cogs.custom import CustomServerInfoCog
+from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
 from cogs.library.moderation.mod.cog import ModCommandError
@@ -69,14 +69,43 @@ load_cogs(
     RolesCog(),
     PermissionsCog(),
     SettingsCog(),
+    SudoCog(),
+
+    # Moderation
+    ModCog(),
+    LoggingCog(),
+    MessageCog(),
+    MediaOnlyCog(),
+    InvitesCog(),
+    AutoModCog(),
+    AutoRoleCog(),
+    RoleNotificationsCog(),
+    VerificationCog(),
+    SpamDetectionCog(),
 
     # Information
-    BotInfoCog(),
+    CustomBotInfoCog(),
+    CodeblocksCog(),
+    HeartbeatCog(),
     HelpCog(),
+    MetaQuestionCog(),
     CustomServerInfoCog(),
+    UserInfoCog(),
+    InactivityCog(),
+
+    # Integrations
+    AdventOfCodeCog(),
+    DiscordpyDocumentationCog(),
+    RedditCog(),
+    RunCodeCog(),
 
     # General
+    BeTheProfessionalCog(),
+    PollsCog(team_roles=["team"]),
+    ReactionPinCog(),
+    ReactionRoleCog(),
     UtilsCog(),
+    VoiceChannelCog(team_roles=["team"]),
 )
 # fmt: on
 

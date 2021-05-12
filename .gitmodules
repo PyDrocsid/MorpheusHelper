@@ -1,8 +1,8 @@
 [submodule "bot/cogs/library"]
-	path = bot/cogs/library
+	path = morpheushelper/cogs/library
 	url = ../../PyDrocsid/cogs.git
 	branch = develop
 [submodule "bot/library"]
-	path = bot/library
+	path = morpheushelper/library
 	url = ../../PyDrocsid/library.git
 	branch = develop

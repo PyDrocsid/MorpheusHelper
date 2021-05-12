@@ -1,16 +1,16 @@
 version: '3.7'
 
 x-defaults: &defaults
-  env_file: bot.env
+  env_file: morpheushelper.env
   restart: always
   networks:
-    - bot
+    - morpheushelper
 
 services:
-  bot:
+  morpheushelper:
     << : *defaults
-    image: pydrocsid/bot
-#    image: pydrocsid/bot:develop
+    image: defelo/morpheushelper
+#    image: defelo/morpheushelper:develop
     tty: true
     depends_on:
       - db
@@ -30,4 +30,4 @@ services:
       - ./data/redis:/data
 
 networks:
-  bot:
+  morpheushelper:

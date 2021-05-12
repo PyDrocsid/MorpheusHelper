@@ -1,21 +1,13 @@
 <p>
-  
-  [![CI](https://github.com/PyDrocsid/template/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/template/actions/workflows/ci.yml)
+
+  [![CI](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml)
   [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-  <!-- [![DockerHub - template](https://img.shields.io/docker/pulls/pydrocsid/template?style=flat-square&label=DockerHub%20-%20template)](https://hub.docker.com/r/pydrocsid/template) -->
+  [![DockerHub - MorpheusHelper](https://img.shields.io/docker/pulls/defelo/morpheushelper?style=flat-square&label=DockerHub%20-%20MorpheusHelper)](https://hub.docker.com/r/defelo/morpheushelper)
 
 </p>
 
-# PyDrocsid Bot Template
-
-## Template Instructions
-- [ ] Adjust name, repository and author in [config.yml](https://github.com/PyDrocsid/template/blob/develop/config.yml)
-- [ ] Replace the banner in [bot/pydrocsid_bot.py#L19](https://github.com/PyDrocsid/template/blob/develop/bot/pydrocsid_bot.py#L19). You can generate one on [this website](http://www.patorjk.com/software/taag/#p=display&f=Slant&t=PyDrocsid%20Bot).
-- [ ] Adjust repository in [Dockerfile#L21](https://github.com/PyDrocsid/template/blob/develop/Dockerfile#L21)
-- [ ] Adjust docker image tags in [.github/workflows/ci.yml#L9](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/ci.yml#L9)
-- [ ] Enable push to docker registries in [.github/workflows/ci.yml#L158](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/ci.yml#L158)
-- [ ] Add reviewers in [.github/dependabot.yml](https://github.com/PyDrocsid/template/blob/develop/.github/dependabot.yaml)
-- [ ] Adjust this [README.md](https://github.com/PyDrocsid/template/blob/develop/README.md) and remove this section
+# MorpheusHelper
+Bot for the [Discord Server of The Morpheus Tutorials](https://discord.gg/themorpheus)
 
 ## Development
 ### Prerequisites
@@ -30,12 +22,12 @@
 
 #### SSH (recommended)
 ```
-git clone --recursive git@github.com:PyDrocsid/template.git
+git clone --recursive git@github.com:PyDrocsid/MorpheusHelper.git
 ```
 
 #### HTTPS
 ```
-git clone --recursive https://github.com/PyDrocsid/template.git
+git clone --recursive https://github.com/PyDrocsid/MorpheusHelper.git
 ```
 
 ### Setup dependencies
@@ -47,13 +39,13 @@ pipenv install --dev
 ```
 
 ### Environment variables
-To set the required environment variables it is necessary to create a file named `.env` in the root directory (there is a template for this file in [`bot.env`](bot.env)). If you need a token, generate one by following these instructions: [Creating a Bot Account](https://discordpy.readthedocs.io/en/latest/discord.html) (Note you need to enable the options under `Privileged Gateway Intents`)
+To set the required environment variables it is necessary to create a file named `.env` in the root directory (there is a template for this file in [`morpheushelper.env`](morpheushelper.env)). If you need a token, generate one by following these instructions: [Creating a Bot Account](https://discordpy.readthedocs.io/en/latest/discord.html) (Note you need to enable the options under `Privileged Gateway Intents`)
 
 ### Project structure
 
 ```
 Project
-├── bot
+├── morpheushelper
 │  ├── cogs
 │  │  ├── custom
 │  │  │  ├── <cog>
@@ -85,13 +77,13 @@ Project
 │  │     ├── pubsub.py
 │  │     └── translations.py
 │  ├── bot.py
-│  └── pydrocsid_bot.py
+│  └── morpheushelper.py
 └── config.yml
- ```
+```
 
 ### PyCharm configuration
 
-- Open PyCharm and go to `Settings` ➔ `Project` ➔ `Python Interpreter`
+- Open PyCharm and go to `Settings` ➔ `Project: MorpheusHelper` ➔ `Python Interpreter`
 - Open the menu `Python Interpreter` and click on `Show All...`
 - Click on the plus symbol
 - Click on `Pipenv Environment`
@@ -100,7 +92,7 @@ Project
 - Change the working directory to root path  ➔ `Edit Configurations`  ➔ `Working directory`
 
 
-Finally, please remember to mark the `bot` directory as `Sources Root` (right click on `bot` ➔ `Mark Directory as` ➔ `Sources Root`).
+Finally, please remember to mark the `morpheushelper` directory as `Sources Root` (right click on `morpheushelper` ➔ `Mark Directory as` ➔ `Sources Root`).
 
 
 ## Installation instructions
@@ -108,14 +100,14 @@ Finally, please remember to mark the `bot` directory as `Sources Root` (right cl
 ### Using Docker
 ```bash
 # clone git repository and cd into it
-git clone --recursive https://github.com/PyDrocsid/template.git
-cd template
+git clone --recursive https://github.com/PyDrocsid/MorpheusHelper.git
+cd MorpheusHelper
 
 # build docker image
-sudo docker build -t pydrocsid/bot .
+sudo docker build -t pydrocsid/morpheushelper .
 
 # adjust the docker-compose.yml and create the .env file
-cp bot.env .env
+cp morpheushelper.env .env
 vim .env
 vim docker-compose.yml
 

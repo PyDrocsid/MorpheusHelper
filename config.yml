@@ -1,9 +1,9 @@
-name: PyDrocsid Bot
+name: MorpheusHelper
 
 repo:
   owner: PyDrocsid
-  name: template
-  icon: "https://github.com/Defelo.png"
+  name: MorpheusHelper
+  icon: "https://github.com/PyDrocsid.png"
 
 author: Defelo
 
@@ -16,9 +16,21 @@ roles:
     name: Administrator
     check_assignable: false
 
+  op:
+    name: Operator
+    check_assignable: false
+
   mod:
     name: Moderator
     check_assignable: false
+
+  team:
+    name: Team
+    check_assignable: false
+
+  verified:
+    name: Verified
+    check_assignable: true
 
   mute:
     name: Mute
@@ -27,11 +39,18 @@ roles:
 permission_levels:
   administrator:
     name: Administrator
-    level: 2
+    level: 3
     aliases: [admin, a]
     if:
       permissions: [administrator]
       roles: [admin]
+
+  operator:
+    name: Operator
+    level: 2
+    aliases: [op, o]
+    if:
+      roles: [op]
 
   moderator:
     name: Moderator
