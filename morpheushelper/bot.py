@@ -85,10 +85,8 @@ load_cogs(
 
     # Information
     CustomBotInfoCog(),
-    CodeblocksCog(),
     HeartbeatCog(),
     HelpCog(),
-    MetaQuestionCog(),
     CustomServerInfoCog(),
     UserInfoCog(),
     InactivityCog(),
@@ -101,6 +99,10 @@ load_cogs(
 
     # General
     BeTheProfessionalCog(),
+    CustomCommandsCog(
+        "morpheushelper/cogs/library/custom_commands/codeblocks.yml",
+        "morpheushelper/cogs/library/custom_commands/metaquestion.yml",
+    ),
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),
     ReactionRoleCog(),
