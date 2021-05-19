@@ -12,6 +12,7 @@ sqlalchemy = "*"
 aiohttp = "*"
 python-dateutil = "*"
 requests = "*"
+wikipedia = "*"
 
 [dev-packages]
 flake8 = "*"
