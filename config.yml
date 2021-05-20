@@ -28,7 +28,7 @@ permission_levels:
   administrator:
     name: Administrator
     level: 2
-    aliases: [admin, a]
+    aliases: [administrator, admin, a]
     if:
       permissions: [administrator]
       roles: [admin]
@@ -36,7 +36,7 @@ permission_levels:
   moderator:
     name: Moderator
     level: 1
-    aliases: [mod, m]
+    aliases: [moderator, mod, m]
     if:
       roles: [mod]
 
