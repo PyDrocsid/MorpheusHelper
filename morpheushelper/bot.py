@@ -16,6 +16,7 @@ from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
 from cogs.library.moderation.mod.cog import UserCommandError
+from cogs.library.moderation.user_notes import UserNoteCog
 
 logger = get_logger(__name__)
 
@@ -83,6 +84,7 @@ load_cogs(
     RoleNotificationsCog(),
     VerificationCog(),
     SpamDetectionCog(),
+    UserNoteCog(),
 
     # Information
     CustomBotInfoCog(),
