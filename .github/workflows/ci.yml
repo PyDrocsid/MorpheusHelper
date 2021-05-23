@@ -151,6 +151,7 @@ jobs:
         with:
           name: ${{ steps.archive.outputs.name }}
           path: ${{ steps.archive.outputs.name }}
+          retention-days: 1
 
   docker_push:
     if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}

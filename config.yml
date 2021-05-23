@@ -40,7 +40,7 @@ permission_levels:
   administrator:
     name: Administrator
     level: 3
-    aliases: [admin, a]
+    aliases: [administrator, admin, a]
     if:
       permissions: [administrator]
       roles: [admin]
@@ -48,14 +48,14 @@ permission_levels:
   operator:
     name: Operator
     level: 2
-    aliases: [op, o]
+    aliases: [operator, op, o]
     if:
       roles: [op]
 
   moderator:
     name: Moderator
     level: 1
-    aliases: [mod, m]
+    aliases: [moderator, mod, m]
     if:
       roles: [mod]
 
