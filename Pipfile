@@ -7,7 +7,7 @@ verify_ssl = true
 python_version = "3.9"
 
 [packages]
-pydrocsid = "==2.0.0.dev8"
+pydrocsid = "==2.0.0rc1"
 sqlalchemy = "*"
 aiohttp = "*"
 python-dateutil = "*"
