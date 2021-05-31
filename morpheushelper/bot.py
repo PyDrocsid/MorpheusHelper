@@ -102,6 +102,7 @@ load_cogs(
     # General
     BeTheProfessionalCog(),
     CustomCommandsCog(
+        "custom_commands",
         "morpheushelper/cogs/library/custom_commands/codeblocks.yml",
         "morpheushelper/cogs/library/custom_commands/metaquestion.yml",
     ),
