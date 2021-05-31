@@ -77,7 +77,7 @@ load_cogs(
     CustomServerInfoCog(),
 
     # General
-    CustomCommandsCog(),
+    CustomCommandsCog("custom_commands"),
     UtilsCog(),
 )
 # fmt: on
