@@ -102,8 +102,8 @@ load_cogs(
     BeTheProfessionalCog(),
     CustomCommandsCog(
         "custom_commands",
-        "morpheushelper/cogs/library/custom_commands/codeblocks.yml",
-        "morpheushelper/cogs/library/custom_commands/metaquestion.yml",
+        "bot/cogs/library/custom_commands/codeblocks.yml",
+        "bot/cogs/library/custom_commands/metaquestion.yml",
     ),
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),
