@@ -45,7 +45,7 @@ To set the required environment variables it is necessary to create a file named
 
 ```
 Project
-├── morpheushelper
+├── bot
 │  ├── cogs
 │  │  ├── custom
 │  │  │  ├── <cog>
@@ -92,7 +92,7 @@ Project
 - Change the working directory to root path  ➔ `Edit Configurations`  ➔ `Working directory`
 
 
-Finally, please remember to mark the `morpheushelper` directory as `Sources Root` (right click on `morpheushelper` ➔ `Mark Directory as` ➔ `Sources Root`).
+Finally, please remember to mark the `bot` directory as `Sources Root` (right click on `bot` ➔ `Mark Directory as` ➔ `Sources Root`).
 
 
 ## Installation instructions

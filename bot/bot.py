@@ -1,7 +1,7 @@
 from typing import Iterable
 
 import sentry_sdk
-from discord import Intents, Message
+from discord import Intents, Message, Guild
 from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError, CommandInvokeError
 
 from PyDrocsid.cog import load_cogs
@@ -16,7 +16,7 @@ from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
 from cogs.library.moderation.mod.cog import UserCommandError
-from cogs.library.moderation.user_notes import UserNoteCog
+from cogs.library.pubsub import send_alert
 
 logger = get_logger(__name__)
 
@@ -63,6 +63,11 @@ async def on_command_error(ctx: Context, error: CommandError):
         await reply(ctx, embed=make_error(str(error)))
 
 
+@listener
+async def on_permission_error(guild: Guild, error: str):
+    await send_alert(guild, error)
+
+
 # fmt: off
 load_cogs(
     bot,
@@ -103,8 +108,9 @@ load_cogs(
     # General
     BeTheProfessionalCog(),
     CustomCommandsCog(
-        "morpheushelper/cogs/library/custom_commands/codeblocks.yml",
-        "morpheushelper/cogs/library/custom_commands/metaquestion.yml",
+        "custom_commands",
+        "bot/cogs/library/custom_commands/codeblocks.yml",
+        "bot/cogs/library/custom_commands/metaquestion.yml",
     ),
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),
