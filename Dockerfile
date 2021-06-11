@@ -33,6 +33,6 @@ COPY --from=builder /build/.venv/lib /usr/local/lib
 COPY --from=builder /build/VERSION /app/
 
 COPY config.yml /app/
-COPY morpheushelper /app/morpheushelper/
+COPY bot /app/bot/
 
-CMD ["python", "morpheushelper/morpheushelper.py"]
+CMD ["python", "bot/morpheushelper.py"]

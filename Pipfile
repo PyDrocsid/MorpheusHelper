@@ -20,6 +20,6 @@ black = "==20.8b1"
 wemake-python-styleguide = "*"
 
 [scripts]
-bot = "python morpheushelper/morpheushelper.py"
+bot = "python bot/morpheushelper.py"
 flake8 = "flake8 . --count --statistics --show-source"
 black = "black -l 120 ."
