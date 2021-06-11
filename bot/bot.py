@@ -89,6 +89,7 @@ load_cogs(
     RoleNotificationsCog(),
     VerificationCog(),
     SpamDetectionCog(),
+    UserNoteCog(),
 
     # Information
     CustomBotInfoCog(),
