@@ -115,6 +115,7 @@ load_cogs(
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),
     ReactionRoleCog(),
+    RemindMeCog(),
     UtilsCog(),
     VoiceChannelCog(team_roles=["team"]),
 )
