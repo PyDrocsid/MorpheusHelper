@@ -111,6 +111,7 @@ load_cogs(
         "custom_commands",
         "bot/cogs/library/custom_commands/codeblocks.yml",
         "bot/cogs/library/custom_commands/metaquestion.yml",
+        "bot/cogs/library/custom_commands/discordtoken.yml",
     ),
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),
