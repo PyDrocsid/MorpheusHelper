@@ -113,6 +113,7 @@ load_cogs(
         "bot/cogs/library/custom_commands/metaquestion.yml",
         "bot/cogs/library/custom_commands/discordtoken.yml",
     ),
+    DiscordBotTokenDeleterCog(),
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),
     ReactionRoleCog(),
