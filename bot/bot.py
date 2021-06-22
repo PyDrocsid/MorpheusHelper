@@ -12,6 +12,7 @@ from PyDrocsid.events import listener
 from PyDrocsid.logger import get_logger
 from PyDrocsid.prefix import get_prefix
 from PyDrocsid.translations import t
+from cogs.library.moderation.auto_delete_messages.cog import AutoDeleteMessages
 from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help
@@ -90,6 +91,7 @@ load_cogs(
     VerificationCog(),
     SpamDetectionCog(),
     UserNoteCog(),
+    AutoDeleteMessages(),
 
     # Information
     CustomBotInfoCog(),
