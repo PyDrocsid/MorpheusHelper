@@ -43,7 +43,7 @@ jobs:
           submodules: recursive
 
       - name: Lint with wemake-python-styleguide
-        uses: wemake-services/wemake-python-styleguide@0.15.2
+        uses: wemake-services/wemake-python-styleguide@0.15.3
         with:
           reporter: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'github-pr-review' || 'terminal' }}
         env:
