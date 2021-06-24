@@ -78,6 +78,7 @@ Project
 │  │     │     ├── api.py
 │  │     │     ├── cog.py
 │  │     │     ├── colors.py
+│  │     │     ├── documentation.md
 │  │     │     ├── models.py
 │  │     │     ├── permissions.py
 │  │     │     └── settings.py
