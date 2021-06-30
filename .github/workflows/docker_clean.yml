@@ -1,0 +1,29 @@
+name: Docker Clean
+
+on: delete
+
+jobs:
+  clean:
+    if: "false"  # ${{ github.event.ref_type == 'branch' }}
+    environment: docker-clean
+    runs-on: ubuntu-latest
+
+    steps:
+      - env:
+          TOKEN: ${{ secrets.CR_PAT }}
+          USER: "orgs/pydrocsid"
+          NAME: "template"
+          BRANCH: ${{ github.event.ref }}
+        run: |
+          set -ex
+
+          AUTH="Authorization: Bearer ${TOKEN}"
+          URL="https://api.github.com/${USER}/packages/container/${NAME}/versions"
+          branch=$(echo $BRANCH | tr / -)
+
+          for version in $(curl -H "${AUTH}" "${URL}" | jq -c ".[] | select((.metadata.container.tags - (.metadata.container.tags - (\"$branch $branch-linux-amd64 $branch-linux-arm-v7 $branch-linux-arm64-v8\" | split(\" \"))))!=[])"); do
+              id=$(echo "${version}" | jq -r .id)
+              name=$(echo "${version}" | jq -r .name)
+              echo pruning $id $name
+              curl -X DELETE -H "${AUTH}" "${URL}/${id}"
+          done
