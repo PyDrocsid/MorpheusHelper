@@ -1,4 +1,4 @@
-FROM python:3.9-alpine AS builder
+FROM python:3.9.6-alpine AS builder
 
 RUN apk add --no-cache gcc~=10.3 g++~=10.3 musl-dev~=1.2 git~=2.32
 
@@ -16,7 +16,7 @@ RUN pipenv install --deploy --ignore-pipfile
 COPY .git /build/.git/
 RUN git describe --tags --always > VERSION
 
-FROM python:3.9-alpine
+FROM python:3.9.6-alpine
 
 LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/template
 
