@@ -84,6 +84,7 @@ load_cogs(
     MessageCog(),
     MediaOnlyCog(),
     InvitesCog(),
+    AutoClearCog(),
     AutoModCog(),
     AutoRoleCog(),
     RoleNotificationsCog(),
