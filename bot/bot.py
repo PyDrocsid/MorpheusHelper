@@ -108,12 +108,7 @@ load_cogs(
 
     # General
     BeTheProfessionalCog(),
-    CustomCommandsCog(
-        "custom_commands",
-        "bot/cogs/library/custom_commands/codeblocks.yml",
-        "bot/cogs/library/custom_commands/metaquestion.yml",
-        "bot/cogs/library/custom_commands/discordtoken.yml",
-    ),
+    CustomCommandsCog(),
     DiscordBotTokenDeleterCog(),
     PollsCog(team_roles=["team"]),
     ReactionPinCog(),

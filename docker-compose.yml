@@ -11,8 +11,6 @@ services:
     depends_on:
       - db
       - redis
-    volumes:
-      - ./custom_commands:/app/custom_commands:ro
     networks:
       - morpheushelper
 
