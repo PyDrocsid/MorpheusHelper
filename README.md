@@ -2,6 +2,7 @@
   
   [![CI](https://github.com/PyDrocsid/template/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/template/actions/workflows/ci.yml)
   [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+  [![Discord](https://img.shields.io/discord/637234990404599809.svg?label=Discord&logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/zcmkZVC)
   <!-- [![DockerHub - template](https://img.shields.io/docker/pulls/pydrocsid/template?style=flat-square&label=DockerHub%20-%20template)](https://hub.docker.com/r/pydrocsid/template) -->
 
 </p>
