@@ -118,7 +118,7 @@ load_cogs(
     RemindMeCog(),
     UtilsCog(),
     VoiceChannelCog(team_roles=["team"]),
-    AutoreactionCog()
+    AutoreactionCog(),
 )
 # fmt: on
 
