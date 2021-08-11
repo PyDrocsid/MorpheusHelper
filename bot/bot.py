@@ -51,7 +51,8 @@ async def on_error(*_, **__):
 @listener
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandInvokeError):
-        await reply(ctx, embed=make_error(t.internal_error))
+        if not isinstance(error.original, PermissionError):
+            await reply(ctx, embed=make_error(t.internal_error))
         raise error.original
 
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
