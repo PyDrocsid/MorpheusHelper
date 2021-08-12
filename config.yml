@@ -60,11 +60,129 @@ permission_levels:
       roles: [mod]
 
 default_permission_level: administrator
+
 default_permission_overrides:
+
+  autoclear:
+    read: moderator
+    write: administrator
+
+  automod:
+    autokick_read: moderator
+    autokick_write: administrator
+    instantkick_read: moderator
+    instantkick_write: administrator
+
+  autorole:
+    read: moderator
+    write: administrator
+
+  betheprofessional:
+    manage: operator
+
+  custom_commands:
+    read: moderator
+    write: operator
+
+  inactivity:
+    read: moderator
+    write: administrator
+    scan: administrator
+
+  invites:
+    bypass: moderator
+    manage: moderator
+
+  logging:
+    read: moderator
+    write: administrator
+
+  mediaonly:
+    bypass: moderator
+    read: moderator
+    write: administrator
+
+  message:
+    edit: operator
+    send: operator
+    delete: operator
+    clear: operator
+
+  mod:
+    warn: moderator
+    mute: moderator
+    kick: operator
+    ban: operator
+
+  permissions:
+    view_own: moderator
+    view_all: moderator
+    manage: operator
+
+  polls:
+    delete: moderator
+    team_poll: moderator
+
+  reactionpin:
+    pin: moderator
+    read: moderator
+    write: operator
+
+  reactionrole:
+    read: moderator
+    write: operator
+
+  reddit:
+    read: moderator
+    write: operator
+    trigger: operator
+
+  role_notifications:
+    read: moderator
+    write: operator
+
+  roles:
+    auth_read: moderator
+    auth_write: administrator
+    config_read: moderator
+    config_write: administrator
+    list_members: moderator
+
+  settings:
+    change_prefix: administrator
+
+  spam_detection:
+    read: moderator
+    write: operator
+
   sudo:
     clear_cache: owner
     reload: owner
     stop: owner
     kill: owner
+
+  user_info:
+    init_join_log: administrator
+    view_userinfo: moderator
+    view_userlog: moderator
+
+  user_notes:
+    read: moderator
+    write: moderator
+
+  utils:
+    suggest_role_color: moderator
+
+  verification:
+    read: moderator
+    write: operator
+
+  voice_channel:
+    dyn_read: moderator
+    dyn_rename: administrator
+    dyn_write: administrator
+    link_read: moderator
+    link_write: administrator
+    override_owner: moderator
 
 teamler_level: moderator
