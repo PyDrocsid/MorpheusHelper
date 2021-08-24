@@ -2,7 +2,3 @@
 	path = bot/cogs/library
 	url = ../../PyDrocsid/cogs.git
 	branch = develop
-[submodule "bot/library"]
-	path = bot/library
-	url = ../../PyDrocsid/library.git
-	branch = develop
