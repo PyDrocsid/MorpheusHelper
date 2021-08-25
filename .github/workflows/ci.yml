@@ -1,0 +1,244 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+env:
+  PYTHON_VERSION: 3.9
+  IMAGE_NAME: defelo/morpheushelper
+  GHCR_NAME: pydrocsid/morpheushelper
+
+jobs:
+  codestyle:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          submodules: recursive
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install black
+        run: |
+          pip install --upgrade pip
+          pip install black==20.8b1
+
+      - name: Check code formatting with black
+        run: black -l 120 . --diff --check
+
+  linter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          submodules: recursive
+
+      - name: Lint with wemake-python-styleguide
+        uses: wemake-services/wemake-python-styleguide@0.15.3
+        with:
+          reporter: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'github-pr-review' || 'terminal' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
+
+  docker_build:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.4
+        with:
+          persist-credentials: false
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1.5.1
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2.1.6
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-${{ matrix.platform }}-
+
+      - name: Create Version
+        id: version
+        run: |
+          set -x
+
+          name=$IMAGE_NAME
+          ghcr_name=$GHCR_NAME
+
+          tag=${GITHUB_REF#refs/tags/v}
+          branch=${GITHUB_REF#refs/heads/}
+          pull=${GITHUB_REF#refs/pull/}
+          pull=${pull%/merge}
+          platform=${{ matrix.platform }}
+
+          hub=0
+
+          if [[ $GITHUB_REF = refs/tags/v* ]]; then
+            tags="v$tag latest"
+            hub=1
+          elif [[ $GITHUB_REF = refs/heads/* ]]; then
+            tags="$branch"
+            if [[ $branch == develop ]]; then
+              hub=1
+            fi
+          elif [[ $GITHUB_REF = refs/pull/* ]]; then
+            tags="pr-$pull"
+          fi
+          tags="$(echo $tags | tr / -)"
+
+          out=""
+          for t in $tags; do
+            [[ $hub == "1" ]] && out="$out,$name:$t-$(echo $platform | tr / -)"
+            out="$out,ghcr.io/$ghcr_name:$t-$(echo $platform | tr / -)"
+            if [[ $platform == linux/amd64 ]]; then
+              [[ $hub == "1" ]] && out="$out,$name:$t"
+              out="$out,ghcr.io/$ghcr_name:$t"
+            fi
+          done
+
+          echo ::set-output name=tags::${out:1}
+
+      - name: Build
+        uses: docker/build-push-action@v2.7.0
+        with:
+          push: false
+          load: true
+          tags: ${{ steps.version.outputs.tags }}
+          platforms: ${{ matrix.platform }}
+          file: Dockerfile
+          context: .
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Build Docker Image Archive
+        id: archive
+        env:
+          TAGS: ${{ steps.version.outputs.tags }}
+        run: |
+          set -ex
+          platform=${{ matrix.platform }}
+          name=$(echo $IMAGE_NAME | tr / _)_$(echo $platform | tr / -).tar.gz
+          echo ::set-output name=name::${name}
+          docker save $(echo $TAGS | tr , ' ') | gzip > $name
+
+      - name: Upload Docker Image Archive
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.archive.outputs.name }}
+          path: ${{ steps.archive.outputs.name }}
+          retention-days: 1
+
+  docker_push_ghcr:
+    if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
+    needs: [ codestyle, linter, docker_build ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Docker Image Archive
+        uses: actions/download-artifact@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.github_token }}
+
+      - name: Push Docker Image
+        run: |
+          set -ex
+
+          for file in $(ls */*); do
+            echo Loading $file
+            docker load -qi $file | cut -d' ' -f3 | grep '^ghcr.io/' | xargs -L1 docker push
+          done
+
+      - name: Clear
+        if: always()
+        run: rm -f ${HOME}/.docker/config.json
+
+#     - name: Prune old Docker Images
+#       env:
+#         TOKEN: ${{ secrets.CR_PAT }}
+#         USER: "orgs/pydrocsid"
+#         NAME: "morpheushelper"
+#       run: |
+#         set -ex
+
+#         AUTH="Authorization: Bearer ${TOKEN}"
+#         URL="https://api.github.com/${USER}/packages/container/${NAME}/versions"
+
+#         for version in $(curl -H "${AUTH}" "${URL}" | jq -c '.[] | select(.metadata.container.tags==[])'); do
+#             id=$(echo "${version}" | jq -r .id)
+#             name=$(echo "${version}" | jq -r .name)
+#             echo pruning $id $name
+#             curl -X DELETE -H "${AUTH}" "${URL}/${id}"
+#         done
+
+  docker_push_dockerhub:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop' }}
+    needs: [ codestyle, linter, docker_build ]
+    environment: docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Docker Image Archive
+        uses: actions/download-artifact@v2
+
+      - name: Login to DockerHub
+        id: login_dockerhub
+        uses: docker/login-action@v1.10.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Push Docker Image
+        run: |
+          set -ex
+
+          for file in $(ls */*); do
+            echo Loading $file
+            docker load -qi $file | cut -d' ' -f3 | grep -v '^ghcr.io/' | xargs -L1 docker push
+          done
+
+      - name: Clear
+        if: always()
+        run: rm -f ${HOME}/.docker/config.json
+
+  docker_deploy:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+    needs: [ docker_push_ghcr ]
+    environment: server-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy
+        env:
+          CREDENTIALS: ${{ secrets.UPDATE_CREDENTIALS }}
+          URL: ${{ secrets.UPDATE_URL }}
+        run: curl -u $CREDENTIALS $URL

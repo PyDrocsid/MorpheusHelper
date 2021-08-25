@@ -3,25 +3,22 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
-[packages]
-sqlalchemy = "*"
-pymysql = "*"
-requests = "*"
-sentry-sdk = "*"
-pyyaml = "*"
-aiohttp = "*"
-alembic = "*"
-pydrocsid = "*"
-"discord.py" = "*"
-
-[dev-packages]
-flake8 = "*"
-
 [requires]
 python_version = "3.9"
 
+[packages]
+pydrocsid = "*"
+sqlalchemy = "*"
+aiohttp = "*"
+python-dateutil = "*"
+requests = "*"
+
+[dev-packages]
+flake8 = "*"
+black = "==20.8b1"
+wemake-python-styleguide = "*"
+
 [scripts]
-bot = "python morpheushelper/morpheushelper.py"
-flake8 = "flake8 . --count --max-line-length=120 --statistics --show-source"
-upgrade = "alembic upgrade"
-current = "alembic current"
+bot = "python bot/morpheushelper.py"
+flake8 = "flake8 . --count --statistics --show-source"
+black = "black -l 120 ."

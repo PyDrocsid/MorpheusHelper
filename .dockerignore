@@ -1,13 +1,10 @@
 .github
 .dockerignore
-.env*
+*.env
 .gitignore
 docker-compose.yml
 Dockerfile
 .idea
-random_stuff.py
-encrypt_random_stuff.py
-import_data.py
 __pycache__
 README.md
 LICENSE

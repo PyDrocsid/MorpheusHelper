@@ -1,0 +1,5 @@
+* @Defelo
+translations/ @PyDrocsid/code-reviewer @PyDrocsid/text-reviewer
+/bot/cogs/custom/custom_commands/ @PyDrocsid/code-reviewer @PyDrocsid/text-reviewer
+*.md @PyDrocsid/text-reviewer
+*.py @PyDrocsid/code-reviewer

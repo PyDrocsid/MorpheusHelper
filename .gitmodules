@@ -1,0 +1,4 @@
+[submodule "bot/cogs/library"]
+	path = bot/cogs/library
+	url = ../../PyDrocsid/cogs.git
+	branch = develop

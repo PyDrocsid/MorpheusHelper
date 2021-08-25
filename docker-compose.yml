@@ -1,34 +1,36 @@
-version: '3.7'
+version: '3.9'
+
+
 services:
   morpheushelper:
-    container_name: morpheushelper
     image: defelo/morpheushelper
-#    image: defelo/morpheushelper:experimental
+#   image: defelo/morpheushelper:develop
     restart: always
     tty: true
+    env_file: morpheushelper.env
     depends_on:
       - db
-    environment:
-      TOKEN: '<TOKEN>'
-      DB_HOST: 'db'
-      DB_PORT: 3306
-      DB_DATABASE: 'morpheushelper'
-      DB_USER: 'morpheushelper'
-      DB_PASSWORD: 'morpheushelper'
-      SENTRY_DSN: ''
-      OWNER_ID: ''
-      DISABLED_COGS: ''
+      - redis
+    networks:
+      - morpheushelper
 
   db:
-    container_name: mariadb
     image: mariadb
-    # image: jsurf/rpi-mariadb
+#   image: jsurf/rpi-mariadb
     restart: always
-    environment:
-      MYSQL_USER: "morpheushelper"
-      MYSQL_PASSWORD: "morpheushelper"
-      MYSQL_DATABASE: "morpheushelper"
-      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
-      # MYSQL_INITDB_SKIP_TZINFO: "yes"
+    env_file: morpheushelper.env
     volumes:
-      - './mysql_data:/var/lib/mysql'
+      - ./data/mariadb:/var/lib/mysql
+    networks:
+      - morpheushelper
+
+  redis:
+    image: redis:alpine
+    restart: always
+#   volumes:
+#     - ./data/redis:/data
+    networks:
+      - morpheushelper
+
+networks:
+  morpheushelper:
