@@ -7,7 +7,8 @@ verify_ssl = true
 python_version = "3.9"
 
 [packages]
-pydrocsid = "*"
+# pydrocsid = "*"
+pydrocsid = {ref = "develop", git = "https://github.com/PyDrocsid/library.git"}
 sqlalchemy = "*"
 aiohttp = "*"
 python-dateutil = "*"
