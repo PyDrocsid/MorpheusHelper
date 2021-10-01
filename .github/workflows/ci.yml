@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        platform: [ "linux/amd64" ]  # , "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
+        platform: [ "linux/amd64", "linux/arm/v7", "linux/arm64/v8" ]  #, "linux/s390x", "linux/ppc64le"
 
     steps:
       - name: Checkout
@@ -231,7 +231,7 @@ jobs:
         run: rm -f ${HOME}/.docker/config.json
 
   docker_deploy:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/pycord' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
     needs: [ docker_push_ghcr ]
     environment: server-test
     runs-on: ubuntu-latest
