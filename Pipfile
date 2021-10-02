@@ -8,7 +8,7 @@ python_version = "3.9"
 
 [packages]
 # pydrocsid = "*"
-pydrocsid = {ref = "pycord", git = "https://github.com/PyDrocsid/library.git"}
+pydrocsid = {ref = "develop", git = "https://github.com/PyDrocsid/library.git"}
 sqlalchemy = "*"
 aiohttp = "*"
 python-dateutil = "*"
