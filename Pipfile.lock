@@ -295,11 +295,11 @@
         },
         "py-cord": {
             "git": "https://github.com/Pycord-Development/pycord.git",
-            "ref": "cd70e292c59b6abec4f8f12a4e5889746d21705e"
+            "ref": "27e0b42d92cb3a9a2edefa2ec08233000dd8108f"
         },
         "pydrocsid": {
             "git": "https://github.com/PyDrocsid/library.git",
-            "ref": "d9bcd489c58a47d415bd157a5eccca82a7e1cc36"
+            "ref": "4820b3153386bfd929a6f9f721729f2eee3a9bd7"
         },
         "pymysql": {
             "hashes": [
