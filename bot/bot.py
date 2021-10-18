@@ -117,6 +117,9 @@ load_cogs(
     RemindMeCog(),
     UtilsCog(),
     VoiceChannelCog(team_roles=["team"]),
+
+    # Community
+    NekosBestCog(),
 )
 # fmt: on
 
