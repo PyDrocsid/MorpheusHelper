@@ -4,4 +4,5 @@
 	branch = develop
 [submodule "bot/library"]
 	path = bot/library
-	url = git@github.com:PyDrocsid/library.git
+	url = ../../PyDrocsid/library.git
+	branch = develop
