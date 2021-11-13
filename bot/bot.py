@@ -103,7 +103,7 @@ load_cogs(
 
     # Integrations
     AdventOfCodeCog(),
-    DiscordpyDocumentationCog(),
+    PythonDocsCog(),
     RedditCog(),
     RunCodeCog(),
 
