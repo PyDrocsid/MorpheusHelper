@@ -67,6 +67,13 @@ default_permission_level: administrator
 
 default_permission_overrides:
 
+  adventofcode:
+    clear: operator
+    link_read: moderator
+    link_write: operator
+    role_read: moderator
+    role_write: operator
+
   autoclear:
     read: moderator
     write: administrator
