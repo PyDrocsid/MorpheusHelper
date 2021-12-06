@@ -16,7 +16,7 @@ requests = "*"
 
 [dev-packages]
 flake8 = "*"
-black = "==20.8b1"
+black = "==21.12b0"
 wemake-python-styleguide = "*"
 
 [scripts]
