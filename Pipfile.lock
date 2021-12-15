@@ -653,11 +653,11 @@
         },
         "flake8-broken-line": {
             "hashes": [
-                "sha256:611f79c7f27118e7e5d3dc098ef7681c40aeadf23783700c5dbee840d2baf3af",
-                "sha256:f74e052833324a9e5f0055032f7ccc54b23faabafe5a26241c2f977e70b10b50"
+                "sha256:771aab5aa0997666796fed249d0e48e6c01cdfeca8c95521eea28a38b7ced4c7",
+                "sha256:e9c522856862239a2c7ef2c1de0276fa598572aa864bd4e9c7efc2a827538515"
             ],
             "markers": "python_version >= '3.6' and python_version < '4.0'",
-            "version": "==0.3.0"
+            "version": "==0.4.0"
         },
         "flake8-bugbear": {
             "hashes": [
@@ -795,10 +795,10 @@
         },
         "pep8-naming": {
             "hashes": [
-                "sha256:a1dd47dd243adfe8a83616e27cf03164960b507530f155db94e10b36a6cd6724",
-                "sha256:f43bfe3eea7e0d73e8b5d07d6407ab47f2476ccaeff6937c84275cd30b016738"
+                "sha256:4a8daeaeb33cfcde779309fc0c9c0a68a3bbe2ad8a8308b763c5068f86eb9f37",
+                "sha256:bb2455947757d162aa4cad55dba4ce029005cd1692f2899a21d51d8630ca7841"
             ],
-            "version": "==0.11.1"
+            "version": "==0.12.1"
         },
         "platformdirs": {
             "hashes": [
@@ -937,11 +937,11 @@
         },
         "wemake-python-styleguide": {
             "hashes": [
-                "sha256:8b89aedabae67b7b915908ed06c178b702068137c0d8afe1fb59cdc829cd2143",
-                "sha256:a382f6c9ec87d56daa08a11e47cab019c99b384f1393b32564ebc74c6da80441"
+                "sha256:3bf0a4962404e6fd6fa479e72e2ba3fb75d5920ea6c44b72b45240c9e519543c",
+                "sha256:8caa92b4aa77b08a505d718553238812d1b612b1036bc171ca3aa18345efe0b4"
             ],
             "index": "pypi",
-            "version": "==0.15.3"
+            "version": "==0.16.0"
         }
     }
 }
