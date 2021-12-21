@@ -1,6 +1,6 @@
 FROM python:3.10-alpine AS builder
 
-RUN apk add --no-cache gcc~=10.3 g++~=10.3 musl-dev~=1.2 git~=2.32
+RUN apk add --no-cache gcc~=10.3 g++~=10.3 musl-dev~=1.2 git~=2.34
 
 WORKDIR /build
 
