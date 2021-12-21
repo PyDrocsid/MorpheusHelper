@@ -5,7 +5,7 @@ on:
   - pull_request
 
 env:
-  PYTHON_VERSION: 3.10
+  PYTHON_VERSION: "3.10"
   IMAGE_NAME: pydrocsid/bot
   GHCR_NAME: pydrocsid/bot
 
