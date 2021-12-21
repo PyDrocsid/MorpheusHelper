@@ -104,10 +104,10 @@
         },
         "aiomysql": {
             "hashes": [
-                "sha256:811569c0db118dd2685f0878f5cebf17a11e89a995fa14261d5fa0254113842c",
-                "sha256:a81a97da3dd732635926a8ea6adbbf2d1345799680bf61b5f89e730bcec88cc5"
+                "sha256:4e4a65914daacc40e70f992ddbeef32457561efbad8de41393e8ac5a84126a5a",
+                "sha256:9bcf8f26d22e550f75cabd635fa19a55c45f835eea008275960cb37acadd622a"
             ],
-            "version": "==0.0.21"
+            "version": "==0.0.22"
         },
         "aioredis": {
             "hashes": [
@@ -465,7 +465,7 @@
         },
         "pydrocsid": {
             "git": "https://github.com/PyDrocsid/library.git",
-            "ref": "92903913a8f20247f0e4617c2053bf02e1a0ffe1"
+            "ref": "d1bfb7b2db84203dfd0cbc5e3bd989ada6a2d4ed"
         },
         "pymysql": {
             "hashes": [
@@ -1034,7 +1034,7 @@
                 "sha256:4ca091dea149f945ec56afb48dae714f21e8692ef22a395223bcd328961b6a0e",
                 "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"
             ],
-            "markers": "python_version >= '3.10'",
+            "markers": "python_version >= '3.6'",
             "version": "==4.0.1"
         },
         "wemake-python-styleguide": {
