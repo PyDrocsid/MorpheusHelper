@@ -5,7 +5,7 @@ on:
   - pull_request
 
 env:
-  PYTHON_VERSION: 3.9
+  PYTHON_VERSION: 3.10
   IMAGE_NAME: defelo/morpheushelper
   GHCR_NAME: pydrocsid/morpheushelper
 
@@ -28,7 +28,7 @@ jobs:
       - name: Install black
         run: |
           pip install --upgrade pip
-          pip install black==20.8b1
+          pip install black==21.12b0
 
       - name: Check code formatting with black
         run: black -l 120 . --diff --check
