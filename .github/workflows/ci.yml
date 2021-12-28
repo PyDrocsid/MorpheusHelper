@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           submodules: recursive
 
@@ -38,12 +38,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           submodules: recursive
 
       - name: Lint with wemake-python-styleguide
-        uses: wemake-services/wemake-python-styleguide@0.15.3
+        uses: wemake-services/wemake-python-styleguide@0.16.0
         with:
           reporter: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'github-pr-review' || 'terminal' }}
         env:
@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           persist-credentials: false
           submodules: recursive
@@ -68,10 +68,10 @@ jobs:
         uses: docker/setup-qemu-action@v1.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.5.1
+        uses: docker/setup-buildx-action@v1.6.0
 
       - name: Cache Docker layers
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
@@ -163,7 +163,7 @@ jobs:
         uses: actions/download-artifact@v2
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v1.12.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -212,7 +212,7 @@ jobs:
 
       - name: Login to DockerHub
         id: login_dockerhub
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v1.12.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
