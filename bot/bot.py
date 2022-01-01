@@ -91,6 +91,7 @@ load_cogs(
     RoleNotificationsCog(),
     VerificationCog(),
     SpamDetectionCog(),
+    ThreadsCog(),
     UserNoteCog(),
 
     # Information
