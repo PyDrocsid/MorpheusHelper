@@ -91,6 +91,7 @@ load_cogs(
     RoleNotificationsCog(),
     VerificationCog(),
     SpamDetectionCog(),
+    ThreadsCog(),
     UserNoteCog(),
 
     # Information
@@ -103,7 +104,7 @@ load_cogs(
 
     # Integrations
     AdventOfCodeCog(),
-    DiscordpyDocumentationCog(),
+    PythonDocsCog(),
     RedditCog(),
     RunCodeCog(),
 

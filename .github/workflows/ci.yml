@@ -5,7 +5,7 @@ on:
   - pull_request
 
 env:
-  PYTHON_VERSION: 3.9
+  PYTHON_VERSION: "3.10"
   IMAGE_NAME: defelo/morpheushelper
   GHCR_NAME: pydrocsid/morpheushelper
 
@@ -16,19 +16,19 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           submodules: recursive
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v2.3.1
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install black
         run: |
           pip install --upgrade pip
-          pip install black==20.8b1
+          pip install black==21.12b0
 
       - name: Check code formatting with black
         run: black -l 120 . --diff --check
@@ -38,12 +38,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           submodules: recursive
 
       - name: Lint with wemake-python-styleguide
-        uses: wemake-services/wemake-python-styleguide@0.15.3
+        uses: wemake-services/wemake-python-styleguide@0.16.0
         with:
           reporter: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'github-pr-review' || 'terminal' }}
         env:
@@ -58,7 +58,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           persist-credentials: false
           submodules: recursive
@@ -68,10 +68,10 @@ jobs:
         uses: docker/setup-qemu-action@v1.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1.5.1
+        uses: docker/setup-buildx-action@v1.6.0
 
       - name: Cache Docker layers
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
@@ -147,7 +147,7 @@ jobs:
           docker save $(echo $TAGS | tr , ' ') | gzip > $name
 
       - name: Upload Docker Image Archive
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.3.1
         with:
           name: ${{ steps.archive.outputs.name }}
           path: ${{ steps.archive.outputs.name }}
@@ -160,10 +160,10 @@ jobs:
 
     steps:
       - name: Download Docker Image Archive
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v2.1.0
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v1.12.0
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -208,11 +208,11 @@ jobs:
 
     steps:
       - name: Download Docker Image Archive
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v2.1.0
 
       - name: Login to DockerHub
         id: login_dockerhub
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v1.12.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}

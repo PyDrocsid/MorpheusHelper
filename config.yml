@@ -5,6 +5,10 @@ repo:
   name: MorpheusHelper
   icon: "https://github.com/PyDrocsid.png"
 
+pydrocsid:
+  documentation_url: https://pydrocsid.defelo.de/
+  discord_invite: https://pydrocsid.defelo.de/discord
+
 author: Defelo
 
 languages:
@@ -36,6 +40,10 @@ roles:
     name: Mute
     check_assignable: true
 
+  thread_auto_join:
+    name: Thread Auto Join
+    check_assignable: false
+
 permission_levels:
   administrator:
     name: Administrator
@@ -62,6 +70,13 @@ permission_levels:
 default_permission_level: administrator
 
 default_permission_overrides:
+
+  adventofcode:
+    clear: operator
+    link_read: moderator
+    link_write: operator
+    role_read: moderator
+    role_write: operator
 
   autoclear:
     read: moderator
@@ -160,6 +175,9 @@ default_permission_overrides:
     reload: owner
     stop: owner
     kill: owner
+
+  threads:
+    list: moderator
 
   user_info:
     init_join_log: administrator
