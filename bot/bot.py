@@ -93,6 +93,7 @@ load_cogs(
     SpamDetectionCog(),
     ThreadsCog(),
     UserNoteCog(),
+    ContentFilterCog(),
 
     # Information
     CustomBotInfoCog(),
