@@ -119,7 +119,7 @@ jobs:
           echo ::set-output name=tags::${out:1}
 
       - name: Build
-        uses: docker/build-push-action@v2.7.0
+        uses: docker/build-push-action@v2.8.0
         with:
           push: false
           load: true
