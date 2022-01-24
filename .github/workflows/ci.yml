@@ -106,6 +106,8 @@ jobs:
           fi
           tags="$(echo $tags | tr / -)"
 
+          hub=0
+
           out=""
           for t in $tags; do
             [[ $hub == "1" ]] && out="$out,$name:$t-$(echo $platform | tr / -)"
@@ -200,35 +202,35 @@ jobs:
 #             curl -X DELETE -H "${AUTH}" "${URL}/${id}"
 #         done
 
-  docker_push_dockerhub:
-    if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop' }}
-    needs: [ codestyle, linter, docker_build ]
-    environment: docker
-    runs-on: ubuntu-latest
+# docker_push_dockerhub:
+#   if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop' }}
+#   needs: [ codestyle, linter, docker_build ]
+#   environment: docker
+#   runs-on: ubuntu-latest
 
-    steps:
-      - name: Download Docker Image Archive
-        uses: actions/download-artifact@v2.1.0
+#   steps:
+#     - name: Download Docker Image Archive
+#       uses: actions/download-artifact@v2.1.0
 
-      - name: Login to DockerHub
-        id: login_dockerhub
-        uses: docker/login-action@v1.12.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+#     - name: Login to DockerHub
+#       id: login_dockerhub
+#       uses: docker/login-action@v1.12.0
+#       with:
+#         username: ${{ secrets.DOCKERHUB_USERNAME }}
+#         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Push Docker Image
-        run: |
-          set -ex
+#     - name: Push Docker Image
+#       run: |
+#         set -ex
 
-          for file in $(ls */*); do
-            echo Loading $file
-            docker load -qi $file | cut -d' ' -f3 | grep -v '^ghcr.io/' | xargs -L1 docker push
-          done
+#         for file in $(ls */*); do
+#           echo Loading $file
+#           docker load -qi $file | cut -d' ' -f3 | grep -v '^ghcr.io/' | xargs -L1 docker push
+#         done
 
-      - name: Clear
-        if: always()
-        run: rm -f ${HOME}/.docker/config.json
+#     - name: Clear
+#       if: always()
+#       run: rm -f ${HOME}/.docker/config.json
 
   docker_deploy:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}

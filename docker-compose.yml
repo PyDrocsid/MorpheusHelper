@@ -3,8 +3,8 @@ version: '3.9'
 
 services:
   morpheushelper:
-    image: defelo/morpheushelper
-#   image: defelo/morpheushelper:develop
+    image: ghcr.io/pydrocsid/morpheushelper
+#   image: ghcr.io/pydrocsid/morpheushelper:develop
     restart: always
     tty: true
     env_file: morpheushelper.env
