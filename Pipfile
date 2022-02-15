@@ -7,8 +7,7 @@ verify_ssl = true
 python_version = "3.10"
 
 [packages]
-# pydrocsid = "*"
-pydrocsid = {ref = "develop", git = "https://github.com/PyDrocsid/library.git"}
+pydrocsid = "*"
 sqlalchemy = "*"
 aiohttp = "*"
 python-dateutil = "*"
@@ -16,7 +15,7 @@ requests = "*"
 
 [dev-packages]
 flake8 = "*"
-black = "==22.1.0"
+black = "*"
 wemake-python-styleguide = "*"
 
 [scripts]

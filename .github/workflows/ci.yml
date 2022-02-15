@@ -28,7 +28,7 @@ jobs:
       - name: Install black
         run: |
           pip install --upgrade pip
-          pip install black==21.12b0
+          pip install black
 
       - name: Check code formatting with black
         run: black -l 120 . --diff --check
