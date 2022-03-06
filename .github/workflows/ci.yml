@@ -162,7 +162,7 @@ jobs:
           docker save $(echo $TAGS | tr , ' ') | gzip > $name
 
       - name: Upload Docker Image Archive
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.archive.outputs.name }}
           path: ${{ steps.archive.outputs.name }}
