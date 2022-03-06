@@ -42,12 +42,25 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Lint with wemake-python-styleguide
-        uses: wemake-services/wemake-python-styleguide@0.16.0
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2.3.1
         with:
-          reporter: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'github-pr-review' || 'terminal' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.github_token }}
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install wemake-python-styleguide
+        run: |
+          pip install --upgrade pip
+          pip install wemake-python-styleguide bandit==1.7.2
+
+      - name: Check code style with wemake-python-styleguide
+        run: flake8 . --count --statistics --show-source
+
+#      - name: Lint with wemake-python-styleguide
+#        uses: wemake-services/wemake-python-styleguide@0.16.0
+#        with:
+#          reporter: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && 'github-pr-review' || 'terminal' }}
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.github_token }}
 
   docker_build:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
