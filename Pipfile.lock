@@ -185,7 +185,7 @@
                 "sha256:2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597",
                 "sha256:6881edbebdb17b39b4eaaa821b438bf6eddffb4468cf344f09f89def34a8b1df"
             ],
-            "markers": "python_version >= '3'",
+            "markers": "python_full_version >= '3.5.0'",
             "version": "==2.0.12"
         },
         "frozenlist": {
@@ -467,10 +467,10 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:1ab34e3851a34aeb3d1af1a0f77cec73978c4e9698e5210d050e4932953cb241",
-                "sha256:ac2a50128409d57655279817aedcb7800cace1f76b266f3dd62055d5afd6e098"
+                "sha256:411a8495bd18cf13038e5749e4710beb4efa53da6351f67b4c2f307c2d9b6d49",
+                "sha256:aa52da941c56b5a76fd838f8e9e92a850bf893a9eb1e33ffce6c21431d07ee30"
             ],
-            "version": "==1.5.6"
+            "version": "==1.5.7"
         },
         "setuptools": {
             "hashes": [
@@ -765,9 +765,11 @@
         },
         "flake8-bandit": {
             "hashes": [
-                "sha256:687fc8da2e4a239b206af2e54a90093572a60d0954f3054e23690739b0b0de3b"
+                "sha256:54d19427e6a8d50322a7b02e1841c0a7c22d856975f3459803320e0e18e2d6a1",
+                "sha256:61b617f4f7cdaa0e2b1e6bf7b68afb2b619a227bb3e3ae00dd36c213bd17900a"
             ],
-            "version": "==2.1.2"
+            "markers": "python_version >= '3.6'",
+            "version": "==3.0.0"
         },
         "flake8-broken-line": {
             "hashes": [
@@ -779,11 +781,11 @@
         },
         "flake8-bugbear": {
             "hashes": [
-                "sha256:179e41ddae5de5e3c20d1f61736feeb234e70958fbb56ab3c28a67739c8e9a82",
-                "sha256:8b04cb2fafc6a78e1a9d873bd3988e4282f7959bb6b0d7c1ae648ec09b937a7b"
+                "sha256:4c2a4136bd4ecb8bf02d5159af302ffc067642784c9d0488b33ce4610da825ee",
+                "sha256:ce7ae44aaaf67ef192b8a6de94a5ac617144e1675ad0654fdea556f48dc18d9b"
             ],
             "markers": "python_version >= '3.6'",
-            "version": "==21.11.29"
+            "version": "==22.1.11"
         },
         "flake8-commas": {
             "hashes": [
@@ -1067,11 +1069,11 @@
         },
         "wemake-python-styleguide": {
             "hashes": [
-                "sha256:3bf0a4962404e6fd6fa479e72e2ba3fb75d5920ea6c44b72b45240c9e519543c",
-                "sha256:8caa92b4aa77b08a505d718553238812d1b612b1036bc171ca3aa18345efe0b4"
+                "sha256:202c22ecfee1f5caf0555048602cd52f2435cd57903e6b0cd46b5aaa3f652140",
+                "sha256:4fcd78dd55732679b5fc8bc37fd7e04bbaa5cdc1b1a829ad265e8f6b0d853cf6"
             ],
             "index": "pypi",
-            "version": "==0.16.0"
+            "version": "==0.16.1"
         }
     }
 }
