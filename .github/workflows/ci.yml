@@ -84,7 +84,7 @@ jobs:
         uses: docker/setup-buildx-action@v1.6.0
 
       - name: Cache Docker layers
-        uses: actions/cache@v2.1.7
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
@@ -134,7 +134,7 @@ jobs:
           echo ::set-output name=tags::${out:1}
 
       - name: Build
-        uses: docker/build-push-action@v2.9.0
+        uses: docker/build-push-action@v2.10.0
         with:
           push: false
           load: true
