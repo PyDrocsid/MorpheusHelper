@@ -25,13 +25,36 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install black
+      - name: Setup poetry
         run: |
-          pip install --upgrade pip
-          pip install black
+          pip install poetry poethepoet
+          poetry install -n --no-root
 
       - name: Check code formatting with black
-        run: black -l 120 . --diff --check
+        run: poe black --diff --check
+
+#  mypy:
+#    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: recursive
+#
+#      - name: Set up Python ${{ env.PYTHON_VERSION }}
+#        uses: actions/setup-python@v3
+#        with:
+#          python-version: ${{ env.PYTHON_VERSION }}
+#
+#      - name: Setup poetry
+#        run: |
+#          pip install poetry poethepoet
+#          poetry install -n --no-root
+#
+#      - name: Check typing with mypy
+#        run: poe mypy
 
   linter:
     runs-on: ubuntu-latest
@@ -47,13 +70,13 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install wemake-python-styleguide
+      - name: Setup poetry
         run: |
-          pip install --upgrade pip
-          pip install wemake-python-styleguide bandit==1.7.2
+          pip install poetry poethepoet
+          poetry install -n --no-root
 
       - name: Check code style with wemake-python-styleguide
-        run: flake8 . --count --statistics --show-source
+        run: poe flake8
 
 #      - name: Lint with wemake-python-styleguide
 #        uses: wemake-services/wemake-python-styleguide@0.16.0

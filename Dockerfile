@@ -1,17 +1,18 @@
 FROM python:3.10-alpine AS builder
 
-RUN apk add --no-cache gcc~=10.3 g++~=10.3 musl-dev~=1.2 git~=2.34
+RUN apk add --no-cache gcc g++ musl-dev libffi-dev postgresql14-dev git
 
 WORKDIR /build
 
-RUN pip install pipenv==2021.11.23
+RUN pip install poetry
 
-COPY Pipfile /build/
-COPY Pipfile.lock /build/
+COPY pyproject.toml /build/
+COPY poetry.lock /build/
 
-ARG PIPENV_NOSPIN=true
-ARG PIPENV_VENV_IN_PROJECT=true
-RUN pipenv install --deploy --ignore-pipfile
+RUN set -ex \
+    && virtualenv .venv \
+    && . .venv/bin/activate \
+    && poetry install -n --no-root --no-dev
 
 COPY .git /build/.git/
 RUN git describe --tags --always > VERSION
@@ -23,6 +24,7 @@ LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/MorpheusHelpe
 WORKDIR /app
 
 RUN set -x \
+    && apk add --no-cache libpq \
     && addgroup -g 1000 bot \
     && adduser -G bot -u 1000 -s /bin/bash -D -H bot \
     && touch health && chown 1000:1000 health

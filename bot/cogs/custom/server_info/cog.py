@@ -32,8 +32,5 @@ class CustomServerInfoCog(ServerInfoCog, name="Server Information"):
     async def get_additional_fields(self, guild: Guild) -> list[tuple[str, str]]:
         return [
             (t.topics, t.cnt_topics(cnt=await db.count(BTPRole))),
-            (
-                t.allowed_discord_server,
-                t.cnt_servers_whitelisted(cnt=await db.count(AllowedInvite)),
-            ),
+            (t.allowed_discord_server, t.cnt_servers_whitelisted(cnt=await db.count(AllowedInvite))),
         ]
