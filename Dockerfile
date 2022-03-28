@@ -1,6 +1,6 @@
 FROM python:3.10-alpine AS builder
 
-RUN apk add --no-cache gcc g++ musl-dev libffi-dev postgresql14-dev git
+RUN apk add --no-cache build-base gcc g++ musl-dev libffi-dev postgresql14-dev git python3-dev openssl-dev cargo
 
 WORKDIR /build
 
