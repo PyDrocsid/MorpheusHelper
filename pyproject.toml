@@ -32,6 +32,18 @@ black = "black ."
 lint = ["black", "flake8"]
 pre-commit = ["lint"]
 
+[tool.poe.tasks.setup]
+shell = """
+set -ex
+poetry install --no-root
+if ! [[ -e .env ]]; then cp morpheushelper.env .env; fi
+./pre-commit.sh install
+unset VIRTUAL_ENV
+git submodule update --init
+git submodule foreach 'poe setup'
+"""
+interpreter = "bash"
+
 [tool.black]
 target-version = ["py310"]
 line-length = 120
