@@ -4,6 +4,7 @@
 
 if [[ "$1" = "install" ]]; then
     hooks=$(git rev-parse --git-path hooks)
+    rm -f $hooks/pre-commit
     ln -s $(realpath --relative-to $hooks pre-commit.sh) $hooks/pre-commit
     exit 0
 fi
