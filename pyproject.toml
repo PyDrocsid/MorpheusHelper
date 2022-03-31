@@ -18,8 +18,7 @@ python-dateutil = "^2.8.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
-black = "^22.1.0"
-click = "<8.1.0"  # >=8.1.0 breaks black
+black = "^22.3.0"
 wemake-python-styleguide = "^0.16.1"
 # mypy = "^0.941"
 # SQLAlchemy = { extras = ["mypy"], version = "^1.4.32" }
