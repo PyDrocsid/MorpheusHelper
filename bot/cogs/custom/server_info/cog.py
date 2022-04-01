@@ -1,10 +1,11 @@
 from typing import Optional
 
-from discord import Member, Role, Guild
+from discord import Guild, Member, Role
 
 from PyDrocsid.database import db
 from PyDrocsid.settings import RoleSettings
 from PyDrocsid.translations import t
+
 from cogs.library import ServerInfoCog
 from cogs.library.general.betheprofessional.models import BTPRole
 from cogs.library.moderation.invites.models import AllowedInvite
