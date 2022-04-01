@@ -18,6 +18,7 @@ python-dateutil = "^2.8.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
+isort = "^5.10.1"
 black = "^22.3.0"
 wemake-python-styleguide = "^0.16.1"
 # mypy = "^0.941"
@@ -26,9 +27,11 @@ wemake-python-styleguide = "^0.16.1"
 [tool.poe.tasks]
 bot = { cmd = "python bot/pydrocsid_bot.py", envfile = ".env" }
 flake8 = "flake8 . --count --statistics --show-source"
+isort = "isort ."
 black = "black ."
+format = ["isort", "black"]
 # mypy = "mypy ."
-lint = ["black", "flake8"]
+lint = ["format", "flake8"]
 pre-commit = ["lint"]
 
 [tool.poe.tasks.setup]
@@ -47,6 +50,15 @@ interpreter = "bash"
 target-version = ["py310"]
 line-length = 120
 skip-magic-trailing-comma = true
+
+[tool.isort]
+profile = "black"
+py_version = 310
+line_length = 120
+reverse_relative = true
+known_pydrocsid = ["PyDrocsid"]
+known_local_folder = ["cogs"]
+sections = ["FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "PYDROCSID", "LOCALFOLDER"]
 
 [tool.mypy]
 strict = true

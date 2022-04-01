@@ -1,17 +1,18 @@
 from typing import Iterable
 
 import sentry_sdk
-from discord import Intents, Message, Guild
-from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError, CommandInvokeError
+from discord import Guild, Intents, Message
+from discord.ext.commands import Bot, CommandError, CommandInvokeError, CommandNotFound, Context, UserInputError
 
 from PyDrocsid.cog import load_cogs
-from PyDrocsid.command import reply, make_error
+from PyDrocsid.command import make_error, reply
 from PyDrocsid.database import db
 from PyDrocsid.environment import TOKEN
 from PyDrocsid.events import listener
 from PyDrocsid.logger import get_logger
 from PyDrocsid.prefix import get_prefix
 from PyDrocsid.translations import t
+
 from cogs.custom import CustomServerInfoCog
 from cogs.library import *
 from cogs.library.information.help.cog import send_help

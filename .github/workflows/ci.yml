@@ -30,8 +30,8 @@ jobs:
           pip install poetry poethepoet
           poetry install -n --no-root
 
-      - name: Check code formatting with black
-        run: poe black --diff --check
+      - name: Check code formatting with black and isort
+        run: poe black --diff --check && poe isort --diff --check
 
 #  mypy:
 #    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}

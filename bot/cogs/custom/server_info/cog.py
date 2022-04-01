@@ -1,9 +1,10 @@
 from typing import Optional
 
-from discord import Member, Role, Guild
+from discord import Guild, Member, Role
 
 from PyDrocsid.settings import RoleSettings
 from PyDrocsid.translations import t
+
 from cogs.library import ServerInfoCog
 
 t = t.server_info
