@@ -28,7 +28,7 @@ save() {
 }
 
 restore() {
-    git submodule foreach "git checkout \$(cat .head.ref) && rm .head.ref && /bin/bash $SELF restore"
+    git submodule foreach "git restore . && git checkout \$(cat .head.ref) && rm .head.ref && /bin/bash $SELF restore"
 
     git apply -3 --allow-empty .staged.patch && rm .staged.patch || echo "Warning: Could not restore staged changes in $(pwd)"
     git apply --allow-empty .unstaged.patch && rm .unstaged.patch || echo "Warning: Could not restore unstaged changes in $(pwd)"
