@@ -55,6 +55,7 @@ skip-magic-trailing-comma = true
 profile = "black"
 py_version = 310
 line_length = 120
+lines_after_imports = 2
 reverse_relative = true
 known_pydrocsid = ["PyDrocsid"]
 known_local_folder = ["cogs"]

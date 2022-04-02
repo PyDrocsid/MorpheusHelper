@@ -4,6 +4,7 @@ from PyDrocsid.config import Config, load_config_file, load_version
 from PyDrocsid.environment import SENTRY_DSN
 from PyDrocsid.logger import get_logger, setup_sentry
 
+
 logger = get_logger(__name__)
 
 logger.debug("loading config")
@@ -34,5 +35,6 @@ if SENTRY_DSN:
     setup_sentry(SENTRY_DSN, Config.NAME, Config.VERSION)
 
 from bot import run  # noqa: E402
+
 
 run()

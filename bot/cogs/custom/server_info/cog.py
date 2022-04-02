@@ -10,6 +10,7 @@ from cogs.library import ServerInfoCog
 from cogs.library.general.betheprofessional.models import BTPRole
 from cogs.library.moderation.invites.models import AllowedInvite
 
+
 t = t.server_info
 
 
