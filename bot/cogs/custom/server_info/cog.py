@@ -5,7 +5,7 @@ from discord import Guild, Member, Role
 from PyDrocsid.settings import RoleSettings
 from PyDrocsid.translations import t
 
-from cogs.library import ServerInfoCog
+from cogs.library.information import ServerInfoCog
 
 
 t = t.server_info
