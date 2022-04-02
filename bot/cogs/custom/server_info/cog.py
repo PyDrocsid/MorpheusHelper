@@ -7,6 +7,7 @@ from PyDrocsid.translations import t
 
 from cogs.library import ServerInfoCog
 
+
 t = t.server_info
 
 
