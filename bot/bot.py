@@ -13,9 +13,11 @@ from PyDrocsid.logger import get_logger
 from PyDrocsid.prefix import get_prefix
 from PyDrocsid.translations import t
 
-from cogs.custom import CustomServerInfoCog
-from cogs.library import *
-from cogs.library.information.help.cog import send_help
+from cogs.custom.server_info import CustomServerInfoCog
+from cogs.library.administration import PermissionsCog, RolesCog, SettingsCog
+from cogs.library.general import UtilsCog
+from cogs.library.information import BotInfoCog
+from cogs.library.information.help.cog import HelpCog, send_help
 from cogs.library.moderation.mod.cog import UserCommandError
 from cogs.library.pubsub import send_alert
 
