@@ -13,10 +13,38 @@ from PyDrocsid.logger import get_logger
 from PyDrocsid.prefix import get_prefix
 from PyDrocsid.translations import t
 
-from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
-from cogs.library import *
-from cogs.library.information.help.cog import send_help
-from cogs.library.moderation.mod.cog import UserCommandError
+from cogs.custom.bot_info import CustomBotInfoCog
+from cogs.custom.server_info import CustomServerInfoCog
+from cogs.library.administration import PermissionsCog, RolesCog, SettingsCog, SudoCog
+from cogs.library.general import (
+    BeTheProfessionalCog,
+    CustomCommandsCog,
+    DiscordBotTokenDeleterCog,
+    PollsCog,
+    ReactionPinCog,
+    ReactionRoleCog,
+    RemindMeCog,
+    UtilsCog,
+    VoiceChannelCog,
+)
+from cogs.library.information import HeartbeatCog, InactivityCog, UserInfoCog
+from cogs.library.information.help.cog import HelpCog, send_help
+from cogs.library.integrations import AdventOfCodeCog, PythonDocsCog, RedditCog, RunCodeCog
+from cogs.library.moderation import (
+    AutoClearCog,
+    AutoModCog,
+    AutoRoleCog,
+    InvitesCog,
+    LoggingCog,
+    MediaOnlyCog,
+    MessageCog,
+    RoleNotificationsCog,
+    SpamDetectionCog,
+    ThreadsCog,
+    UserNoteCog,
+    VerificationCog,
+)
+from cogs.library.moderation.mod.cog import ModCog, UserCommandError
 from cogs.library.pubsub import send_alert
 
 
