@@ -10,7 +10,8 @@ repository = "https://github.com/PyDrocsid/MorpheusHelper"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-PyDrocsid = "^2.2.0"
+# PyDrocsid = "^2.3.0dev0"
+PyDrocsid = {git = "https://github.com/PyDrocsid/library", branch = "mypy"}
 SQLAlchemy = "^1.4.32"
 aiohttp = "^3.8.1"
 requests = "^2.27.1"
@@ -18,6 +19,7 @@ python-dateutil = "^2.8.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
+isort = "^5.10.1"
 black = "^22.3.0"
 wemake-python-styleguide = "^0.16.1"
 mypy = "^0.942"
@@ -29,9 +31,11 @@ types-PyYAML = "^6.0.5"
 [tool.poe.tasks]
 bot = { cmd = "python bot/morpheushelper.py", envfile = ".env" }
 flake8 = "flake8 . --count --statistics --show-source"
+isort = "isort ."
 black = "black ."
+format = ["isort", "black"]
 mypy = "mypy ."
-lint = ["black", "mypy", "flake8"]
+lint = ["format", "flake8"]
 pre-commit = ["lint"]
 
 [tool.poe.tasks.setup]
@@ -50,6 +54,16 @@ interpreter = "bash"
 target-version = ["py310"]
 line-length = 120
 skip-magic-trailing-comma = true
+
+[tool.isort]
+profile = "black"
+py_version = 310
+line_length = 120
+lines_after_imports = 2
+reverse_relative = true
+known_pydrocsid = ["PyDrocsid"]
+known_local_folder = ["cogs"]
+sections = ["FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "PYDROCSID", "LOCALFOLDER"]
 
 [tool.mypy]
 strict = true
