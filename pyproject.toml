@@ -10,7 +10,8 @@ repository = "https://github.com/PyDrocsid/template"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-PyDrocsid = "^2.2.0"
+# PyDrocsid = "^2.3.0dev0"
+PyDrocsid = {git = "https://github.com/PyDrocsid/library", branch = "mypy"}
 SQLAlchemy = "^1.4.32"
 aiohttp = "^3.8.1"
 requests = "^2.27.1"
@@ -21,8 +22,11 @@ flake8 = "^4.0.1"
 isort = "^5.10.1"
 black = "^22.3.0"
 wemake-python-styleguide = "^0.16.1"
-# mypy = "^0.941"
-# SQLAlchemy = { extras = ["mypy"], version = "^1.4.32" }
+mypy = "^0.942"
+SQLAlchemy = { extras = ["mypy"], version = "^1.4.32" }
+types-python-dateutil = "^2.8.10"
+types-requests = "^2.27.15"
+types-PyYAML = "^6.0.5"
 
 [tool.poe.tasks]
 bot = { cmd = "python bot/pydrocsid_bot.py", envfile = ".env" }
@@ -30,7 +34,7 @@ flake8 = "flake8 . --count --statistics --show-source"
 isort = "isort ."
 black = "black ."
 format = ["isort", "black"]
-# mypy = "mypy ."
+mypy = "mypy ."
 lint = ["format", "flake8"]
 pre-commit = ["lint"]
 
@@ -64,6 +68,8 @@ sections = ["FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "PYDROCSID", "LOCALF
 [tool.mypy]
 strict = true
 ignore_missing_imports = true
+no_incremental = true
+exclude = ["bot/library/PyDrocsid"]
 plugins = ["sqlalchemy.ext.mypy.plugin"]
 
 [build-system]
