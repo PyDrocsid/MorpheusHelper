@@ -165,6 +165,7 @@ jobs:
     name: Docker Push
     if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     needs: [ codestyle, linter, docker_build ]
+    concurrency: docker
     runs-on: ubuntu-latest
 
     steps:
