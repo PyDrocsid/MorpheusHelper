@@ -10,6 +10,7 @@ env:
 
 jobs:
   codestyle:
+    name: Codestyle (black+isort)
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
 
@@ -33,6 +34,7 @@ jobs:
         run: poe black --diff --check && poe isort --diff --check
 
 #  mypy:
+#    name: mypy
 #    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
 #    runs-on: ubuntu-latest
 #
@@ -56,6 +58,8 @@ jobs:
 #        run: poe mypy
 
   linter:
+    name: Linter (flake8)
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
 
     steps:
@@ -85,6 +89,7 @@ jobs:
 #          GITHUB_TOKEN: ${{ secrets.github_token }}
 
   docker_build:
+    name: Docker Build
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository }}
     runs-on: ubuntu-latest
     strategy:
@@ -157,6 +162,7 @@ jobs:
           retention-days: 1
 
   docker_push:
+    name: Docker Push
     if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     needs: [ codestyle, linter, docker_build ]
     runs-on: ubuntu-latest
@@ -239,6 +245,7 @@ jobs:
 #         done
 
   docker_deploy:
+    name: Docker Deploy
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
     needs: [ docker_push ]
     environment: server-test
