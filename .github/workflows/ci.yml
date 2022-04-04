@@ -6,8 +6,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.10"
-  IMAGE_NAME: defelo/morpheushelper
-  GHCR_NAME: pydrocsid/morpheushelper
+  IMAGE_NAME: pydrocsid/morpheushelper
 
 jobs:
   codestyle:
@@ -118,55 +117,16 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ matrix.platform }}-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-${{ matrix.platform }}-
 
-      - name: Create Version
-        id: version
-        run: |
-          set -x
-
-          name=$IMAGE_NAME
-          ghcr_name=$GHCR_NAME
-
-          tag=${GITHUB_REF#refs/tags/v}
-          branch=${GITHUB_REF#refs/heads/}
-          pull=${GITHUB_REF#refs/pull/}
-          pull=${pull%/merge}
-          platform=${{ matrix.platform }}
-
-          hub=0
-
-          if [[ $GITHUB_REF = refs/tags/v* ]]; then
-            tags="v$tag latest"
-            hub=1
-          elif [[ $GITHUB_REF = refs/heads/* ]]; then
-            tags="$branch"
-            if [[ $branch == develop ]]; then
-              hub=1
-            fi
-          elif [[ $GITHUB_REF = refs/pull/* ]]; then
-            tags="pr-$pull"
-          fi
-          tags="$(echo $tags | tr / -)"
-
-          hub=0
-
-          out=""
-          for t in $tags; do
-            [[ $hub == "1" ]] && out="$out,$name:$t-$(echo $platform | tr / -)"
-            out="$out,ghcr.io/$ghcr_name:$t-$(echo $platform | tr / -)"
-            if [[ $platform == linux/amd64 ]]; then
-              [[ $hub == "1" ]] && out="$out,$name:$t"
-              out="$out,ghcr.io/$ghcr_name:$t"
-            fi
-          done
-
-          echo ::set-output name=tags::${out:1}
+      - name: Create Tag
+        id: tag
+        run: echo ::set-output "name=tag::$(echo ${{ matrix.platform }} | tr / -)"
 
       - name: Build
         uses: docker/build-push-action@v2.10.0
         with:
           push: false
           load: true
-          tags: ${{ steps.version.outputs.tags }}
+          tags: ${{ steps.tag.outputs.tag }}
           platforms: ${{ matrix.platform }}
           file: Dockerfile
           context: .
@@ -181,13 +141,13 @@ jobs:
       - name: Build Docker Image Archive
         id: archive
         env:
-          TAGS: ${{ steps.version.outputs.tags }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
           set -ex
-          platform=${{ matrix.platform }}
-          name=$(echo $IMAGE_NAME | tr / _)_$(echo $platform | tr / -).tar.gz
-          echo ::set-output name=name::${name}
-          docker save $(echo $TAGS | tr , ' ') | gzip > $name
+
+          name=${TAG}.tar.gz
+          docker save $TAG | gzip > $name
+          echo ::set-output name=name::$name
 
       - name: Upload Docker Image Archive
         uses: actions/upload-artifact@v3
@@ -196,7 +156,7 @@ jobs:
           path: ${{ steps.archive.outputs.name }}
           retention-days: 1
 
-  docker_push_ghcr:
+  docker_push:
     if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' }}
     needs: [ codestyle, linter, docker_build ]
     runs-on: ubuntu-latest
@@ -212,13 +172,48 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.github_token }}
 
-      - name: Push Docker Image
+      - name: Create and Push Tags
         run: |
           set -ex
 
+          name=$IMAGE_NAME
+
+          tag=${GITHUB_REF#refs/tags/v}
+          branch=${GITHUB_REF#refs/heads/}
+          pull=${GITHUB_REF#refs/pull/}
+          pull=${pull%/merge}
+
+          if [[ $GITHUB_REF = refs/tags/v* ]]; then
+            tags="v$tag latest"
+          elif [[ $GITHUB_REF = refs/heads/* ]]; then
+            tags="$branch"
+          elif [[ $GITHUB_REF = refs/pull/* ]]; then
+            tags="pr-$pull"
+          fi
+
+          tags="$(echo $tags | tr / -)"
+          echo Tags: $tags
+
+          platforms=""
           for file in $(ls */*); do
             echo Loading $file
-            docker load -qi $file | cut -d' ' -f3 | grep '^ghcr.io/' | xargs -L1 docker push
+            platform=$(docker load -qi $file | cut -d' ' -f3)
+            platform=${platform%:*}
+            platforms="$platforms $platform"
+            for tag in $tags; do
+              tag=ghcr.io/$name:$tag-$platform
+              docker tag $platform $tag
+              docker push $tag
+            done
+          done
+
+          for tag in $tags; do
+            cmd="docker manifest create ghcr.io/$name:$tag"
+            for platform in $platforms; do
+              cmd="$cmd --amend ghcr.io/$name:$tag-$platform"
+            done
+            $cmd
+            docker manifest push ghcr.io/$name:$tag
           done
 
       - name: Clear
@@ -243,39 +238,9 @@ jobs:
 #             curl -X DELETE -H "${AUTH}" "${URL}/${id}"
 #         done
 
-# docker_push_dockerhub:
-#   if: ${{ startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/develop' }}
-#   needs: [ codestyle, linter, docker_build ]
-#   environment: docker
-#   runs-on: ubuntu-latest
-
-#   steps:
-#     - name: Download Docker Image Archive
-#       uses: actions/download-artifact@v3
-
-#     - name: Login to DockerHub
-#       id: login_dockerhub
-#       uses: docker/login-action@v1.14.1
-#       with:
-#         username: ${{ secrets.DOCKERHUB_USERNAME }}
-#         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-#     - name: Push Docker Image
-#       run: |
-#         set -ex
-
-#         for file in $(ls */*); do
-#           echo Loading $file
-#           docker load -qi $file | cut -d' ' -f3 | grep -v '^ghcr.io/' | xargs -L1 docker push
-#         done
-
-#     - name: Clear
-#       if: always()
-#       run: rm -f ${HOME}/.docker/config.json
-
   docker_deploy:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
-    needs: [ docker_push_ghcr ]
+    needs: [ docker_push ]
     environment: server-test
     runs-on: ubuntu-latest
 
