@@ -95,6 +95,11 @@ default_permission_overrides:
   betheprofessional:
     manage: operator
 
+  content_filter:
+    bypass: moderator
+    read: moderator
+    write: operator
+
   custom_commands:
     read: moderator
     write: operator
