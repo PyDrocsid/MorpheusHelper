@@ -51,16 +51,25 @@ jobs:
           
           for tag in $(git tag); do
             echo Found tag: $tag
-            add ${tag#v}
+            add $tag
           done
           
           keep=$(printf '%s\n' "${keep[@]}" | tr / - | jq -R . | jq -cs .)
           
           URL=/users/${OWNER}/packages/container/${NAME}/versions
-          for version in $(gh api $URL | jq -c '.[] | .metadata.container.tags as $tags | select($tags-($tags-'"$keep"')==[])'); do
-              cat <<< "$version"
-              id=$(jq -r .id <<< "$version")
-              name=$(jq -r .name <<< "$version")
-              echo Pruning $id $name
-              curl -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com${URL}/${id}"
+          page=1
+          versions=$(mktemp)
+          while true; do
+            gh api "${URL}?per_page=100&page=${page}" | jq -c '.[]' > page
+            if ! [[ -s page ]]; then break; fi
+            jq -c '.metadata.container.tags as $tags | select($tags-($tags-'"$keep"')==[])' page >> $versions
+            page=$((page+1))
           done
+          
+          while read version; do
+            id=$(jq -r .id <<< "$version")
+            name=$(jq -r .name <<< "$version")
+            echo Pruning $id $name
+            curl -X DELETE -H "Authorization: Bearer $GITHUB_TOKEN" "https://api.github.com${URL}/${id}"
+          done < $versions
+          echo Pruned $(jq -rs length $versions) versions
