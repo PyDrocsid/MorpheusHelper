@@ -599,8 +599,8 @@ SQLAlchemy = "^1.4.32"
 [package.source]
 type = "git"
 url = "https://github.com/PyDrocsid/library"
-reference = "mypy"
-resolved_reference = "1980f0a2aabb6da179800e08741bf2567b43b10e"
+reference = "develop"
+resolved_reference = "6127cbe4fbcbe0eff95ab4b15ecaeee315ebae77"
 
 [[package]]
 name = "pyflakes"
@@ -908,7 +908,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4db76b4ffd2de428d09f0e5bf5b1c5008efd0d6f3aeef130f36dcfdcdd1a94b4"
+content-hash = "37fac27f0ab4e4a22134fa21b2979c3083b8b13dc3dbe4d4346d48b495994d92"
 
 [metadata.files]
 aenum = [
