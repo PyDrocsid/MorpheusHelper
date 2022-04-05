@@ -187,15 +187,11 @@ jobs:
 
           tag=${GITHUB_REF#refs/tags/v}
           branch=${GITHUB_REF#refs/heads/}
-          pull=${GITHUB_REF#refs/pull/}
-          pull=${pull%/merge}
 
           if [[ $GITHUB_REF = refs/tags/v* ]]; then
             tags="v$tag latest"
           elif [[ $GITHUB_REF = refs/heads/* ]]; then
             tags="$branch"
-          elif [[ $GITHUB_REF = refs/pull/* ]]; then
-            tags="pr-$pull"
           fi
 
           tags="$(echo $tags | tr / -)"
@@ -226,24 +222,6 @@ jobs:
       - name: Clear
         if: always()
         run: rm -f ${HOME}/.docker/config.json
-
-#     - name: Prune old Docker Images
-#       env:
-#         TOKEN: ${{ secrets.CR_PAT }}
-#         USER: "orgs/pydrocsid"
-#         NAME: "morpheushelper"
-#       run: |
-#         set -ex
-
-#         AUTH="Authorization: Bearer ${TOKEN}"
-#         URL="https://api.github.com/${USER}/packages/container/${NAME}/versions"
-
-#         for version in $(curl -H "${AUTH}" "${URL}" | jq -c '.[] | select(.metadata.container.tags==[])'); do
-#             id=$(echo "${version}" | jq -r .id)
-#             name=$(echo "${version}" | jq -r .name)
-#             echo pruning $id $name
-#             curl -X DELETE -H "${AUTH}" "${URL}/${id}"
-#         done
 
   docker_deploy:
     name: Docker Deploy
