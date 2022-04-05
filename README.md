@@ -3,6 +3,7 @@
   [![CI](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml)
   [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
   [![Maintainability](https://api.codeclimate.com/v1/badges/b0cfbebabf9129ae4335/maintainability)](https://codeclimate.com/github/PyDrocsid/MorpheusHelper/maintainability)
+  [![Version](https://img.shields.io/github/v/tag/PyDrocsid/MorpheusHelper?label=version)](https://ghcr.io/pydrocsid/morpheushelper)
   [![Discord](https://img.shields.io/discord/637234990404599809.svg?label=Discord&logo=discord&logoColor=ffffff&color=7389D8)](https://pydrocsid.defelo.de/discord)
   [![Matrix](https://img.shields.io/matrix/pydrocsid:matrix.defelo.de.svg?label=Matrix&logo=matrix&logoColor=ffffff&color=4db798)](https://pydrocsid.defelo.de/matrix)
 
