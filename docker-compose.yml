@@ -3,8 +3,8 @@ version: '3.9'
 
 services:
   bot:
-    image: ghcr.io/pydrocsid/bot
-#   image: ghcr.io/pydrocsid/bot:develop
+    image: ghcr.io/pydrocsid/template
+#   image: ghcr.io/pydrocsid/template:develop
     restart: always
     tty: true
     env_file: bot.env

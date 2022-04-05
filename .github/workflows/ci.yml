@@ -6,8 +6,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.10"
-  IMAGE_NAME: pydrocsid/bot
-  GHCR_NAME: pydrocsid/bot
+  IMAGE_NAME: pydrocsid/template
 
 jobs:
   codestyle:
