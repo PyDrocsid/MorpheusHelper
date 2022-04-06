@@ -18,6 +18,7 @@
 - [ ] Adjust docker image tags in [.github/workflows/ci.yml#L9](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/ci.yml#L9)
 - [ ] Enable push to docker registries in [.github/workflows/ci.yml#L166](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/ci.yml#L166)
 - [ ] Add reviewers in [.github/dependabot.yaml](https://github.com/PyDrocsid/template/blob/develop/.github/dependabot.yaml)
+- [ ] Enable the [Merge Template workflow](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/merge_template.yml)
 - [ ] Adjust this [README.md](https://github.com/PyDrocsid/template/blob/develop/README.md) and remove this section
 
 ## Development

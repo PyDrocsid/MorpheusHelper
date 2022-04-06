@@ -1,0 +1,47 @@
+name: Merge Template
+
+on:
+# schedule:
+#   - cron: "0 4 * * *"
+  workflow_dispatch:
+
+env:
+  TEMPLATE_REPO: "https://github.com/PyDrocsid/template.git"
+  TEMPLATE_BRANCH: develop
+
+jobs:
+  merge_template:
+    name: Merge Template
+    if: "false"
+    runs-on: ubuntu-latest
+    environment: merge-template
+    concurrency: merge_template
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          token: ${{ secrets.TOKEN }}
+
+      - name: Merge Template
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          set -ex
+
+          git remote add template ${TEMPLATE_REPO}
+          git fetch template
+          git checkout -b template template/${TEMPLATE_BRANCH}
+          git push origin template || git push -f origin template
+          git switch -
+
+          branch=$(git name-rev --name-only --always HEAD)
+          if git merge-base --is-ancestor template HEAD; then
+            echo $branch is up to date
+            exit 0
+          fi
+
+          echo Creating pull request from template into $branch
+          gh -R ${{ github.repository }} pr create --title "Merge Template" --body "Merge template into $branch" --base $branch --head template || true
