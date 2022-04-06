@@ -205,7 +205,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "eradicate"
-version = "2.0.0"
+version = "2.1.0"
 description = "Removes commented-out code."
 category = "dev"
 optional = false
@@ -599,8 +599,8 @@ SQLAlchemy = "^1.4.32"
 [package.source]
 type = "git"
 url = "https://github.com/PyDrocsid/library"
-reference = "mypy"
-resolved_reference = "1980f0a2aabb6da179800e08741bf2567b43b10e"
+reference = "develop"
+resolved_reference = "6127cbe4fbcbe0eff95ab4b15ecaeee315ebae77"
 
 [[package]]
 name = "pyflakes"
@@ -908,7 +908,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4db76b4ffd2de428d09f0e5bf5b1c5008efd0d6f3aeef130f36dcfdcdd1a94b4"
+content-hash = "37fac27f0ab4e4a22134fa21b2979c3083b8b13dc3dbe4d4346d48b495994d92"
 
 [metadata.files]
 aenum = [
@@ -1075,7 +1075,8 @@ docutils = [
     {file = "docutils-0.18.1.tar.gz", hash = "sha256:679987caf361a7539d76e584cbeddc311e3aee937877c87346f31debc63e9d06"},
 ]
 eradicate = [
-    {file = "eradicate-2.0.0.tar.gz", hash = "sha256:27434596f2c5314cc9b31410c93d8f7e8885747399773cd088d3adea647a60c8"},
+    {file = "eradicate-2.1.0-py3-none-any.whl", hash = "sha256:8bfaca181db9227dc88bdbce4d051a9627604c2243e7d85324f6d6ce0fd08bb2"},
+    {file = "eradicate-2.1.0.tar.gz", hash = "sha256:aac7384ab25b1bf21c4c012de9b4bf8398945a14c98c911545b2ea50ab558014"},
 ]
 flake8 = [
     {file = "flake8-4.0.1-py2.py3-none-any.whl", hash = "sha256:479b1304f72536a55948cb40a32dce8bb0ffe3501e26eaf292c7e60eb5e0428d"},
