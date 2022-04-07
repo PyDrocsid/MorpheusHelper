@@ -49,12 +49,15 @@ jobs:
           git remote add template ${TEMPLATE_REPO}
           git fetch template
           git checkout -b template template/${TEMPLATE_BRANCH}
-          git push origin template || git push -f origin template
+          git merge --no-edit $branch || git merge --abort
 
           if git merge-base --is-ancestor template $branch; then
             echo $branch is up to date
+            git push -d origin template || true
             exit 0
           fi
+
+          git push origin template || git push -f origin template
 
           echo Creating pull request from template into $branch
           gh -R ${{ github.repository }} pr create --title "Merge Template" --body "Merge template into $branch" --base $branch --head template || true
