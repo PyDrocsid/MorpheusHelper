@@ -1,0 +1,69 @@
+name: Merge Template
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+env:
+  TEMPLATE_REPO: "https://github.com/PyDrocsid/template.git"
+  TEMPLATE_BRANCH: develop
+  DEFAULT_BRANCH: mypy
+
+jobs:
+  merge_template:
+    name: Merge Template
+    runs-on: ubuntu-latest
+    environment: merge-template
+    concurrency: merge_template
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+          token: ${{ secrets.TOKEN }}
+
+      - name: Import GPG Key
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: Merge Template
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        run: |
+          set -ex
+
+          if [[ ${{ github.event_name }} = schedule ]]; then
+            branch=$DEFAULT_BRANCH
+          elif [[ ${{ github.ref_type }} != branch ]]; then
+            echo "Can only update branches"
+            exit 1
+          else
+            branch=${{ github.ref_name }}
+          fi
+
+          if [[ "$branch" = "template" ]]; then
+            echo "Cannot update template branch"
+            exit 1
+          fi
+
+          git remote add template ${TEMPLATE_REPO}
+          git fetch template
+          git checkout -b template template/${TEMPLATE_BRANCH}
+          git merge --no-edit $branch || git merge --abort
+
+          if git merge-base --is-ancestor template $branch; then
+            echo $branch is up to date
+            git push -d origin template || true
+            exit 0
+          fi
+
+          git push origin template || git push -f origin template
+
+          echo Creating pull request from template into $branch
+          gh -R ${{ github.repository }} pr create --title "Merge Template" --body "Merge template into $branch" --base $branch --head template || true
