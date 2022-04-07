@@ -8,6 +8,7 @@ on:
 env:
   TEMPLATE_REPO: "https://github.com/PyDrocsid/template.git"
   TEMPLATE_BRANCH: develop
+  DEFAULT_BRANCH: develop
 
 jobs:
   merge_template:
@@ -31,14 +32,26 @@ jobs:
         run: |
           set -ex
 
+          if [[ ${{ github.event_name }} = schedule ]]; then
+            branch=$DEFAULT_BRANCH
+          elif [[ ${{ github.ref_type }} != branch ]]; then
+            echo "Can only update branches"
+            exit 1
+          else
+            branch=${{ github.ref_name }}
+          fi
+
+          if [[ "$branch" = "template" ]]; then
+            echo "Cannot update template branch"
+            exit 1
+          fi
+
           git remote add template ${TEMPLATE_REPO}
           git fetch template
           git checkout -b template template/${TEMPLATE_BRANCH}
           git push origin template || git push -f origin template
-          git switch -
 
-          branch=$(git name-rev --name-only --always HEAD)
-          if git merge-base --is-ancestor template HEAD; then
+          if git merge-base --is-ancestor template $branch; then
             echo $branch is up to date
             exit 0
           fi
