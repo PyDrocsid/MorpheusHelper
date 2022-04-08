@@ -23,8 +23,7 @@ save() {
 
     git diff > .unstaged.patch
     git diff --staged > .staged.patch
-    git restore --staged .
-    git restore .
+    git restore -WS .
 }
 
 restore() {
@@ -52,7 +51,7 @@ elif [[ "$SELF" != "$HOOK" ]]; then
 fi
 
 save
-git apply --allow-empty .staged.patch && rm .staged.patch && touch .staged.patch
+git apply --allow-empty --index .staged.patch && rm .staged.patch && touch .staged.patch
 git add -u
 
 $HOME/.local/bin/poe pre-commit
