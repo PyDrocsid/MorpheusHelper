@@ -56,9 +56,9 @@ jobs:
           git remote add template ${TEMPLATE_REPO}
           git fetch template
           git checkout -b template template/${TEMPLATE_BRANCH}
-          git merge --no-edit $branch || git merge --abort
+          git merge --no-edit origin/$branch || git merge --abort
 
-          if git merge-base --is-ancestor template $branch; then
+          if git merge-base --is-ancestor template origin/$branch; then
             echo $branch is up to date
             git push -d origin template || true
             exit 0
