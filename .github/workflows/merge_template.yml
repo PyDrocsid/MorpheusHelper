@@ -1,19 +1,18 @@
 name: Merge Template
 
 on:
-# schedule:
-#   - cron: "0 4 * * *"
+  schedule:
+    - cron: "0 4 * * *"
   workflow_dispatch:
 
 env:
   TEMPLATE_REPO: "https://github.com/PyDrocsid/template.git"
   TEMPLATE_BRANCH: develop
-  DEFAULT_BRANCH: develop
+  DEFAULT_BRANCH: mypy
 
 jobs:
   merge_template:
     name: Merge Template
-    if: "false"
     runs-on: ubuntu-latest
     environment: merge-template
     concurrency: merge_template
