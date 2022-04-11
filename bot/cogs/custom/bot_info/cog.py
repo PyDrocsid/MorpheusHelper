@@ -1,4 +1,4 @@
-from cogs.library import BotInfoCog
+from cogs.library.information import BotInfoCog
 
 
 class CustomBotInfoCog(BotInfoCog, name="Bot Information"):

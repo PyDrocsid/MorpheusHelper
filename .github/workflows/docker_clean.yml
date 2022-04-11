@@ -32,7 +32,7 @@ jobs:
           PLATFORMS: ${{ env.PLATFORMS }}
         run: |
           set -ex
-          
+
           keep=()
           add() {
             keep+=("${1}")
@@ -40,22 +40,22 @@ jobs:
               keep+=("${1}-${platform}")
             done
           }
-          
+
           add latest
           add edge
-          
+
           for branch in $(git ls-remote --heads origin | cut -d/ -f3-); do
             echo Found branch: $branch
             add $branch
           done
-          
+
           for tag in $(git tag); do
             echo Found tag: $tag
             add $tag
           done
-          
+
           keep=$(printf '%s\n' "${keep[@]}" | tr / - | jq -R . | jq -cs .)
-          
+
           URL=/users/${OWNER}/packages/container/${NAME}/versions
           page=1
           versions=$(mktemp)
@@ -65,7 +65,7 @@ jobs:
             jq -c '.metadata.container.tags as $tags | select($tags-($tags-'"$keep"')==[])' page >> $versions
             page=$((page+1))
           done
-          
+
           while read version; do
             id=$(jq -r .id <<< "$version")
             name=$(jq -r .name <<< "$version")

@@ -1,22 +1,53 @@
 from typing import Iterable
 
 import sentry_sdk
-from discord import Intents, Message, Guild
-from discord.ext.commands import Bot, Context, CommandError, CommandNotFound, UserInputError, CommandInvokeError
+from discord import Guild, Intents, Message
+from discord.ext.commands import Bot, CommandError, CommandInvokeError, CommandNotFound, Context, UserInputError
 
 from PyDrocsid.cog import load_cogs
-from PyDrocsid.command import reply, make_error
+from PyDrocsid.command import make_error, reply
 from PyDrocsid.database import db
 from PyDrocsid.environment import TOKEN
 from PyDrocsid.events import listener
 from PyDrocsid.logger import get_logger
 from PyDrocsid.prefix import get_prefix
 from PyDrocsid.translations import t
-from cogs.custom import CustomBotInfoCog, CustomServerInfoCog
-from cogs.library import *
-from cogs.library.information.help.cog import send_help
-from cogs.library.moderation.mod.cog import UserCommandError
+
+from cogs.custom.bot_info import CustomBotInfoCog
+from cogs.custom.server_info import CustomServerInfoCog
+from cogs.library.administration import PermissionsCog, RolesCog, SettingsCog, SudoCog
+from cogs.library.general import (
+    BeTheProfessionalCog,
+    CustomCommandsCog,
+    DiscordBotTokenDeleterCog,
+    PollsCog,
+    ReactionPinCog,
+    ReactionRoleCog,
+    RemindMeCog,
+    UtilsCog,
+    VoiceChannelCog,
+)
+from cogs.library.information import HeartbeatCog, InactivityCog, UserInfoCog
+from cogs.library.information.help.cog import HelpCog, send_help
+from cogs.library.integrations import AdventOfCodeCog, PythonDocsCog, RedditCog, RunCodeCog
+from cogs.library.moderation import (
+    AutoClearCog,
+    AutoModCog,
+    AutoRoleCog,
+    ContentFilterCog,
+    InvitesCog,
+    LoggingCog,
+    MediaOnlyCog,
+    MessageCog,
+    RoleNotificationsCog,
+    SpamDetectionCog,
+    ThreadsCog,
+    UserNoteCog,
+    VerificationCog,
+)
+from cogs.library.moderation.mod.cog import ModCog, UserCommandError
 from cogs.library.pubsub import send_alert
+
 
 logger = get_logger(__name__)
 
@@ -88,6 +119,7 @@ load_cogs(
     AutoClearCog(),
     AutoModCog(),
     AutoRoleCog(),
+    ContentFilterCog(),
     RoleNotificationsCog(),
     VerificationCog(),
     SpamDetectionCog(),

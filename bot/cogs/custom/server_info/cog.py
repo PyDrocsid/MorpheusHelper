@@ -1,13 +1,15 @@
 from typing import Optional
 
-from discord import Member, Role, Guild
+from discord import Guild, Member, Role
 
 from PyDrocsid.database import db
 from PyDrocsid.settings import RoleSettings
 from PyDrocsid.translations import t
-from cogs.library import ServerInfoCog
+
 from cogs.library.general.betheprofessional.models import BTPRole
+from cogs.library.information import ServerInfoCog
 from cogs.library.moderation.invites.models import AllowedInvite
+
 
 t = t.server_info
 
@@ -32,8 +34,5 @@ class CustomServerInfoCog(ServerInfoCog, name="Server Information"):
     async def get_additional_fields(self, guild: Guild) -> list[tuple[str, str]]:
         return [
             (t.topics, t.cnt_topics(cnt=await db.count(BTPRole))),
-            (
-                t.allowed_discord_server,
-                t.cnt_servers_whitelisted(cnt=await db.count(AllowedInvite)),
-            ),
+            (t.allowed_discord_server, t.cnt_servers_whitelisted(cnt=await db.count(AllowedInvite))),
         ]

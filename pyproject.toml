@@ -1,4 +1,76 @@
+[tool.poetry]
+name = "MorpheusHelper"
+version = "0"
+description = ""
+authors = ["Defelo <elodef42@gmail.com>"]
+readme = "README.md"
+license = "GPL-3.0-only"
+homepage = "https://github.com/PyDrocsid/MorpheusHelper"
+repository = "https://github.com/PyDrocsid/MorpheusHelper"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+PyDrocsid = "^2.3.0dev1"
+SQLAlchemy = "^1.4.35"
+aiohttp = "^3.8.1"
+requests = "^2.27.1"
+python-dateutil = "^2.8.2"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+black = "^22.3.0"
+wemake-python-styleguide = "^0.16.1"
+mypy = "^0.942"
+SQLAlchemy = { extras = ["mypy"], version = "^1.4.35" }
+types-python-dateutil = "^2.8.10"
+types-requests = "^2.27.15"
+types-PyYAML = "^6.0.5"
+
+[tool.poe.tasks]
+bot = { cmd = "python bot/morpheushelper.py", envfile = ".env" }
+flake8 = "flake8 . --count --statistics --show-source"
+isort = "isort ."
+black = "black ."
+format = ["isort", "black"]
+mypy = "mypy ."
+lint = ["format", "flake8"]
+pre-commit = ["lint"]
+
+[tool.poe.tasks.setup]
+shell = """
+set -ex
+poetry install --no-root
+if ! [[ -e .env ]]; then cp morpheushelper.env .env; fi
+./pre-commit.sh install
+unset VIRTUAL_ENV
+git submodule update --init
+git submodule foreach 'poe setup'
+"""
+interpreter = "bash"
+
 [tool.black]
 target-version = ["py310"]
 line-length = 120
-# skip-magic-trailing-comma = true
+skip-magic-trailing-comma = true
+
+[tool.isort]
+profile = "black"
+py_version = 310
+line_length = 120
+lines_after_imports = 2
+reverse_relative = true
+known_pydrocsid = ["PyDrocsid"]
+known_local_folder = ["cogs"]
+sections = ["FUTURE", "STDLIB", "FIRSTPARTY", "THIRDPARTY", "PYDROCSID", "LOCALFOLDER"]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+no_incremental = true
+exclude = ["bot/library/PyDrocsid"]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
+
+[build-system]
+requires = ["setuptools", "poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
