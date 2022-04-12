@@ -25,6 +25,14 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Cache Virtual Environment
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/pypoetry
+          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
+
       - name: Setup poetry
         run: |
           pip install poetry poethepoet
@@ -49,6 +57,14 @@ jobs:
 #        with:
 #          python-version: ${{ env.PYTHON_VERSION }}
 #
+#      - name: Cache Virtual Environment
+#        uses: actions/cache@v3
+#        with:
+#          path: |
+#            ~/.cache/pip
+#            ~/.cache/pypoetry
+#          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
+#
 #      - name: Setup poetry
 #        run: |
 #          pip install poetry poethepoet
@@ -72,6 +88,14 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Virtual Environment
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/pypoetry
+          key: ${{ runner.os }}-venv-${{ hashFiles('poetry.lock') }}
 
       - name: Setup poetry
         run: |
