@@ -8,7 +8,7 @@ on:
 env:
   TEMPLATE_REPO: "https://github.com/PyDrocsid/template.git"
   TEMPLATE_BRANCH: develop
-  DEFAULT_BRANCH: mypy
+  DEFAULT_BRANCH: develop
 
 jobs:
   merge_template:
