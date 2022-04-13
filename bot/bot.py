@@ -1,3 +1,4 @@
+import sys
 from typing import Iterable
 
 import sentry_sdk
@@ -156,6 +157,10 @@ load_cogs(
 
 def run():
     bot.loop.run_until_complete(db.create_tables())
+
+    if not TOKEN:
+        logger.critical("No token found. Please add it to the environment variables.")
+        sys.exit(1)
 
     logger.debug("logging in")
     bot.run(TOKEN)
