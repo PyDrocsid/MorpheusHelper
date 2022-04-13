@@ -1,20 +1,19 @@
 name: Docker Clean
 
 on:
-# delete:
-# schedule:
-#   - cron: "0 4 * * *"
+  delete:
+  schedule:
+    - cron: "0 4 * * *"
   workflow_dispatch:
 
 env:
   OWNER: "pydrocsid"
-  NAME: "template"
+  NAME: "morpheushelper"
   PLATFORMS: "linux/amd64 linux/arm/v7 linux/arm64/v8 linux/s390x linux/ppc64le"
 
 jobs:
   docker_clean:
     name: Docker Clean
-    if: "false"
     runs-on: ubuntu-latest
     environment: docker-clean
     concurrency: docker_clean
