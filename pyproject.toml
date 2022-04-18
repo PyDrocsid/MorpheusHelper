@@ -25,7 +25,7 @@ mypy = "^0.942"
 SQLAlchemy = { extras = ["mypy"], version = "^1.4.35" }
 types-python-dateutil = "^2.8.10"
 types-requests = "^2.27.15"
-types-PyYAML = "^6.0.5"
+types-PyYAML = "^6.0.6"
 
 [tool.poe.tasks]
 bot = { cmd = "python bot/pydrocsid_bot.py", envfile = ".env" }
