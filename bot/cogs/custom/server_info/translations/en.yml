@@ -1,6 +1,19 @@
 cnt_admins:
   one: "{cnt} Administrator"
   many: "{cnt} Administrators"
+cnt_ops:
+  one: "{cnt} Operator"
+  many: "{cnt} Operators"
 cnt_mods:
   one: "{cnt} Moderator"
   many: "{cnt} Moderators"
+
+topics: Topics
+cnt_topics:
+  one: "{cnt} Topics registered"
+  many: "{cnt} Topics registered"
+
+allowed_discord_server: Allowed Discord Servers
+cnt_servers_whitelisted:
+  one: "{cnt} servers whitelisted"
+  many: "{cnt} servers whitelisted"
