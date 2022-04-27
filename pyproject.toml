@@ -23,7 +23,7 @@ black = "^22.3.0"
 wemake-python-styleguide = "^0.16.1"
 mypy = "^0.942"
 SQLAlchemy = { extras = ["mypy"], version = "^1.4.36" }
-types-python-dateutil = "^2.8.12"
+types-python-dateutil = "^2.8.14"
 types-requests = "^2.27.20"
 types-PyYAML = "^6.0.7"
 
