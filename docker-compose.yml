@@ -2,27 +2,27 @@ version: '3.9'
 
 
 services:
-  bot:
-    image: ghcr.io/pydrocsid/template
-#   image: ghcr.io/pydrocsid/template:develop
+  morpheushelper:
+    image: ghcr.io/pydrocsid/morpheushelper
+#   image: ghcr.io/pydrocsid/morpheushelper:develop
     restart: always
     tty: true
-    env_file: bot.env
+    env_file: morpheushelper.env
     depends_on:
       - db
       - redis
     networks:
-      - bot
+      - morpheushelper
 
   db:
     image: mariadb
 #   image: jsurf/rpi-mariadb
     restart: always
-    env_file: bot.env
+    env_file: morpheushelper.env
     volumes:
       - ./data/mariadb:/var/lib/mysql
     networks:
-      - bot
+      - morpheushelper
 
   redis:
     image: redis:alpine
@@ -30,7 +30,7 @@ services:
 #   volumes:
 #     - ./data/redis:/data
     networks:
-      - bot
+      - morpheushelper
 
 networks:
-  bot:
+  morpheushelper:
