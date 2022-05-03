@@ -10,7 +10,8 @@ repository = "https://github.com/PyDrocsid/template"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-PyDrocsid = "^2.3.0dev1"
+#PyDrocsid = "^2.3.0dev1"
+PyDrocsid = { path = "library/", develop = true }
 SQLAlchemy = "^1.4.36"
 aiohttp = "^3.8.1"
 requests = "^2.27.1"
