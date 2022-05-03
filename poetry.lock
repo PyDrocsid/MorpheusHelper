@@ -656,7 +656,7 @@ SQLAlchemy = "^1.4.32"
 
 [package.source]
 type = "directory"
-url = "bot/library"
+url = "library"
 
 [[package]]
 name = "pyflakes"
@@ -987,7 +987,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "98fd7484d4e297b035acf79561c2b8301dbef6dcf8421240bccdfc1b20abd626"
+content-hash = "0c5a096146b130e49f4729bc07e45f4cb1dd1144ad9c5e53480aa1860680e23d"
 
 [metadata.files]
 aenum = [
