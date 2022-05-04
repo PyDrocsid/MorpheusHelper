@@ -6,7 +6,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.10"
-  IMAGE_NAME: pydrocsid/template
+  IMAGE_NAME: pydrocsid/morpheushelper
 
 jobs:
   codestyle:
@@ -121,7 +121,7 @@ jobs:
         platform:
           - "linux/amd64"
 #         - "linux/arm/v7"
-#         - "linux/arm64/v8"
+          - "linux/arm64/v8"
 #         - "linux/s390x"
 #         - "linux/ppc64le"
 
@@ -187,7 +187,7 @@ jobs:
 
   docker_push:
     name: Docker Push
-    if: "false" # ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' && github.ref != 'refs/heads/template' }}
+    if: ${{ github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' && github.ref != 'refs/heads/template' }}
     needs: [ codestyle, linter, docker_build ]
     concurrency: docker
     runs-on: ubuntu-latest
