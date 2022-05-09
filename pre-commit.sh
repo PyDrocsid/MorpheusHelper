@@ -19,7 +19,7 @@ uninstall() {
 }
 
 save() {
-    git submodule foreach "git name-rev --name-only --always HEAD > .head.ref && /bin/bash $SELF save" && git submodule update
+    git submodule foreach "git name-rev --name-only --always --exclude='tags/*' HEAD > .head.ref && /bin/bash $SELF save" && git submodule update
 
     git diff > .unstaged.patch
     git diff --staged > .staged.patch
