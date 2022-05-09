@@ -149,6 +149,7 @@ poe bot
 | TOKEN               | Discord Bot Token                                                                    |                  |
 | GITHUB_TOKEN        | GitHub Personal Access Token (PAT) with public access                                |                  |
 | LOG_LEVEL           | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                               | `INFO`           |
+| PYCORD_LOG_LEVEL    | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                               | `ERROR`          |
 |                     |                                                                                      |                  |
 | DB_DRIVER           | Name of the SQL connection driver                                                    | `mysql+aiomysql` |
 | DB_HOST             | Hostname of the database server                                                      | `localhost`      |
