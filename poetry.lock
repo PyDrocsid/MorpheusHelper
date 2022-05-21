@@ -635,7 +635,7 @@ toml = ["toml"]
 
 [[package]]
 name = "pydrocsid"
-version = "2.3.1"
+version = "2.3.2"
 description = "Python Discord Bot Framework based on pycord"
 category = "main"
 optional = false
