@@ -135,35 +135,36 @@ poe bot
 ```
 
 ### Environment variables
-|    Variable Name    |                                     Description                                      |  Default Value   |
-|:--------------------|:-------------------------------------------------------------------------------------|:-----------------|
-| TOKEN               | Discord Bot Token                                                                    |                  |
-| GITHUB_TOKEN        | GitHub Personal Access Token (PAT) with public access                                |                  |
-| LOG_LEVEL           | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                               | `INFO`           |
-| PYCORD_LOG_LEVEL    | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                               | `ERROR`          |
-|                     |                                                                                      |                  |
-| DB_DRIVER           | Name of the SQL connection driver                                                    | `mysql+aiomysql` |
-| DB_HOST             | Hostname of the database server                                                      | `localhost`      |
-| DB_PORT             | Port on which the database server is running                                         | `3306`           |
-| DB_DATABASE         | Name of the database you want to use                                                 | `bot`            |
-| DB_USER             | Username for the database account                                                    | `bot`            |
-| DB_PASSWORD         | Password for the database account                                                    | `bot`            |
-| POOL_RECYCLE        | Number of seconds between db connection recycling                                    | `300`            |
-| POOL_SIZE           | Size of the connection pool                                                          | `20`             |
-| MAX_OVERFLOW        | The maximum overflow size of the connection pool                                     | `20`             |
-| SQL_SHOW_STATEMENTS | whether SQL queries should be logged                                                 | `False`          |
-|                     |                                                                                      |                  |
-| REDIS_HOST          | Hostname of the redis server                                                         | `redis`          |
-| REDIS_PORT          | Port on which the redis server is running                                            | `6379`           |
-| REDIS_DB            | Index of the redis database you want to use                                          | `0`              |
-|                     |                                                                                      |                  |
-| CACHE_TTL           | Time to live of redis cache in seconds                                               | `28800`          |
-| RESPONSE_LINK_TTL   | Time to live of links between command messages and the resulting bot responses       | `7200`           |
-|                     |                                                                                      |                  |
-| REPLY               | wether to use the reply feature when responding to commands                          | `True`           |
-| MENTION_AUTHOR      | wether to mention the author when the reply feature is being used                    | `True`           |
-|                     |                                                                                      |                  |
-| SENTRY_DSN          | [Optional] Sentry DSN for logging                                                    |                  |
-| OWNER_ID            | [Optional] Discord User ID of the person who should recieve status information.      |                  |
-| DISABLED_COGS       | [Optional] Cogs you'd like to disable.                                               |                  |
-|                     |                                                                                      |                  |
+| Variable Name       | Description                                                                     | Default Value    |
+|:--------------------|:--------------------------------------------------------------------------------|:-----------------|
+| TOKEN               | Discord Bot Token                                                               |                  |
+| GITHUB_TOKEN        | GitHub Personal Access Token (PAT) with public access                           |                  |
+| LOG_LEVEL           | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                          | `INFO`           |
+| PYCORD_LOG_LEVEL    | one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`                          | `ERROR`          |
+|                     |                                                                                 |                  |
+| DB_DRIVER           | Name of the SQL connection driver                                               | `mysql+aiomysql` |
+| DB_HOST             | Hostname of the database server                                                 | `localhost`      |
+| DB_PORT             | Port on which the database server is running                                    | `3306`           |
+| DB_DATABASE         | Name of the database you want to use                                            | `bot`            |
+| DB_USER             | Username for the database account                                               | `bot`            |
+| DB_PASSWORD         | Password for the database account                                               | `bot`            |
+| POOL_RECYCLE        | Number of seconds between db connection recycling                               | `300`            |
+| POOL_SIZE           | Size of the connection pool                                                     | `20`             |
+| MAX_OVERFLOW        | The maximum overflow size of the connection pool                                | `20`             |
+| SQL_SHOW_STATEMENTS | whether SQL queries should be logged                                            | `False`          |
+|                     |                                                                                 |                  |
+| REDIS_HOST          | Hostname of the redis server                                                    | `redis`          |
+| REDIS_PORT          | Port on which the redis server is running                                       | `6379`           |
+| REDIS_DB            | Index of the redis database you want to use                                     | `0`              |
+|                     |                                                                                 |                  |
+| CACHE_TTL           | Time to live of redis cache in seconds                                          | `28800`          |
+| RESPONSE_LINK_TTL   | Time to live of links between command messages and the resulting bot responses  | `7200`           |
+|                     |                                                                                 |                  |
+| REPLY               | wether to use the reply feature when responding to commands                     | `True`           |
+| MENTION_AUTHOR      | wether to mention the author when the reply feature is being used               | `True`           |
+|                     |                                                                                 |                  |
+| SENTRY_DSN          | [Optional] Sentry DSN for logging                                               |                  |
+| SENTRY_ENVIRONMENT  | [Optional] Sentry environment                                                   | `production`     |
+| OWNER_ID            | [Optional] Discord User ID of the person who should recieve status information. |                  |
+| DISABLED_COGS       | [Optional] Cogs you'd like to disable.                                          |                  |
+|                     |                                                                                 |                  |
