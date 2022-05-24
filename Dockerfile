@@ -21,7 +21,7 @@ RUN git describe --tags --always > VERSION
 
 FROM python:3.10-alpine
 
-LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/template
+LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/MorpheusHelper
 
 WORKDIR /app
 
@@ -44,4 +44,4 @@ USER bot
 HEALTHCHECK --interval=10s --timeout=5s --retries=1 \
     CMD sh -c 'test $(expr $(date +%s) - $(cat health)) -lt 30'
 
-CMD ["python", "bot/pydrocsid_bot.py"]
+CMD ["python", "bot/morpheushelper.py"]
