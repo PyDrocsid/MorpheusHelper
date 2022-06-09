@@ -1,25 +1,16 @@
 <p>
-  
-  [![CI](https://github.com/PyDrocsid/template/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/template/actions/workflows/ci.yml)
+
+  [![CI](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml/badge.svg)](https://github.com/PyDrocsid/MorpheusHelper/actions/workflows/ci.yml)
   [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-  [![Maintainability](https://api.codeclimate.com/v1/badges/cf9f606da13c20077022/maintainability)](https://codeclimate.com/github/PyDrocsid/library/maintainability)
+  [![Maintainability](https://api.codeclimate.com/v1/badges/b0cfbebabf9129ae4335/maintainability)](https://codeclimate.com/github/PyDrocsid/MorpheusHelper/maintainability)
+  [![Version](https://img.shields.io/github/v/tag/PyDrocsid/MorpheusHelper?label=version)](https://ghcr.io/pydrocsid/morpheushelper)
   [![Discord](https://img.shields.io/discord/637234990404599809.svg?label=Discord&logo=discord&logoColor=ffffff&color=7389D8)](https://pydrocsid.defelo.de/discord)
   [![Matrix](https://img.shields.io/matrix/pydrocsid:matrix.defelo.de.svg?label=Matrix&logo=matrix&logoColor=ffffff&color=4db798)](https://pydrocsid.defelo.de/matrix)
 
 </p>
 
-# PyDrocsid Bot Template
-
-## Template Instructions
-- [ ] Adjust name, repository and author in [config.yml](https://github.com/PyDrocsid/template/blob/develop/config.yml)
-- [ ] Replace the banner in [bot/pydrocsid_bot.py#L19](https://github.com/PyDrocsid/template/blob/develop/bot/pydrocsid_bot.py#L19-L25). You can generate one on [this website](http://www.patorjk.com/software/taag/#p=display&f=Slant&t=PyDrocsid%20Bot).
-- [ ] Add the cogs you want to use in [bot/bot.py#L80](https://github.com/PyDrocsid/template/blob/develop/bot/bot.py#L76-L91).
-- [ ] Adjust repository in [Dockerfile#L22](https://github.com/PyDrocsid/template/blob/develop/Dockerfile#L22)
-- [ ] Adjust docker image tags in [.github/workflows/ci.yml#L9](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/ci.yml#L9)
-- [ ] Enable push to docker registries in [.github/workflows/ci.yml#L166](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/ci.yml#L166)
-- [ ] Add reviewers in [.github/dependabot.yaml](https://github.com/PyDrocsid/template/blob/develop/.github/dependabot.yaml)
-- [ ] Enable the [Merge Template workflow](https://github.com/PyDrocsid/template/blob/develop/.github/workflows/merge_template.yml)
-- [ ] Adjust this [README.md](https://github.com/PyDrocsid/template/blob/develop/README.md) and remove this section
+# MorpheusHelper
+Bot for the [Discord Server of The Morpheus Tutorials](https://discord.gg/themorpheus)
 
 ## Development
 ### Prerequisites
@@ -33,12 +24,12 @@
 
 #### SSH (recommended)
 ```bash
-git clone --recursive git@github.com:PyDrocsid/template.git
+git clone --recursive git@github.com:PyDrocsid/MorpheusHelper.git
 ```
 
 #### HTTPS
 ```bash
-git clone --recursive https://github.com/PyDrocsid/template.git
+git clone --recursive https://github.com/PyDrocsid/MorpheusHelper.git
 ```
 
 ### Setup development environment
@@ -53,7 +44,7 @@ This will create a virtual environment, install the dependencies, create a `.env
 
 
 ### Environment variables
-To set the required environment variables it is necessary to create a file named `.env` in the root directory (there is a template for this file in [`bot.env`](bot.env)). If you need a token, generate one by following these instructions: [Creating a Bot Account](https://docs.pycord.dev/en/master/discord.html) (Note you need to enable the options under `Privileged Gateway Intents`)
+To set the required environment variables it is necessary to create a file named `.env` in the root directory (there is a template for this file in [`morpheushelper.env`](morpheushelper.env)). If you need a token, generate one by following these instructions: [Creating a Bot Account](https://docs.pycord.dev/en/master/discord.html) (Note you need to enable the options under `Privileged Gateway Intents`)
 
 ### Project structure
 
@@ -93,13 +84,13 @@ Project
 │  │     ├── pubsub.py
 │  │     └── translations.py
 │  ├── bot.py
-│  └── pydrocsid_bot.py
+│  └── morpheushelper.py
 └── config.yml
- ```
+```
 
 ### PyCharm configuration
 
-- Open PyCharm and go to `Settings` ➔ `Project` ➔ `Python Interpreter`
+- Open PyCharm and go to `Settings` ➔ `Project: MorpheusHelper` ➔ `Python Interpreter`
 - Open the menu `Python Interpreter` and click on `Show All...`
 - Click on the plus symbol
 - Click on `Poetry Environment`
@@ -116,14 +107,14 @@ Finally, please remember to mark the `bot` directory as `Sources Root` (right cl
 ### Using Docker
 ```bash
 # clone git repository and cd into it
-git clone --recursive https://github.com/PyDrocsid/template.git
-cd template
+git clone --recursive https://github.com/PyDrocsid/MorpheusHelper.git
+cd MorpheusHelper
 
 # build docker image
-sudo docker build -t pydrocsid/template .
+sudo docker build -t pydrocsid/morpheushelper .
 
 # adjust the docker-compose.yml and create a .env file
-cp bot.env .env
+cp morpheushelper.env .env
 vim .env
 vim docker-compose.yml
 
