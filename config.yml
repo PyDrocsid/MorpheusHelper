@@ -32,6 +32,10 @@ roles:
     name: Team
     check_assignable: false
 
+  organizer:
+    name: Organizer
+    check_assignable: false
+
   verified:
     name: Verified
     check_assignable: true
@@ -47,7 +51,7 @@ roles:
 permission_levels:
   administrator:
     name: Administrator
-    level: 3
+    level: 4
     aliases: [administrator, admin, a]
     if:
       permissions: [administrator]
@@ -55,17 +59,24 @@ permission_levels:
 
   operator:
     name: Operator
-    level: 2
+    level: 3
     aliases: [operator, op, o]
     if:
       roles: [op]
 
   moderator:
     name: Moderator
-    level: 1
+    level: 2
     aliases: [moderator, mod, m]
     if:
       roles: [mod]
+
+  organizer:
+    name: Organizer
+    level: 1
+    aliases: [org]
+    if:
+      roles: [organizer]
 
 default_permission_level: administrator
 
