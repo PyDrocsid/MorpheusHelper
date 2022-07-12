@@ -1,3 +1,4 @@
+import sys
 from typing import Iterable
 
 import sentry_sdk
@@ -13,12 +14,39 @@ from PyDrocsid.logger import get_logger
 from PyDrocsid.prefix import get_prefix
 from PyDrocsid.translations import t
 
+from cogs.custom.bot_info import CustomBotInfoCog
 from cogs.custom.server_info import CustomServerInfoCog
-from cogs.library.administration import PermissionsCog, RolesCog, SettingsCog
-from cogs.library.general import UtilsCog
-from cogs.library.information import BotInfoCog
+from cogs.library.administration import PermissionsCog, RolesCog, SettingsCog, SudoCog
+from cogs.library.general import (
+    BeTheProfessionalCog,
+    CustomCommandsCog,
+    DiscordBotTokenDeleterCog,
+    PollsCog,
+    ReactionPinCog,
+    ReactionRoleCog,
+    RemindMeCog,
+    UtilsCog,
+    VoiceChannelCog,
+)
+from cogs.library.information import HeartbeatCog, InactivityCog, UserInfoCog
 from cogs.library.information.help.cog import HelpCog, send_help
-from cogs.library.moderation.mod.cog import UserCommandError
+from cogs.library.integrations import AdventOfCodeCog, PythonDocsCog, RedditCog, RunCodeCog
+from cogs.library.moderation import (
+    AutoClearCog,
+    AutoModCog,
+    AutoRoleCog,
+    ContentFilterCog,
+    InvitesCog,
+    LoggingCog,
+    MediaOnlyCog,
+    MessageCog,
+    RoleNotificationsCog,
+    SpamDetectionCog,
+    ThreadsCog,
+    UserNoteCog,
+    VerificationCog,
+)
+from cogs.library.moderation.mod.cog import ModCog, UserCommandError
 from cogs.library.pubsub import send_alert
 
 
@@ -54,7 +82,8 @@ async def on_error(*_, **__):
 @listener
 async def on_command_error(ctx: Context, error: CommandError):
     if isinstance(error, CommandInvokeError):
-        await reply(ctx, embed=make_error(t.internal_error))
+        if not isinstance(error.original, PermissionError):
+            await reply(ctx, embed=make_error(t.internal_error))
         raise error.original
 
     if isinstance(error, CommandNotFound) and ctx.guild is not None and ctx.prefix == await get_prefix():
@@ -80,20 +109,58 @@ load_cogs(
     RolesCog(),
     PermissionsCog(),
     SettingsCog(),
+    SudoCog(),
+
+    # Moderation
+    ModCog(),
+    LoggingCog(),
+    MessageCog(),
+    MediaOnlyCog(),
+    InvitesCog(),
+    AutoClearCog(),
+    AutoModCog(),
+    AutoRoleCog(),
+    ContentFilterCog(),
+    RoleNotificationsCog(),
+    VerificationCog(),
+    SpamDetectionCog(),
+    ThreadsCog(),
+    UserNoteCog(),
 
     # Information
-    BotInfoCog(),
+    CustomBotInfoCog(),
+    HeartbeatCog(),
     HelpCog(),
     CustomServerInfoCog(),
+    UserInfoCog(),
+    InactivityCog(),
+
+    # Integrations
+    AdventOfCodeCog(),
+    PythonDocsCog(),
+    RedditCog(),
+    RunCodeCog(),
 
     # General
+    BeTheProfessionalCog(),
+    CustomCommandsCog(),
+    DiscordBotTokenDeleterCog(),
+    PollsCog(team_roles=["team"]),
+    ReactionPinCog(),
+    ReactionRoleCog(),
+    RemindMeCog(),
     UtilsCog(),
+    VoiceChannelCog(team_roles=["team"]),
 )
 # fmt: on
 
 
 def run():
     bot.loop.run_until_complete(db.create_tables())
+
+    if not TOKEN:
+        logger.critical("No token found. Please add it to the environment variables.")
+        sys.exit(1)
 
     logger.debug("logging in")
     bot.run(TOKEN)
