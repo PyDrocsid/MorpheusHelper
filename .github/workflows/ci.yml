@@ -249,7 +249,7 @@ jobs:
 
   docker_deploy:
     name: Docker Deploy
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/develop' }}
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/mod_rewrite' }}
     needs: [ docker_push ]
     environment: server-test
     runs-on: ubuntu-latest
