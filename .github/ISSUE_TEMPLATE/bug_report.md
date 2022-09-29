@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Your Configuration (please complete the following information):**
- - Exact Bot Version (Found in `.version` command):
+ - Exact MorpheusHelper Version (Found in `.version` command):
  - Hosting Method (with/without Pipenv/Docker):
  - Database (MySQL/MariaDB/PostreSQL):
 
