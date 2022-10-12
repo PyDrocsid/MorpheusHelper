@@ -151,7 +151,7 @@ jobs:
         run: echo ::set-output "name=tag::$(echo ${{ matrix.platform }} | tr / -)"
 
       - name: Build
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v3.2.0
         with:
           push: false
           load: true
