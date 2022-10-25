@@ -1,4 +1,4 @@
-FROM python:3.10-alpine AS builder
+FROM python:3.11.0-alpine AS builder
 
 RUN apk add --no-cache build-base gcc g++ musl-dev libffi-dev postgresql14-dev git python3-dev openssl-dev cargo
 
@@ -19,7 +19,7 @@ RUN set -ex \
 COPY .git /build/.git/
 RUN git describe --tags --always > VERSION
 
-FROM python:3.10-alpine
+FROM python:3.11.0-alpine
 
 LABEL org.opencontainers.image.source=https://github.com/PyDrocsid/MorpheusHelper
 
